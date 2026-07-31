@@ -113,7 +113,6 @@ export default function RefundPage() {
           </p>
         </Section>
 
-        <LegalReviewNote />
       </div>
     </article>
   );
@@ -128,15 +127,3 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function LegalReviewNote() {
-  return (
-    <aside className="rounded-lg border border-dashed border-border bg-[color:var(--paper)] p-5 text-xs text-muted-foreground leading-relaxed">
-      <strong className="text-foreground">Note for the ADAB team:</strong>{" "}
-      The return window (7 days), damage-report window (48 hours), and
-      refund method (bKash only) are placeholders that should match what
-      you can actually operationally support. Confirm with a Bangladesh-qualified
-      lawyer that this satisfies local consumer-protection requirements before
-      publishing.
-    </aside>
-  );
-}

@@ -126,7 +126,6 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <LegalReviewNote />
       </div>
     </article>
   );
@@ -141,13 +140,3 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function LegalReviewNote() {
-  return (
-    <aside className="rounded-lg border border-dashed border-border bg-[color:var(--paper)] p-5 text-xs text-muted-foreground leading-relaxed">
-      <strong className="text-foreground">Note for the ADAB team:</strong>{" "}
-      Plain-language draft only. Have a Bangladesh-qualified lawyer review
-      the sections on liability limitation, governing law/jurisdiction, and
-      consumer-rights language before publishing.
-    </aside>
-  );
-}

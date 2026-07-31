@@ -3,16 +3,46 @@
 import { useState } from "react";
 import { ChevronDown, Instagram } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const FAQ = [
-  { q: "What does 'Adab' mean?", a: "[COPY] Final answer to come in Prompt 11." },
-  { q: "What is a piran?", a: "[COPY] Final answer to come in Prompt 11." },
-  { q: "How does the drop model work?", a: "[COPY] Final answer to come in Prompt 11." },
-  { q: "What sizes do you carry?", a: "[COPY] Final answer to come in Prompt 11." },
-  { q: "How do I pay?", a: "[COPY] Final answer to come in Prompt 11." },
-  { q: "What's your return policy?", a: "[COPY] Final answer to come in Prompt 11." },
-  { q: "Do you ship internationally?", a: "[COPY] Final answer to come in Prompt 11." },
+  {
+    q: "What does 'Adab' mean?",
+    a: "Adab is an old word for refinement — the courtesy, respect, and quiet good manners you carry with you. It's also a traditional gesture of greeting. We chose it because that's the spirit of the brand: heritage worn with respect, in a modern cut. Old soul, new cut.",
+  },
+  {
+    q: "What is a piran?",
+    a: "The piran was a short-hemmed, full-sleeve shirt worn by men across East Bengal — today's Bangladesh — in the 1950s and 60s. Over time it lengthened into the panjabi we know now. Adab reinterprets that earlier moment: the same DNA, in today's fabric, cut, and embroidery. You can read the full story on our Manifesto.",
+  },
+  {
+    q: "How does the drop model work?",
+    a: "We release in limited drops rather than open-ended stock. Founding Drop pieces are made in small quantities with no guaranteed restock. You reserve your piece with an advance payment, and we confirm size, final price, and delivery with you directly within 24 hours. Once it's gone, it's gone.",
+  },
+  {
+    q: "What sizes do you carry?",
+    a: "We carry S through XXL. Our pieces are cut with a considered, relaxed fit — choose your usual size, or size up for extra room. Every product page has a full measurement chart (chest, length, sleeve, shoulder) under 'Size guide' so you can check before you reserve.",
+  },
+  {
+    q: "How do I pay?",
+    a: "Right now we take advance payment by bKash, which secures your reserved piece. After you submit a reservation we reach out over WhatsApp or bKash within 24 hours to confirm the details and complete payment. More payment methods will follow as we grow.",
+  },
+  {
+    q: "What's your return policy?",
+    a: "We offer size exchanges within 7 days on unworn, unwashed pieces with tags intact, subject to stock. If a piece arrives damaged or incorrect, tell us within 48 hours with photos and we'll arrange a replacement or full refund. Full details are on our Refund & Returns page.",
+  },
+  {
+    q: "Do you ship internationally?",
+    a: "For now we ship across Bangladesh via trusted couriers — free delivery inside Dhaka on the Founding Drop, with nationwide rates confirmed at reservation. We're not shipping internationally yet, but if you're abroad and want a piece, message us and we'll see what's possible.",
+  },
 ];
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(120),
+  email: z.string().trim().email("Enter a valid email").max(320),
+  orderNumber: z.string().trim().max(60).optional().or(z.literal("")),
+  message: z.string().trim().min(1, "Message is required").max(4000),
+});
 
 export function ContactClient() {
   const [form, setForm] = useState({
@@ -25,9 +55,23 @@ export function ContactClient() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const parsed = contactSchema.safeParse(form);
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Please check the form.");
+      return;
+    }
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    const { error } = await supabase.from("contact_messages").insert({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      order_number: parsed.data.orderNumber ? parsed.data.orderNumber : null,
+      message: parsed.data.message,
+    });
     setSubmitting(false);
+    if (error) {
+      toast.error("Couldn't send your message. Please try again or email hello@adab.co.");
+      return;
+    }
     setForm({ name: "", email: "", orderNumber: "", message: "" });
     toast("Message sent. We'll get back to you within 24 hours.");
   };

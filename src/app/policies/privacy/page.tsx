@@ -111,7 +111,6 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <LegalReviewNote />
       </div>
     </article>
   );
@@ -126,13 +125,3 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function LegalReviewNote() {
-  return (
-    <aside className="rounded-lg border border-dashed border-border bg-[color:var(--paper)] p-5 text-xs text-muted-foreground leading-relaxed">
-      <strong className="text-foreground">Note for the ADAB team:</strong>{" "}
-      This is plain-language draft copy. Have a Bangladesh-qualified lawyer
-      review before publishing — especially anything touching data-protection
-      compliance, cross-border transfers, and specific retention periods.
-    </aside>
-  );
-}
