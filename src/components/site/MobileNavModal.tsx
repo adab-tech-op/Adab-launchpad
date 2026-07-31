@@ -21,7 +21,7 @@ export function MobileNavModal({
         Navigation
       </h2>
       <div className="relative flex items-center justify-center px-5 py-5">
-        <img src="/assets/adab-logo-mark.svg" alt="ADAB" className="h-9 w-auto object-contain" />
+        <img src="/assets/adab-logo-lockup.svg" alt="ADAB" className="h-9 w-auto object-contain" />
         <button
           onClick={onClose}
           aria-label="Close menu"

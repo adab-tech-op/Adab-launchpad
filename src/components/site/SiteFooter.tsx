@@ -9,7 +9,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-5">
           <div className="md:col-span-2">
             <img
-              src="/assets/adab-logo-mark.svg"
+              src="/assets/adab-logo-lockup.svg"
               alt="ADAB"
               className="h-10 w-auto object-contain"
               loading="lazy"

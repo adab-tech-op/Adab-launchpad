@@ -66,7 +66,7 @@ export function SiteHeader() {
             aria-label="ADAB home"
           >
             <img
-              src={scrolled ? "/assets/adab-logo-mark.svg" : "/assets/adab-logo-mark-white.svg"}
+              src={scrolled ? "/assets/adab-logo-lockup.svg" : "/assets/adab-logo-lockup-white.svg"}
               alt="ADAB"
               className="h-[2.275rem] w-auto object-contain transition-all duration-300 md:h-[2.6rem]"
               loading="eager"
