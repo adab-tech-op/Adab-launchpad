@@ -22,10 +22,12 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          order_ref: string | null
           phone: string
           product_slug: string
           quantity: number
           size: string
+          status: string
         }
         Insert: {
           created_at?: string
@@ -34,10 +36,12 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          order_ref?: string | null
           phone: string
           product_slug: string
           quantity?: number
           size: string
+          status?: string
         }
         Update: {
           created_at?: string
@@ -46,10 +50,12 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          order_ref?: string | null
           phone?: string
           product_slug?: string
           quantity?: number
           size?: string
+          status?: string
         }
         Relationships: []
       }

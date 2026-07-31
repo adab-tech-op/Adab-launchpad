@@ -6,6 +6,7 @@ import { Minus, Plus, X, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { generateOrderRef } from "@/lib/order-ref";
 import { useCart } from "@/context/CartContext";
 
 // PHASE 2: replace with real Shopify/payment-gateway checkout once Drop 01 sells and integration is ready.
@@ -23,6 +24,7 @@ export function CartClient() {
 
   const [showForm, setShowForm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [orderRef, setOrderRef] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -42,6 +44,7 @@ export function CartClient() {
     if (items.length === 0) return;
 
     setSubmitting(true);
+    const ref = generateOrderRef();
     const rows = items.map((i) => ({
       name: parsed.data.name,
       phone: parsed.data.phone,
@@ -51,6 +54,7 @@ export function CartClient() {
       product_slug: i.slug,
       size: i.size,
       quantity: i.qty,
+      order_ref: ref,
     }));
 
     const { error } = await supabase.from("reservations").insert(rows);
@@ -60,6 +64,7 @@ export function CartClient() {
       return;
     }
     clear();
+    setOrderRef(ref);
     setSubmitted(true);
   }
 
@@ -81,9 +86,15 @@ export function CartClient() {
       ) : submitted ? (
         <div className="mt-16 rounded-2xl border border-border p-12 text-center paper-grain">
           <p className="font-editorial italic text-3xl">Reservation received.</p>
+          {orderRef && (
+            <p className="mt-5 inline-block rounded-full border border-border bg-background px-5 py-2 text-sm">
+              Your reference:{" "}
+              <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span>
+            </p>
+          )}
           <p className="mt-4 text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-            We'll message you on WhatsApp/bKash within 24 hours to confirm
-            payment and secure your piece.
+            Keep this reference. We'll message you on WhatsApp/bKash within 24
+            hours to confirm payment and secure your piece.
           </p>
           <Link
             href="/shop"

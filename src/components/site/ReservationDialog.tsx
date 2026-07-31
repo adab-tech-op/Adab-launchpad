@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { generateOrderRef } from "@/lib/order-ref";
 import { ModalShell } from "./ModalShell";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
@@ -28,6 +29,7 @@ type Props = {
 export function ReservationDialog({ open, onClose, productSlug, productName, defaultSize = "L" }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [orderRef, setOrderRef] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -38,6 +40,7 @@ export function ReservationDialog({ open, onClose, productSlug, productName, def
 
   const close = () => {
     setDone(false);
+    setOrderRef(null);
     setForm({ name: "", email: "", phone: "", size: defaultSize, quantity: 1 });
     onClose();
   };
@@ -50,15 +53,18 @@ export function ReservationDialog({ open, onClose, productSlug, productName, def
       return;
     }
     setSubmitting(true);
+    const ref = generateOrderRef();
     const { error } = await supabase.from("reservations").insert({
       ...parsed.data,
       product_slug: productSlug,
+      order_ref: ref,
     });
     setSubmitting(false);
     if (error) {
       toast.error("Something went wrong. Please try again.");
       return;
     }
+    setOrderRef(ref);
     setDone(true);
   };
 
@@ -76,8 +82,14 @@ export function ReservationDialog({ open, onClose, productSlug, productName, def
           <h3 className="mt-3 font-editorial text-3xl leading-tight">
             Thank you.
           </h3>
+          {orderRef && (
+            <p className="mt-5 inline-block rounded-full border border-border bg-[color:var(--paper)] px-5 py-2 text-sm">
+              Reference:{" "}
+              <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span>
+            </p>
+          )}
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-            We'll confirm your reservation and payment details over WhatsApp/bKash within 24 hours.
+            Keep your reference. We'll confirm your reservation and payment details over WhatsApp/bKash within 24 hours.
           </p>
           <button
             onClick={close}
