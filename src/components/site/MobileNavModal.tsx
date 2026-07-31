@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ChevronRight, X } from "lucide-react";
 import { ModalShell } from "./ModalShell";
-import logoAsset from "@/assets/adab-logo.png.asset.json";
 
 export type NavItem = { to: string; label: string };
 
@@ -22,7 +21,7 @@ export function MobileNavModal({
         Navigation
       </h2>
       <div className="relative flex items-center justify-center px-5 py-5">
-        <img src={logoAsset.url} alt="ADAB" className="h-9 w-auto object-contain" />
+        <img src="/assets/adab-logo-mark.svg" alt="ADAB" className="h-9 w-auto object-contain" />
         <button
           onClick={onClose}
           aria-label="Close menu"

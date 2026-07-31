@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Menu, Search, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logoAsset from "@/assets/adab-logo.png.asset.json";
 import { CartModal } from "./CartModal";
 import { SearchModal } from "./SearchModal";
 import { MobileNavModal } from "./MobileNavModal";
@@ -67,12 +66,9 @@ export function SiteHeader() {
             aria-label="ADAB home"
           >
             <img
-              src={logoAsset.url}
+              src={scrolled ? "/assets/adab-logo-mark.svg" : "/assets/adab-logo-mark-white.svg"}
               alt="ADAB"
-              className={cn(
-                "h-[2.275rem] w-auto object-contain transition-all duration-300 md:h-[2.6rem]",
-                scrolled ? "filter-none" : "brightness-0 invert"
-              )}
+              className="h-[2.275rem] w-auto object-contain transition-all duration-300 md:h-[2.6rem]"
               loading="eager"
             />
           </Link>

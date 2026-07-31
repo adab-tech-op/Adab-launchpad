@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import logoAsset from "@/assets/adab-logo.png.asset.json";
 
 export function SiteFooter() {
   return (
@@ -10,7 +9,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-5">
           <div className="md:col-span-2">
             <img
-              src={logoAsset.url}
+              src="/assets/adab-logo-mark.svg"
               alt="ADAB"
               className="h-10 w-auto object-contain"
               loading="lazy"
