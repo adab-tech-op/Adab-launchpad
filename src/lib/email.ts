@@ -1,0 +1,128 @@
+import "server-only";
+import { Resend } from "resend";
+import { getProduct } from "@/data/products";
+
+// Resend is configured lazily. If RESEND_API_KEY is unset, sends are skipped
+// (logged) so the app works before email is wired up.
+let _resend: Resend | null = null;
+function client(): Resend | null {
+  if (!process.env.RESEND_API_KEY) return null;
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
+
+const FROM = process.env.ADAB_FROM_EMAIL ?? "ADAB <orders@adab.co>";
+const NOTIFY = process.env.ADAB_NOTIFY_EMAIL; // internal ops inbox (optional)
+
+const INK = "#1c1c1c";
+const PRUSSIAN = "#003153";
+const PAPER = "#faf6ef";
+const MUTED = "#8a8a8a";
+const BORDER = "#d9d2c4";
+
+export type OrderItem = { product_slug: string; size: string; quantity: number };
+
+export type OrderEmailInput = {
+  to: string;
+  name: string;
+  phone: string;
+  orderRef: string;
+  items: OrderItem[];
+  deliveryAddress?: string;
+  notes?: string;
+};
+
+function itemRows(items: OrderItem[]): string {
+  return items
+    .map((it) => {
+      const p = getProduct(it.product_slug);
+      const name = p?.name ?? it.product_slug;
+      const price = p?.price ?? "";
+      return `
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid ${BORDER};color:${INK};font-size:14px;">
+            ${name}<br><span style="color:${MUTED};font-size:12px;">Size ${it.size} &middot; Qty ${it.quantity}</span>
+          </td>
+          <td style="padding:12px 0;border-bottom:1px solid ${BORDER};color:${INK};font-size:14px;text-align:right;white-space:nowrap;">${price}</td>
+        </tr>`;
+    })
+    .join("");
+}
+
+function customerHtml(o: OrderEmailInput): string {
+  return `
+  <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
+      <tr><td style="padding:28px 32px 8px;">
+        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; Founding Drop</p>
+        <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Reservation received.</h1>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. Your piece is held. Keep your reference below — we'll message you on WhatsApp/bKash within 24 hours to confirm payment and delivery.</p>
+      </td></tr>
+      <tr><td style="padding:20px 32px 0;">
+        <div style="display:inline-block;border:1px solid ${BORDER};border-radius:999px;padding:8px 18px;font-size:14px;color:${INK};">
+          Reference: <strong style="letter-spacing:0.12em;color:${PRUSSIAN};">${o.orderRef}</strong>
+        </div>
+      </td></tr>
+      <tr><td style="padding:20px 32px 8px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemRows(o.items)}</table>
+      </td></tr>
+      ${
+        o.deliveryAddress
+          ? `<tr><td style="padding:8px 32px;color:${MUTED};font-size:13px;line-height:1.6;"><strong style="color:${INK};">Deliver to:</strong> ${o.deliveryAddress}</td></tr>`
+          : ""
+      }
+      <tr><td style="padding:16px 32px 28px;">
+        <p style="margin:0;color:${MUTED};font-size:12px;line-height:1.7;">Advance payment secures your piece. This is a reservation, not a confirmed order, until we reach out. Made in Bangladesh.</p>
+      </td></tr>
+      <tr><td style="padding:16px 32px;background:${PAPER};border-top:1px solid ${BORDER};">
+        <p style="margin:0;color:${MUTED};font-size:12px;">ADAB &middot; Old Soul. New Cut. &middot; Dhaka, Bangladesh</p>
+      </td></tr>
+    </table>
+  </div>`;
+}
+
+function teamHtml(o: OrderEmailInput): string {
+  return `
+  <div style="font-family:Helvetica,Arial,sans-serif;color:${INK};">
+    <h2 style="font-size:18px;">New reservation ${o.orderRef}</h2>
+    <p style="font-size:14px;line-height:1.6;">
+      <strong>${o.name}</strong><br>
+      ${o.to}<br>
+      ${o.phone}
+    </p>
+    <table role="presentation" width="100%" style="max-width:520px;">${itemRows(o.items)}</table>
+    ${o.deliveryAddress ? `<p style="font-size:13px;"><strong>Deliver to:</strong> ${o.deliveryAddress}</p>` : ""}
+    ${o.notes ? `<p style="font-size:13px;"><strong>Notes:</strong> ${o.notes}</p>` : ""}
+  </div>`;
+}
+
+/** Best-effort transactional emails for a new reservation. Never throws. */
+export async function sendOrderEmails(o: OrderEmailInput): Promise<void> {
+  const resend = client();
+  if (!resend) {
+    console.warn(`[email] RESEND_API_KEY not set — skipping emails for ${o.orderRef}`);
+    return;
+  }
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: o.to,
+      subject: `Your ADAB reservation — ${o.orderRef}`,
+      html: customerHtml(o),
+    });
+  } catch (err) {
+    console.error(`[email] customer confirmation failed for ${o.orderRef}`, err);
+  }
+  if (NOTIFY) {
+    try {
+      await resend.emails.send({
+        from: FROM,
+        to: NOTIFY,
+        subject: `New reservation ${o.orderRef} — ${o.name}`,
+        html: teamHtml(o),
+      });
+    } catch (err) {
+      console.error(`[email] team notification failed for ${o.orderRef}`, err);
+    }
+  }
+}
