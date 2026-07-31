@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import heroDesktop from "@/assets/hero-desktop-v2.png.asset.json";
 import { ProductCard } from "@/components/site/ProductCard";
 import { products } from "@/data/products";
 
@@ -39,7 +38,7 @@ export default function Home() {
           className="absolute -top-[10%] left-0 h-[120%] w-full will-change-transform"
           style={{ transform: `translateY(${parallaxY}px)` }}
         >
-          <source media="(min-width: 768px)" srcSet={heroDesktop.url} />
+          <source media="(min-width: 768px)" srcSet="/assets/hero-desktop.jpg" />
           <img
             src={heroImg}
             alt="Adab piran — heritage-fusion menswear from Bangladesh"
