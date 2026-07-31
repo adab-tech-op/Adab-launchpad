@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { createWaitlistSignup } from "@/lib/actions/waitlist";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ModalShell } from "./ModalShell";
@@ -47,14 +47,14 @@ export function NewsletterModal() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("waitlist_signups").insert({
+    const res = await createWaitlistSignup({
       email: parsed.data.email,
-      phone: parsed.data.phone ? parsed.data.phone : null,
+      phone: parsed.data.phone ? parsed.data.phone : undefined,
       source: "newsletter_modal",
     });
     setSubmitting(false);
-    if (error && !/duplicate|unique/i.test(error.message)) {
-      toast.error("Something went wrong. Please try again.");
+    if (!res.ok) {
+      toast.error(res.error);
       return;
     }
     toast.success("You're on the list.");

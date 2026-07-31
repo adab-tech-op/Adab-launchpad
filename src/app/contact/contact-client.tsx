@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { createContactMessage } from "@/lib/actions/contact";
 
 const FAQ = [
   {
@@ -61,15 +61,15 @@ export function ContactClient() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from("contact_messages").insert({
+    const res = await createContactMessage({
       name: parsed.data.name,
       email: parsed.data.email,
-      order_number: parsed.data.orderNumber ? parsed.data.orderNumber : null,
+      orderNumber: parsed.data.orderNumber || undefined,
       message: parsed.data.message,
     });
     setSubmitting(false);
-    if (error) {
-      toast.error("Couldn't send your message. Please try again or email hello@adab.co.");
+    if (!res.ok) {
+      toast.error(res.error);
       return;
     }
     setForm({ name: "", email: "", orderNumber: "", message: "" });

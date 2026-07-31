@@ -4,8 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { generateOrderRef } from "@/lib/order-ref";
+import { createReservation } from "@/lib/actions/reservations";
 import { ModalShell } from "./ModalShell";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
@@ -53,18 +52,24 @@ export function ReservationDialog({ open, onClose, productSlug, productName, def
       return;
     }
     setSubmitting(true);
-    const ref = generateOrderRef();
-    const { error } = await supabase.from("reservations").insert({
-      ...parsed.data,
-      product_slug: productSlug,
-      order_ref: ref,
+    const res = await createReservation({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      items: [
+        {
+          product_slug: productSlug,
+          size: parsed.data.size,
+          quantity: parsed.data.quantity,
+        },
+      ],
     });
     setSubmitting(false);
-    if (error) {
-      toast.error("Something went wrong. Please try again.");
+    if (!res.ok) {
+      toast.error(res.error);
       return;
     }
-    setOrderRef(ref);
+    setOrderRef(res.orderRef);
     setDone(true);
   };
 

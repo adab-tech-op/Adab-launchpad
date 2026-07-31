@@ -5,8 +5,7 @@ import { useState } from "react";
 import { Minus, Plus, X, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { generateOrderRef } from "@/lib/order-ref";
+import { createReservation } from "@/lib/actions/reservations";
 import { useCart } from "@/context/CartContext";
 
 // PHASE 2: replace with real Shopify/payment-gateway checkout once Drop 01 sells and integration is ready.
@@ -44,27 +43,25 @@ export function CartClient() {
     if (items.length === 0) return;
 
     setSubmitting(true);
-    const ref = generateOrderRef();
-    const rows = items.map((i) => ({
+    const res = await createReservation({
       name: parsed.data.name,
-      phone: parsed.data.phone,
       email: parsed.data.email,
+      phone: parsed.data.phone,
       delivery_address: parsed.data.delivery_address,
-      notes: parsed.data.notes || null,
-      product_slug: i.slug,
-      size: i.size,
-      quantity: i.qty,
-      order_ref: ref,
-    }));
-
-    const { error } = await supabase.from("reservations").insert(rows);
+      notes: parsed.data.notes || undefined,
+      items: items.map((i) => ({
+        product_slug: i.slug,
+        size: i.size,
+        quantity: i.qty,
+      })),
+    });
     setSubmitting(false);
-    if (error) {
-      toast.error("Could not save reservation. Please try again.");
+    if (!res.ok) {
+      toast.error(res.error);
       return;
     }
     clear();
-    setOrderRef(ref);
+    setOrderRef(res.orderRef);
     setSubmitted(true);
   }
 
