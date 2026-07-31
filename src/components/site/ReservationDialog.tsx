@@ -1,0 +1,175 @@
+"use client";
+
+import { useState } from "react";
+import { X } from "lucide-react";
+import { z } from "zod";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { ModalShell } from "./ModalShell";
+
+const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
+
+const schema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(120),
+  email: z.string().trim().email("Invalid email").max(320),
+  phone: z.string().trim().min(3, "Phone is required").max(40),
+  size: z.enum(SIZES),
+  quantity: z.number().int().min(1).max(10),
+});
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  productSlug: string;
+  productName: string;
+  defaultSize?: string;
+};
+
+export function ReservationDialog({ open, onClose, productSlug, productName, defaultSize = "L" }: Props) {
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    size: defaultSize,
+    quantity: 1,
+  });
+
+  const close = () => {
+    setDone(false);
+    setForm({ name: "", email: "", phone: "", size: defaultSize, quantity: 1 });
+    onClose();
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = schema.safeParse(form);
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from("reservations").insert({
+      ...parsed.data,
+      product_slug: productSlug,
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error("Something went wrong. Please try again.");
+      return;
+    }
+    setDone(true);
+  };
+
+  return (
+    <ModalShell open={open} onClose={close} labelledBy="reservation-modal-title" className="max-w-md">
+      <button onClick={close} className="absolute right-4 top-4" aria-label="Close">
+        <X className="h-5 w-5" strokeWidth={1.5} />
+      </button>
+
+      {done ? (
+        <div>
+          <p className="font-display text-[11px] tracking-[0.24em] text-primary">
+            RESERVATION RECEIVED
+          </p>
+          <h3 className="mt-3 font-editorial text-3xl leading-tight">
+            Thank you.
+          </h3>
+          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+            We'll confirm your reservation and payment details over WhatsApp/bKash within 24 hours.
+          </p>
+          <button
+            onClick={close}
+            className="mt-6 w-full rounded-full bg-foreground text-background py-3 text-xs uppercase tracking-[0.2em] hover:bg-foreground/85 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={submit}>
+          <p className="font-display text-[11px] tracking-[0.24em] text-primary">
+            FOUNDING DROP
+          </p>
+          <h3 id="reservation-modal-title" className="mt-2 font-editorial text-2xl leading-tight">
+            Reserve {productName}
+          </h3>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Advance payment secures your piece. We'll confirm details over WhatsApp/bKash.
+          </p>
+
+          <div className="mt-5 space-y-4">
+            <Field label="Name">
+              <input
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+              />
+            </Field>
+            <Field label="Phone (WhatsApp/bKash)">
+              <input
+                required
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+                placeholder="+8801…"
+              />
+            </Field>
+            <Field label="Email">
+              <input
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Size">
+                <select
+                  value={form.size}
+                  onChange={(e) => setForm({ ...form, size: e.target.value })}
+                  className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+                >
+                  {SIZES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Quantity">
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={form.quantity}
+                  onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })}
+                  className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+                />
+              </Field>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="mt-6 w-full rounded-full bg-foreground text-background py-3 text-xs uppercase tracking-[0.2em] hover:bg-foreground/85 transition-colors disabled:opacity-60"
+          >
+            {submitting ? "Reserving…" : "Reserve — Founding Drop"}
+          </button>
+        </form>
+      )}
+    </ModalShell>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
