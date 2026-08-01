@@ -178,3 +178,22 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-heart-pulse, .animate-heart-break { animation: none; }
 }
+
+/* Cart badge pop (re-triggers on count change via key) */
+@keyframes badge-pop {
+  0%   { transform: scale(0.5); }
+  55%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.animate-badge-pop { animation: badge-pop 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Gentle page cross-fade on route change (via app/template.tsx) */
+@keyframes page-in {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-page-in { animation: page-in 0.35s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-badge-pop, .animate-page-in { animation: none; }
+}

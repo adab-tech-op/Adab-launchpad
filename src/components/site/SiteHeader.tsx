@@ -128,7 +128,10 @@ export function SiteHeader() {
             >
               <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
               {count > 0 && (
-                <span className="absolute right-0 top-0 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] leading-none text-primary-foreground tabular-nums">
+                <span
+                  key={count}
+                  className="absolute right-0 top-0 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] leading-none text-primary-foreground tabular-nums animate-badge-pop"
+                >
                   {count}
                 </span>
               )}
