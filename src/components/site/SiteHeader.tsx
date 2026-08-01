@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Menu, Search, ShoppingBag } from "lucide-react";
+import { Menu, Search, ShoppingBag, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
 import { CartModal } from "./CartModal";
 import { SearchModal } from "./SearchModal";
 import { MobileNavModal } from "./MobileNavModal";
@@ -25,6 +26,7 @@ export function SiteHeader() {
   const [cartOpen, setCartOpen] = useState(false);
   const [scrollState, setScrollState] = useState(false);
   const { count } = useCart();
+  const { data: session } = useSession();
 
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -106,6 +108,16 @@ export function SiteHeader() {
             >
               <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
             </button>
+            <Link
+              href={session ? "/account" : "/signin"}
+              className={cn(
+                "p-2 transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
+                scrolled ? "text-foreground hover:text-primary" : "text-white hover:text-white/70"
+              )}
+              aria-label={session ? "Account" : "Sign in"}
+            >
+              <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            </Link>
             <button
               onClick={() => setCartOpen(true)}
               className={cn(

@@ -126,3 +126,71 @@ export async function sendOrderEmails(o: OrderEmailInput): Promise<void> {
     }
   }
 }
+
+function authEmailHtml(opts: { heading: string; body: string; cta: string; url: string }): string {
+  return `
+  <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
+      <tr><td style="padding:28px 32px 8px;">
+        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB</p>
+        <h1 style="margin:12px 0 0;font-size:22px;color:${INK};font-weight:600;">${opts.heading}</h1>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">${opts.body}</p>
+      </td></tr>
+      <tr><td style="padding:24px 32px 8px;">
+        <a href="${opts.url}" style="display:inline-block;background:${PRUSSIAN};color:#ffffff;text-decoration:none;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;padding:13px 26px;border-radius:999px;">${opts.cta}</a>
+      </td></tr>
+      <tr><td style="padding:16px 32px 28px;">
+        <p style="margin:0;color:${MUTED};font-size:12px;line-height:1.7;">If the button doesn't work, copy this link:<br><span style="color:${PRUSSIAN};word-break:break-all;">${opts.url}</span></p>
+      </td></tr>
+      <tr><td style="padding:16px 32px;background:${PAPER};border-top:1px solid ${BORDER};">
+        <p style="margin:0;color:${MUTED};font-size:12px;">ADAB &middot; Old Soul. New Cut. &middot; Dhaka, Bangladesh</p>
+      </td></tr>
+    </table>
+  </div>`;
+}
+
+export async function sendVerificationEmail(opts: { to: string; url: string; name?: string }): Promise<void> {
+  const resend = client();
+  if (!resend) {
+    console.warn(`[email] RESEND_API_KEY not set — verification link for ${opts.to}: ${opts.url}`);
+    return;
+  }
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: opts.to,
+      subject: "Verify your email — ADAB",
+      html: authEmailHtml({
+        heading: `Welcome${opts.name ? `, ${opts.name}` : ""}.`,
+        body: "Confirm your email to activate your ADAB account.",
+        cta: "Verify email",
+        url: opts.url,
+      }),
+    });
+  } catch (err) {
+    console.error(`[email] verification email failed for ${opts.to}`, err);
+  }
+}
+
+export async function sendPasswordResetEmail(opts: { to: string; url: string; name?: string }): Promise<void> {
+  const resend = client();
+  if (!resend) {
+    console.warn(`[email] RESEND_API_KEY not set — reset link for ${opts.to}: ${opts.url}`);
+    return;
+  }
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: opts.to,
+      subject: "Reset your password — ADAB",
+      html: authEmailHtml({
+        heading: "Reset your password.",
+        body: "We received a request to reset your ADAB password. This link expires shortly. If you didn't ask for this, you can ignore this email.",
+        cta: "Reset password",
+        url: opts.url,
+      }),
+    });
+  } catch (err) {
+    console.error(`[email] reset email failed for ${opts.to}`, err);
+  }
+}
