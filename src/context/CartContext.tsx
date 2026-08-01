@@ -29,6 +29,7 @@ type CartContextValue = {
   removeItem: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   clear: () => void;
+  hydrated: boolean;
 };
 
 const STORAGE_KEY = "adab_cart_v1";
@@ -87,8 +88,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(() => {
     const count = items.reduce((s, i) => s + i.qty, 0);
     const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-    return { items, count, subtotal, addItem, removeItem, setQty, clear };
-  }, [items, addItem, removeItem, setQty, clear]);
+    return { items, count, subtotal, addItem, removeItem, setQty, clear, hydrated };
+  }, [items, addItem, removeItem, setQty, clear, hydrated]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

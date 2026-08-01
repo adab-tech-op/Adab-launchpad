@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { type Product, products } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
-import { ReservationDialog } from "@/components/site/ReservationDialog";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
@@ -24,13 +24,13 @@ const SIZE_TABLE = [
 ];
 
 export function ProductClient({ product }: { product: Product }) {
+  const router = useRouter();
   const { addItem } = useCart();
   const [size, setSize] = useState("L");
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState(product.swatches[0].name);
   const [zoom, setZoom] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
-  const [reserveOpen, setReserveOpen] = useState(false);
 
   const idx = products.findIndex((p) => p.slug === product.slug);
   const prev = products[(idx - 1 + products.length) % products.length];
@@ -59,18 +59,11 @@ export function ProductClient({ product }: { product: Product }) {
 
   const primaryCta = () => {
     if (dropModeActive) {
-      setReserveOpen(true);
+      router.push(
+        `/checkout?slug=${product.slug}&size=${encodeURIComponent(size)}&color=${encodeURIComponent(color)}&qty=${qty}`,
+      );
     } else {
-      addItem({
-        slug: product.slug,
-        name: product.name,
-        size,
-        color,
-        qty,
-        price: Number(product.price.replace(/[^0-9]/g, "")) || 0,
-        image: product.images[0],
-      });
-      toast.success("Added to cart");
+      addToCart();
     }
   };
 
@@ -408,17 +401,6 @@ export function ProductClient({ product }: { product: Product }) {
           </div>
         </div>
       )}
-
-      <ReservationDialog
-        open={reserveOpen}
-        onClose={() => setReserveOpen(false)}
-        productSlug={product.slug}
-        productName={product.name}
-        size={size}
-        quantity={qty}
-        color={color}
-        price={product.price}
-      />
     </>
   );
 }

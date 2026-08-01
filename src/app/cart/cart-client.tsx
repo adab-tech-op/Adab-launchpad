@@ -1,68 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Minus, Plus, X, ArrowLeft } from "lucide-react";
-import { z } from "zod";
-import { toast } from "sonner";
-import { createReservation } from "@/lib/actions/reservations";
 import { useCart } from "@/context/CartContext";
 
-// PHASE 2: replace with real Shopify/payment-gateway checkout once Drop 01 sells and integration is ready.
-
-const reservationSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120),
-  phone: z.string().trim().min(3, "Phone is required").max(40),
-  email: z.string().trim().email("Enter a valid email").max(320),
-  delivery_address: z.string().trim().min(3, "Delivery address is required").max(1000),
-  notes: z.string().trim().max(1000).optional().or(z.literal("")),
-});
-
 export function CartClient() {
-  const { items, setQty, removeItem, subtotal, clear } = useCart();
-  const router = useRouter();
-
-  const [showForm, setShowForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    delivery_address: "",
-    notes: "",
-  });
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const parsed = reservationSchema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Please check the form.");
-      return;
-    }
-    if (items.length === 0) return;
-
-    setSubmitting(true);
-    const res = await createReservation({
-      name: parsed.data.name,
-      email: parsed.data.email,
-      phone: parsed.data.phone,
-      delivery_address: parsed.data.delivery_address,
-      notes: parsed.data.notes || undefined,
-      items: items.map((i) => ({
-        product_slug: i.slug,
-        size: i.size,
-        quantity: i.qty,
-      })),
-    });
-    setSubmitting(false);
-    if (!res.ok) {
-      toast.error(res.error);
-      return;
-    }
-    clear();
-    router.push(`/pay/${res.orderRef}`);
-  }
+  const { items, setQty, removeItem, subtotal } = useCart();
 
   return (
     <div className="mx-auto max-w-6xl px-5 md:px-8 py-16 md:py-24">
@@ -130,113 +73,32 @@ export function CartClient() {
           </div>
 
           <aside className="lg:sticky lg:top-24 h-fit rounded-2xl border border-border p-8 paper-grain">
-            {!showForm ? (
-              <>
-                <h2 className="font-display text-xl">Summary</h2>
-                <div className="mt-6 space-y-3 text-sm">
-                  <Row label="Subtotal" value={`৳ ${subtotal.toLocaleString()}`} />
-                  <Row label="Delivery" value="Calculated after reservation" muted />
-                </div>
-                <p className="mt-6 rounded-lg bg-primary/10 px-4 py-3 text-xs text-primary leading-relaxed">
-                  Free delivery inside Dhaka on the Founding Drop. Nationwide
-                  shipping confirmed at reservation.
-                </p>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="mt-6 w-full rounded-full bg-primary py-4 text-xs uppercase tracking-[0.2em] text-primary-foreground hover:opacity-90 transition"
-                >
-                  Checkout
-                </button>
-                <p className="mt-4 text-center text-xs text-muted-foreground leading-relaxed">
-                  You'll get bKash payment instructions on the next step.
-                </p>
-              </>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-xl">Your details</h2>
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
-                  >
-                    Back
-                  </button>
-                </div>
-                <Field label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-                <Field label="Phone" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
-                <Field label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                <div>
-                  <label className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                    Delivery Address
-                  </label>
-                  <textarea
-                    value={form.delivery_address}
-                    onChange={(e) => setForm({ ...form, delivery_address: e.target.value })}
-                    rows={3}
-                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                    Notes (optional)
-                  </label>
-                  <textarea
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    rows={2}
-                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full rounded-full bg-primary py-4 text-xs uppercase tracking-[0.2em] text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
-                >
-                  {submitting ? "Please wait…" : "Proceed to payment"}
-                </button>
-              </form>
-            )}
+            <h2 className="font-display text-xl">Summary</h2>
+            <div className="mt-6 space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-foreground tabular-nums">৳ {subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Delivery</span>
+                <span className="text-muted-foreground">Confirmed at checkout</span>
+              </div>
+            </div>
+            <p className="mt-6 rounded-lg bg-primary/10 px-4 py-3 text-xs text-primary leading-relaxed">
+              Free delivery inside Dhaka on the Founding Drop. Nationwide shipping confirmed at checkout.
+            </p>
+            <Link
+              href="/checkout"
+              className="mt-6 block w-full rounded-full bg-primary py-4 text-center text-xs uppercase tracking-[0.2em] text-primary-foreground hover:opacity-90 transition"
+            >
+              Checkout
+            </Link>
+            <p className="mt-4 text-center text-xs text-muted-foreground leading-relaxed">
+              Choose sizes &amp; quantities next, then bKash payment.
+            </p>
           </aside>
         </div>
       )}
-    </div>
-  );
-}
-
-function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={muted ? "text-muted-foreground" : "text-foreground tabular-nums"}>
-        {value}
-      </span>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-}) {
-  return (
-    <div>
-      <label className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary"
-      />
     </div>
   );
 }
