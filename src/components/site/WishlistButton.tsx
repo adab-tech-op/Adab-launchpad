@@ -77,7 +77,7 @@ export function WishlistButton({ slug }: { slug: string }) {
           />
         )}
       </span>
-      {saved ? "Saved" : "Save to wishlist"}
+      {saved ? "Saved" : "Wishlist"}
     </button>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Minus, Plus, X } from "lucide-react";
+import { ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { type Product, products } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ReservationDialog } from "@/components/site/ReservationDialog";
@@ -75,6 +75,19 @@ export function ProductClient({ product }: { product: Product }) {
   };
 
   const ctaLabel = dropModeActive ? "Reserve — Founding Drop" : "Add to Cart";
+
+  const addToCart = () => {
+    addItem({
+      slug: product.slug,
+      name: product.name,
+      size,
+      color,
+      qty,
+      price: Number(product.price.replace(/[^0-9]/g, "")) || 0,
+      image: product.images[0],
+    });
+    toast.success("Added to cart");
+  };
 
   return (
     <>
@@ -232,8 +245,14 @@ export function ProductClient({ product }: { product: Product }) {
                 {ctaLabel}
               </button>
 
-              <div className="hidden lg:block">
+              <div className="hidden lg:grid grid-cols-2 gap-3">
                 <WishlistButton slug={product.slug} />
+                <button
+                  onClick={addToCart}
+                  className="flex items-center justify-center gap-2 rounded-full border border-border py-3.5 text-xs uppercase tracking-[0.2em] text-foreground transition-colors hover:border-foreground active:scale-[0.98]"
+                >
+                  <ShoppingBag className="h-4 w-4" strokeWidth={1.5} /> Add to cart
+                </button>
               </div>
 
               {/* Trust signals */}
@@ -317,6 +336,13 @@ export function ProductClient({ product }: { product: Product }) {
             </p>
           )}
         </div>
+        <button
+          onClick={addToCart}
+          aria-label="Add to cart"
+          className="rounded-full border border-border p-3 text-foreground active:scale-95 transition-transform"
+        >
+          <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
+        </button>
         <button
           onClick={primaryCta}
           className="rounded-full bg-foreground text-background px-5 py-3 text-xs uppercase tracking-[0.2em]"

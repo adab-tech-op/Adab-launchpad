@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Minus, Plus, X, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -20,10 +21,9 @@ const reservationSchema = z.object({
 
 export function CartClient() {
   const { items, setQty, removeItem, subtotal, clear } = useCart();
+  const router = useRouter();
 
   const [showForm, setShowForm] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [orderRef, setOrderRef] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -61,8 +61,7 @@ export function CartClient() {
       return;
     }
     clear();
-    setOrderRef(res.orderRef);
-    setSubmitted(true);
+    router.push(`/pay/${res.orderRef}`);
   }
 
   return (
@@ -70,7 +69,7 @@ export function CartClient() {
       <p className="text-[11px] uppercase tracking-[0.24em] text-primary font-display">Bag</p>
       <h1 className="mt-3 font-display text-5xl md:text-6xl">Your cart</h1>
 
-      {items.length === 0 && !submitted ? (
+      {items.length === 0 ? (
         <div className="mt-16 rounded-2xl border border-border p-12 text-center">
           <p className="font-editorial italic text-2xl">Your cart is quiet.</p>
           <Link
@@ -78,25 +77,6 @@ export function CartClient() {
             className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background"
           >
             Browse the Drop
-          </Link>
-        </div>
-      ) : submitted ? (
-        <div className="mt-16 rounded-2xl border border-border p-12 text-center paper-grain">
-          <p className="font-editorial italic text-3xl">Reservation received.</p>
-          {orderRef && (
-            <p className="mt-5 inline-block rounded-full border border-border bg-background px-5 py-2 text-sm">
-              Your reference:{" "}
-              <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span>
-            </p>
-          )}
-          <p className="mt-4 text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-            Keep this reference. We'll call or message you on WhatsApp within 24 hours to confirm and arrange bKash payment.
-          </p>
-          <Link
-            href="/shop"
-            className="mt-8 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background"
-          >
-            Continue Shopping
           </Link>
         </div>
       ) : (
@@ -165,10 +145,10 @@ export function CartClient() {
                   onClick={() => setShowForm(true)}
                   className="mt-6 w-full rounded-full bg-primary py-4 text-xs uppercase tracking-[0.2em] text-primary-foreground hover:opacity-90 transition"
                 >
-                  Confirm Reservation
+                  Checkout
                 </button>
                 <p className="mt-4 text-center text-xs text-muted-foreground leading-relaxed">
-                  Manual bKash confirmation. We'll message you within 24 hours.
+                  You'll get bKash payment instructions on the next step.
                 </p>
               </>
             ) : (
@@ -213,7 +193,7 @@ export function CartClient() {
                   disabled={submitting}
                   className="w-full rounded-full bg-primary py-4 text-xs uppercase tracking-[0.2em] text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
                 >
-                  {submitting ? "Sending…" : "Send Reservation"}
+                  {submitting ? "Please wait…" : "Proceed to payment"}
                 </button>
               </form>
             )}
