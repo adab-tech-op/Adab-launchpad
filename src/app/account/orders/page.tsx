@@ -55,7 +55,7 @@ export default async function OrdersPage() {
             </div>
           ))}
           <p className="pt-2 text-xs text-muted-foreground">
-            Reservations are confirmed over WhatsApp/bKash. Status updates as we process each order.
+            Reservations are confirmed over a call or WhatsApp. Status updates as we process each order.
           </p>
         </div>
       )}

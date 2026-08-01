@@ -37,7 +37,7 @@ export function ProfileForm({ initial, name, email }: { initial: Profile; name: 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="block">
-          <span className={label}>Phone (WhatsApp/bKash)</span>
+          <span className={label}>Phone (call/WhatsApp)</span>
           <input value={form.phone} onChange={(e) => set("phone", e.target.value)} className={input + " mt-2"} placeholder="+8801…" />
         </label>
         <label className="block">

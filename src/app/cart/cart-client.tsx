@@ -90,8 +90,7 @@ export function CartClient() {
             </p>
           )}
           <p className="mt-4 text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-            Keep this reference. We'll message you on WhatsApp/bKash within 24
-            hours to confirm payment and secure your piece.
+            Keep this reference. We'll call or message you on WhatsApp within 24 hours to confirm and arrange bKash payment.
           </p>
           <Link
             href="/shop"

@@ -85,7 +85,7 @@ export function ReservationDialog({
             </p>
           )}
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-            Keep your reference. We'll confirm your reservation and payment details over WhatsApp/bKash within 24 hours.
+            Keep your reference. We'll call or message you on WhatsApp within 24 hours to confirm your reservation and share bKash payment details.
           </p>
           <button
             onClick={close}
@@ -111,7 +111,7 @@ export function ReservationDialog({
           </div>
 
           <p className="mt-4 text-xs text-muted-foreground">
-            Advance payment secures your piece. We'll confirm details over WhatsApp/bKash within 24 hours.
+            Advance payment secures your piece. We'll call or message you on WhatsApp within 24 hours to confirm.
           </p>
 
           <div className="mt-5 space-y-4">
@@ -123,7 +123,7 @@ export function ReservationDialog({
                 className={inputCls}
               />
             </Field>
-            <Field label="Phone (WhatsApp/bKash)">
+            <Field label="Phone (call/WhatsApp)">
               <input
                 required
                 value={form.phone}

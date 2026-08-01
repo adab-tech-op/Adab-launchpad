@@ -56,7 +56,7 @@ function customerHtml(o: OrderEmailInput): string {
       <tr><td style="padding:28px 32px 8px;">
         <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; Founding Drop</p>
         <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Reservation received.</h1>
-        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. Your piece is held. Keep your reference below — we'll message you on WhatsApp/bKash within 24 hours to confirm payment and delivery.</p>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. Your piece is held. Keep your reference below — we'll call or message you on WhatsApp within 24 hours to confirm payment (bKash) and delivery.</p>
       </td></tr>
       <tr><td style="padding:20px 32px 0;">
         <div style="display:inline-block;border:1px solid ${BORDER};border-radius:999px;padding:8px 18px;font-size:14px;color:${INK};">
