@@ -10,6 +10,12 @@ const input =
   "w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary transition-colors";
 const label = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
 
+// Defined at module scope (NOT inside PayClient) so it keeps a stable identity
+// across re-renders — otherwise every keystroke would remount the form and drop focus.
+function Shell({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto max-w-lg px-5 md:px-8 py-16 md:py-24">{children}</div>;
+}
+
 export function PayClient({
   orderRef,
   items,
@@ -41,10 +47,6 @@ export function PayClient({
     }
     setDone(true);
   };
-
-  const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="mx-auto max-w-lg px-5 md:px-8 py-16 md:py-24">{children}</div>
-  );
 
   if (alreadyProcessed) {
     return (
