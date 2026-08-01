@@ -6,7 +6,7 @@ import { sql } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 
-const STATUSES = ["pending", "confirmed", "paid", "shipped", "delivered", "cancelled"] as const;
+const STATUSES = ["pending", "payment_submitted", "paid", "payment_not_received", "delivered", "cancelled"] as const;
 type Status = (typeof STATUSES)[number];
 
 export type AdminActionResult = { ok: true } | { ok: false; error: string };

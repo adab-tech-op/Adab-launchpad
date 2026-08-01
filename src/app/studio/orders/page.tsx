@@ -53,6 +53,34 @@ export default async function StudioOrders() {
                   </p>
                 </div>
               </div>
+
+              {o.payment ? (
+                <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                  <p className="text-xs uppercase tracking-[0.16em] text-primary">Payment to verify</p>
+                  <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Expected</p>
+                      <p className="tabular-nums">৳ {(o.payment.amount ?? o.total).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Paid from</p>
+                      <p className="tabular-nums">{o.payment.bkashNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">TrxID</p>
+                      <p className="font-medium">{o.payment.trxId}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Submitted</p>
+                      <p className="text-muted-foreground">
+                        {new Date(o.payment.submittedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-4 text-xs text-muted-foreground italic">No payment submitted yet.</p>
+              )}
             </div>
           ))}
         </div>

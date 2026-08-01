@@ -194,3 +194,83 @@ export async function sendPasswordResetEmail(opts: { to: string; url: string; na
     console.error(`[email] reset email failed for ${opts.to}`, err);
   }
 }
+
+export type PaymentEmailInput = {
+  to: string;
+  name: string;
+  phone: string;
+  orderRef: string;
+  items: OrderItem[];
+  amount: number;
+  bkashNumber: string;
+  trxId: string;
+};
+
+export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
+  const resend = client();
+  if (!resend) {
+    console.warn(`[email] RESEND_API_KEY not set — skipping payment email for ${o.orderRef}`);
+    return;
+  }
+  const customer = `
+  <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
+      <tr><td style="padding:28px 32px 8px;">
+        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; Founding Drop</p>
+        <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Payment details received.</h1>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. We've received your payment details for <strong>${o.orderRef}</strong> and are verifying them. We'll call or message you on WhatsApp within 24 hours to confirm.</p>
+      </td></tr>
+      <tr><td style="padding:18px 32px 0;">
+        <table role="presentation" width="100%"><tr>
+          <td style="color:${MUTED};font-size:13px;">TrxID</td>
+          <td style="text-align:right;color:${INK};font-size:13px;">${o.trxId}</td>
+        </tr><tr>
+          <td style="color:${MUTED};font-size:13px;">Amount</td>
+          <td style="text-align:right;color:${INK};font-size:13px;">৳ ${o.amount.toLocaleString()}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:16px 32px 28px;">
+        <p style="margin:0;color:${MUTED};font-size:12px;line-height:1.7;">This confirms we received your submission, not that payment is verified yet. Made in Bangladesh.</p>
+      </td></tr>
+      <tr><td style="padding:16px 32px;background:${PAPER};border-top:1px solid ${BORDER};">
+        <p style="margin:0;color:${MUTED};font-size:12px;">ADAB &middot; Old Soul. New Cut. &middot; Dhaka, Bangladesh</p>
+      </td></tr>
+    </table>
+  </div>`;
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: o.to,
+      subject: `Payment received — ${o.orderRef}`,
+      html: customer,
+    });
+  } catch (err) {
+    console.error(`[email] payment-received (customer) failed for ${o.orderRef}`, err);
+  }
+
+  if (NOTIFY) {
+    const team = `
+    <div style="font-family:Helvetica,Arial,sans-serif;color:${INK};">
+      <h2 style="font-size:18px;">Payment to verify — ${o.orderRef}</h2>
+      <table role="presentation" width="100%" style="max-width:520px;font-size:14px;">
+        <tr><td style="color:${MUTED};">Expected amount</td><td style="text-align:right;"><strong>৳ ${o.amount.toLocaleString()}</strong></td></tr>
+        <tr><td style="color:${MUTED};">Paid from (bKash)</td><td style="text-align:right;">${o.bkashNumber}</td></tr>
+        <tr><td style="color:${MUTED};">TrxID</td><td style="text-align:right;"><strong>${o.trxId}</strong></td></tr>
+        <tr><td style="color:${MUTED};">Customer</td><td style="text-align:right;">${o.name} · ${o.phone}</td></tr>
+      </table>
+      ${itemRows(o.items)}
+      <p style="font-size:13px;color:${MUTED};">Verify against your bKash statement, then set status in /studio.</p>
+    </div>`;
+    try {
+      await resend.emails.send({
+        from: FROM,
+        to: NOTIFY,
+        subject: `Verify payment ${o.orderRef} — ৳${o.amount.toLocaleString()} · ${o.trxId}`,
+        html: team,
+      });
+    } catch (err) {
+      console.error(`[email] payment-received (team) failed for ${o.orderRef}`, err);
+    }
+  }
+}

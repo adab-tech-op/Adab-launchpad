@@ -5,7 +5,7 @@ export default async function StudioOverview() {
   const stats = await getStudioStats();
   const cards = [
     { label: "Orders", value: stats.orders, href: "/studio/orders" },
-    { label: "Pending", value: stats.pending, href: "/studio/orders" },
+    { label: "To verify", value: stats.toVerify, href: "/studio/orders" },
     { label: "Waitlist", value: stats.waitlist, href: "/studio/inbox" },
     { label: "Messages", value: stats.messages, href: "/studio/inbox" },
   ];
@@ -21,9 +21,9 @@ export default async function StudioOverview() {
         ))}
       </div>
       <p className="mt-8 text-sm text-muted-foreground">
-        {stats.pending > 0
-          ? `${stats.pending} order${stats.pending > 1 ? "s" : ""} awaiting confirmation.`
-          : "No pending orders. All caught up."}
+        {stats.toVerify > 0
+          ? `${stats.toVerify} payment${stats.toVerify > 1 ? "s" : ""} awaiting verification.`
+          : "No payments awaiting verification. All caught up."}
       </p>
     </div>
   );

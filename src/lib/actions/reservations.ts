@@ -1,10 +1,8 @@
 "use server";
 
-import { after } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { generateOrderRef } from "@/lib/order-ref";
-import { sendOrderEmails } from "@/lib/email";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -58,17 +56,6 @@ export async function createReservation(input: {
              ${it.quantity}, ${delivery_address || null}, ${notes || null})
         `,
       ),
-    );
-    after(() =>
-      sendOrderEmails({
-        to: email,
-        name,
-        phone,
-        orderRef,
-        items,
-        deliveryAddress: delivery_address || undefined,
-        notes: notes || undefined,
-      }),
     );
     return { ok: true, orderRef };
   } catch (err) {

@@ -71,6 +71,58 @@ export async function getOrdersByEmail(email: string): Promise<Order[]> {
   return [...map.values()];
 }
 
+export type OrderByRef = {
+  orderRef: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  items: OrderItem[];
+  total: number;
+  hasPayment: boolean;
+};
+
+export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null> {
+  let rows: {
+    name: string;
+    email: string;
+    phone: string;
+    product_slug: string;
+    size: string;
+    quantity: number;
+    status: string;
+  }[] = [];
+  try {
+    rows = (await sql`
+      SELECT name, email, phone, product_slug, size, quantity, status
+      FROM reservations WHERE order_ref = ${orderRef}
+    `) as typeof rows;
+  } catch (err) {
+    console.error("[queries] getOrderByRef failed", err);
+    return null;
+  }
+  if (rows.length === 0) return null;
+
+  let hasPayment = false;
+  try {
+    const pay = (await sql`SELECT 1 FROM payments WHERE order_ref = ${orderRef}`) as unknown[];
+    hasPayment = pay.length > 0;
+  } catch {
+    hasPayment = false;
+  }
+
+  const first = rows[0];
+  const items: OrderItem[] = [];
+  let total = 0;
+  for (const r of rows) {
+    const p = getProduct(r.product_slug);
+    const price = p?.price ?? "";
+    items.push({ slug: r.product_slug, name: p?.name ?? r.product_slug, price, size: r.size, quantity: r.quantity });
+    total += priceToNumber(price) * r.quantity;
+  }
+  return { orderRef, name: first.name, email: first.email, phone: first.phone, status: first.status, items, total, hasPayment };
+}
+
 export async function getWishlistSlugs(userId: string): Promise<string[]> {
   try {
     const rows = (await sql`

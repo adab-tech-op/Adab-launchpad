@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { updateOrderStatus } from "@/lib/actions/admin";
 
-const STATUSES = ["pending", "confirmed", "paid", "shipped", "delivered", "cancelled"];
+const STATUSES = ["pending", "payment_submitted", "paid", "payment_not_received", "delivered", "cancelled"];
 
 export function StatusControl({ orderRef, status }: { orderRef: string; status: string }) {
   const router = useRouter();

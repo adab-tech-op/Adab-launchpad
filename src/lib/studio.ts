@@ -18,6 +18,7 @@ export type AdminOrder = {
   createdAt: string;
   items: { name: string; size: string; quantity: number; price: string }[];
   total: number;
+  payment: { bkashNumber: string; trxId: string; amount: number | null; submittedAt: string } | null;
 };
 
 export async function getAllOrders(): Promise<AdminOrder[]> {
@@ -55,6 +56,7 @@ export async function getAllOrders(): Promise<AdminOrder[]> {
         createdAt: r.created_at,
         items: [],
         total: 0,
+        payment: null,
       });
     }
     const o = map.get(key)!;
@@ -63,26 +65,47 @@ export async function getAllOrders(): Promise<AdminOrder[]> {
     o.items.push({ name: p?.name ?? r.product_slug, size: r.size, quantity: r.quantity, price });
     o.total += priceToNumber(price) * r.quantity;
   }
+
+  // Attach payment submissions.
+  try {
+    const pays = (await sql`
+      SELECT order_ref, bkash_number, trx_id, amount, submitted_at FROM payments
+    `) as { order_ref: string; bkash_number: string; trx_id: string; amount: number | null; submitted_at: string }[];
+    for (const pay of pays) {
+      const o = map.get(pay.order_ref);
+      if (o) {
+        o.payment = {
+          bkashNumber: pay.bkash_number,
+          trxId: pay.trx_id,
+          amount: pay.amount,
+          submittedAt: pay.submitted_at,
+        };
+      }
+    }
+  } catch (err) {
+    console.error("[studio] payments fetch failed", err);
+  }
+
   return [...map.values()];
 }
 
 export type StudioStats = {
   orders: number;
-  pending: number;
+  toVerify: number;
   waitlist: number;
   messages: number;
 };
 
 export async function getStudioStats(): Promise<StudioStats> {
-  const [orders, pending, waitlist, messages] = await Promise.all([
+  const [orders, toVerify, waitlist, messages] = await Promise.all([
     sql`SELECT COUNT(DISTINCT order_ref)::int AS c FROM reservations`,
-    sql`SELECT COUNT(DISTINCT order_ref)::int AS c FROM reservations WHERE status = 'pending'`,
+    sql`SELECT COUNT(DISTINCT order_ref)::int AS c FROM reservations WHERE status = 'payment_submitted'`,
     sql`SELECT COUNT(*)::int AS c FROM waitlist_signups`,
     sql`SELECT COUNT(*)::int AS c FROM contact_messages`,
   ]);
   return {
     orders: (orders as { c: number }[])[0]?.c ?? 0,
-    pending: (pending as { c: number }[])[0]?.c ?? 0,
+    toVerify: (toVerify as { c: number }[])[0]?.c ?? 0,
     waitlist: (waitlist as { c: number }[])[0]?.c ?? 0,
     messages: (messages as { c: number }[])[0]?.c ?? 0,
   };

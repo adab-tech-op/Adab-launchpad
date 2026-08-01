@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -34,14 +35,11 @@ export function ReservationDialog({
   color,
   price,
 }: Props) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
-  const [orderRef, setOrderRef] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "" });
 
   const close = () => {
-    setDone(false);
-    setOrderRef(null);
     setForm({ name: "", phone: "", email: "" });
     onClose();
   };
@@ -60,13 +58,14 @@ export function ReservationDialog({
       phone: parsed.data.phone,
       items: [{ product_slug: productSlug, size, quantity }],
     });
-    setSubmitting(false);
     if (!res.ok) {
+      setSubmitting(false);
       toast.error(res.error);
       return;
     }
-    setOrderRef(res.orderRef);
-    setDone(true);
+    // Reservation created — move to the payment step.
+    onClose();
+    router.push(`/pay/${res.orderRef}`);
   };
 
   return (
@@ -75,83 +74,44 @@ export function ReservationDialog({
         <X className="h-5 w-5" strokeWidth={1.5} />
       </button>
 
-      {done ? (
-        <div className="p-7">
-          <p className="font-display text-[11px] tracking-[0.24em] text-primary">RESERVATION RECEIVED</p>
-          <h3 className="mt-3 font-editorial text-3xl leading-tight">Thank you.</h3>
-          {orderRef && (
-            <p className="mt-5 inline-block rounded-full border border-border bg-[color:var(--paper)] px-5 py-2 text-sm">
-              Reference: <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span>
-            </p>
-          )}
-          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-            Keep your reference. We'll call or message you on WhatsApp within 24 hours to confirm your reservation and share bKash payment details.
+      <form onSubmit={submit} className="p-7">
+        <p className="font-display text-[11px] tracking-[0.24em] text-primary">FOUNDING DROP</p>
+        <h3 id="reservation-modal-title" className="mt-2 font-editorial text-2xl leading-tight">
+          Reserve your piece
+        </h3>
+
+        <div className="mt-5 rounded-xl border border-border bg-[color:var(--paper)] p-4">
+          <p className="font-sans text-base leading-tight">{productName}</p>
+          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+            {color ? `${color} · ` : ""}Size {size} · Qty {quantity}
           </p>
-          <button
-            onClick={close}
-            className="mt-6 w-full rounded-full bg-foreground text-background py-3 text-xs uppercase tracking-[0.2em] hover:bg-foreground/85 transition-colors"
-          >
-            Close
-          </button>
+          {price && <p className="mt-2 text-sm tabular-nums">{price}</p>}
         </div>
-      ) : (
-        <form onSubmit={submit} className="p-7">
-          <p className="font-display text-[11px] tracking-[0.24em] text-primary">FOUNDING DROP</p>
-          <h3 id="reservation-modal-title" className="mt-2 font-editorial text-2xl leading-tight">
-            Reserve your piece
-          </h3>
 
-          {/* Summary of the PDP selection — no re-picking */}
-          <div className="mt-5 rounded-xl border border-border bg-[color:var(--paper)] p-4">
-            <p className="font-sans text-base leading-tight">{productName}</p>
-            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-              {color ? `${color} · ` : ""}Size {size} · Qty {quantity}
-            </p>
-            {price && <p className="mt-2 text-sm tabular-nums">{price}</p>}
-          </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          Enter your details, then you'll get bKash payment instructions on the next step.
+        </p>
 
-          <p className="mt-4 text-xs text-muted-foreground">
-            Advance payment secures your piece. We'll call or message you on WhatsApp within 24 hours to confirm.
-          </p>
+        <div className="mt-5 space-y-4">
+          <Field label="Name">
+            <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} />
+          </Field>
+          <Field label="Phone (call/WhatsApp)">
+            <input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} placeholder="+8801…" />
+          </Field>
+          <Field label="Email">
+            <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} />
+          </Field>
+        </div>
 
-          <div className="mt-5 space-y-4">
-            <Field label="Name">
-              <input
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Phone (call/WhatsApp)">
-              <input
-                required
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className={inputCls}
-                placeholder="+8801…"
-              />
-            </Field>
-            <Field label="Email">
-              <input
-                required
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className={inputCls}
-              />
-            </Field>
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="mt-6 w-full rounded-full bg-foreground text-background py-3.5 text-xs uppercase tracking-[0.2em] hover:bg-foreground/85 transition-colors disabled:opacity-60"
-          >
-            {submitting ? "Reserving…" : "Reserve — Founding Drop"}
-          </button>
-        </form>
-      )}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="mt-6 w-full rounded-full bg-foreground text-background py-3.5 text-xs uppercase tracking-[0.2em] hover:bg-foreground/85 transition-colors disabled:opacity-60"
+        >
+          {submitting ? "Please wait…" : "Proceed to payment"}
+        </button>
+      </form>
     </ModalShell>
   );
 }
