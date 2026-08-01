@@ -388,7 +388,10 @@ export function ProductClient({ product }: { product: Product }) {
         onClose={() => setReserveOpen(false)}
         productSlug={product.slug}
         productName={product.name}
-        defaultSize={size}
+        size={size}
+        quantity={qty}
+        color={color}
+        price={product.price}
       />
     </>
   );
