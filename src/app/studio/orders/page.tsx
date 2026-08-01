@@ -1,22 +1,76 @@
+import Link from "next/link";
 import { getAllOrders } from "@/lib/studio";
 import { StatusControl } from "./status-control";
 
-export default async function StudioOrders() {
+export const metadata = { title: "Orders — ADAB Studio" };
+
+const PILLS = [
+  { key: "payment_submitted", label: "To verify" },
+  { key: "pending", label: "Awaiting payment" },
+  { key: "paid", label: "Paid" },
+  { key: "delivered", label: "Delivered" },
+  { key: "payment_not_received", label: "Not received" },
+  { key: "cancelled", label: "Cancelled" },
+  { key: "all", label: "All" },
+];
+
+export default async function StudioOrders({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const active = status ?? "payment_submitted"; // default to the actionable queue
+
   const orders = await getAllOrders();
+
+  const countFor = (key: string) =>
+    key === "all" ? orders.length : orders.filter((o) => o.status === key).length;
+
+  const filtered = active === "all" ? orders : orders.filter((o) => o.status === active);
+
   return (
     <div>
       <h1 className="font-editorial text-4xl">Orders.</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        {orders.length} order{orders.length === 1 ? "" : "s"}. Change status to move an order through fulfillment — customers see this on their account.
+        Verify a payment against your bKash statement, then set the status — customers see it on their account.
       </p>
 
-      {orders.length === 0 ? (
-        <p className="mt-12 rounded-2xl border border-border p-12 text-center font-editorial text-2xl italic text-muted-foreground">
-          No orders yet.
-        </p>
+      {/* Filter pills */}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {PILLS.filter((p) => p.key === "all" || p.key === "payment_submitted" || countFor(p.key) > 0).map((p) => {
+          const isActive = p.key === active;
+          const n = countFor(p.key);
+          return (
+            <Link
+              key={p.key}
+              href={`/studio/orders?status=${p.key}`}
+              className={`rounded-full border px-3.5 py-1.5 text-xs uppercase tracking-[0.12em] transition-colors ${
+                isActive
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+              }`}
+            >
+              {p.label} <span className="tabular-nums opacity-70">{n}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="mt-10 rounded-2xl border border-border p-12 text-center paper-grain">
+          <p className="font-editorial text-2xl italic text-muted-foreground">
+            {active === "payment_submitted" ? "No payments awaiting verification." : "Nothing here."}
+          </p>
+          {active !== "all" && (
+            <Link href="/studio/orders?status=all" className="mt-5 inline-block text-xs uppercase tracking-[0.16em] underline underline-offset-4">
+              View all orders →
+            </Link>
+          )}
+        </div>
       ) : (
-        <div className="mt-10 space-y-4">
-          {orders.map((o) => (
+        <div className="mt-8 space-y-4">
+          {filtered.map((o) => (
             <div key={o.orderRef} className="rounded-2xl border border-border p-6">
               <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
                 <div className="min-w-0">
