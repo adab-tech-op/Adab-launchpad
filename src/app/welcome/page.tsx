@@ -2,10 +2,18 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { AuthShell } from "@/components/site/AuthShell";
+import { VerifyExpired } from "./verify-expired";
 
 export const metadata = { title: "Email verified — ADAB" };
 
-export default async function WelcomePage() {
+export default async function WelcomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  if (error) return <VerifyExpired />;
+
   let signedIn = false;
   try {
     const session = await auth.api.getSession({ headers: await headers() });

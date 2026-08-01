@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
+import { AuthErrorCatcher } from "@/components/site/AuthErrorCatcher";
 import { products } from "@/data/products";
 
 const heroImg = "/assets/hero-main.jpg";
@@ -31,6 +32,9 @@ export default function Home() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <AuthErrorCatcher />
+      </Suspense>
       {/* Hero */}
       <section data-reveal-images-skip className="relative h-screen min-h-[600px] w-full overflow-hidden">
         <picture
