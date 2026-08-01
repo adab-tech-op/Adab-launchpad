@@ -6,6 +6,7 @@ import { ChevronDown, Minus, Plus, X } from "lucide-react";
 import { type Product, products } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ReservationDialog } from "@/components/site/ReservationDialog";
+import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 
@@ -230,6 +231,10 @@ export function ProductClient({ product }: { product: Product }) {
               >
                 {ctaLabel}
               </button>
+
+              <div className="hidden lg:block">
+                <WishlistButton slug={product.slug} />
+              </div>
 
               {/* Trust signals */}
               <ul className="space-y-2 text-xs text-muted-foreground">
