@@ -25,7 +25,7 @@ export default function SignUpPage() {
       return;
     }
     setLoading(true);
-    const { error } = await signUp.email({ name, email, password });
+    const { error } = await signUp.email({ name, email, password, callbackURL: "/welcome" });
     setLoading(false);
     if (error) {
       toast.error(error.message ?? "Could not create your account.");

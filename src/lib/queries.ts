@@ -24,19 +24,25 @@ export type Order = {
 };
 
 export async function getOrdersByEmail(email: string): Promise<Order[]> {
-  const rows = (await sql`
-    SELECT order_ref, product_slug, size, quantity, status, created_at
-    FROM reservations
-    WHERE lower(email) = lower(${email})
-    ORDER BY created_at DESC
-  `) as {
+  let rows: {
     order_ref: string | null;
     product_slug: string;
     size: string;
     quantity: number;
     status: string;
     created_at: string;
-  }[];
+  }[] = [];
+  try {
+    rows = (await sql`
+      SELECT order_ref, product_slug, size, quantity, status, created_at
+      FROM reservations
+      WHERE lower(email) = lower(${email})
+      ORDER BY created_at DESC
+    `) as typeof rows;
+  } catch (err) {
+    console.error("[queries] getOrdersByEmail failed", err);
+    return [];
+  }
 
   const map = new Map<string, Order>();
   for (const r of rows) {
@@ -66,12 +72,17 @@ export async function getOrdersByEmail(email: string): Promise<Order[]> {
 }
 
 export async function getWishlistSlugs(userId: string): Promise<string[]> {
-  const rows = (await sql`
-    SELECT product_slug FROM wishlist_items
-    WHERE user_id = ${userId}
-    ORDER BY created_at DESC
-  `) as { product_slug: string }[];
-  return rows.map((r) => r.product_slug);
+  try {
+    const rows = (await sql`
+      SELECT product_slug FROM wishlist_items
+      WHERE user_id = ${userId}
+      ORDER BY created_at DESC
+    `) as { product_slug: string }[];
+    return rows.map((r) => r.product_slug);
+  } catch (err) {
+    console.error("[queries] getWishlistSlugs failed", err);
+    return [];
+  }
 }
 
 export type Profile = {
@@ -84,17 +95,30 @@ export type Profile = {
 };
 
 export async function getProfile(userId: string): Promise<Profile> {
-  const rows = (await sql`
-    SELECT phone, default_size, address_line, city, area, postal_code
-    FROM profiles WHERE user_id = ${userId}
-  `) as Partial<Profile>[];
-  const p = rows[0] ?? {};
-  return {
-    phone: p.phone ?? "",
-    default_size: p.default_size ?? "",
-    address_line: p.address_line ?? "",
-    city: p.city ?? "",
-    area: p.area ?? "",
-    postal_code: p.postal_code ?? "",
+  const empty: Profile = {
+    phone: "",
+    default_size: "",
+    address_line: "",
+    city: "",
+    area: "",
+    postal_code: "",
   };
+  try {
+    const rows = (await sql`
+      SELECT phone, default_size, address_line, city, area, postal_code
+      FROM profiles WHERE user_id = ${userId}
+    `) as Partial<Profile>[];
+    const p = rows[0] ?? {};
+    return {
+      phone: p.phone ?? "",
+      default_size: p.default_size ?? "",
+      address_line: p.address_line ?? "",
+      city: p.city ?? "",
+      area: p.area ?? "",
+      postal_code: p.postal_code ?? "",
+    };
+  } catch (err) {
+    console.error("[queries] getProfile failed", err);
+    return empty;
+  }
 }

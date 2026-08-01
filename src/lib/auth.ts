@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { nextCookies } from "better-auth/next-js";
 import { Pool } from "@neondatabase/serverless";
 import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/email";
 
@@ -29,4 +30,6 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 30, // 30 days
     cookieCache: { enabled: true, maxAge: 5 * 60 },
   },
+
+  plugins: [nextCookies()],
 });
