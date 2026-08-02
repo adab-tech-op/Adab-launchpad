@@ -23,6 +23,7 @@ Known-temporary or deferred items, tracked so nothing gets lost.
   emails (verification, payment received) reach everyone.
 
 ## Catalog
+- Cloudinary uploads are **unsigned** (anyone with cloud name + preset could upload). Fine for an admin tool at this stage; tighten to **signed** uploads (server-generated signature) when needed.
 - Products live in code (`src/data/products.ts`); `/studio` products view is
   read-only. Move to DB-backed products when the catalog grows.
 
