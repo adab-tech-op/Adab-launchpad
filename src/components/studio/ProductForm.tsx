@@ -170,19 +170,26 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
         <span className={labelCls}>Images <span className="normal-case tracking-normal">(first is the cover)</span></span>
         <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 gap-3">
           {p.images.map((url, i) => (
-            <div key={url + i} className="group relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-[color:var(--paper)]">
+            <div key={url + i} className="relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-[color:var(--paper)]">
               <img src={url} alt="" className="h-full w-full object-cover" />
               {i === 0 && <span className="absolute left-1 top-1 rounded bg-foreground/80 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-background">Cover</span>}
-              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-background/85 p-1 opacity-0 transition-opacity group-hover:opacity-100">
-                <button type="button" onClick={() => moveImage(i, -1)} disabled={i === 0} className="disabled:opacity-30"><ArrowUp className="h-4 w-4" /></button>
-                <button type="button" onClick={() => moveImage(i, 1)} disabled={i === p.images.length - 1} className="disabled:opacity-30"><ArrowDown className="h-4 w-4" /></button>
-                <button type="button" onClick={() => setP((s) => ({ ...s, images: s.images.filter((_, j) => j !== i) }))} className="text-destructive"><Trash2 className="h-4 w-4" /></button>
+              <button
+                type="button"
+                onClick={() => setP((s) => ({ ...s, images: s.images.filter((_, j) => j !== i) }))}
+                aria-label="Remove image"
+                className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-background/90 text-destructive shadow-sm hover:bg-background"
+              >
+                <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+              </button>
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-4 bg-background/85 py-1">
+                <button type="button" onClick={() => moveImage(i, -1)} disabled={i === 0} aria-label="Move earlier" className="disabled:opacity-30"><ArrowUp className="h-4 w-4" /></button>
+                <button type="button" onClick={() => moveImage(i, 1)} disabled={i === p.images.length - 1} aria-label="Move later" className="disabled:opacity-30"><ArrowDown className="h-4 w-4" /></button>
               </div>
             </div>
           ))}
           <label className="flex aspect-[4/5] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors">
             {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <UploadCloud className="h-6 w-6" strokeWidth={1.5} />}
-            <span className="text-[10px] uppercase tracking-[0.14em]">{uploading ? "Uploading" : "Upload"}</span>
+            <span className="text-[10px] uppercase tracking-[0.14em]">{uploading ? "Uploading" : p.images.length ? "Add / replace" : "Upload"}</span>
             <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadFiles(e.target.files)} disabled={uploading} />
           </label>
         </div>
