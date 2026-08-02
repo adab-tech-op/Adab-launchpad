@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
 import { SlidersHorizontal, X } from "lucide-react";
 
 const placeholderImg = "/assets/coming-soon-placeholder.jpg";
@@ -23,7 +23,7 @@ const COMING_SOON = [
   "Pattern in development",
 ];
 
-export function ShopClient() {
+export function ShopClient({ products }: { products: Product[] }) {
   const [sort, setSort] = useState("Featured");
   const [mobileOpen, setMobileOpen] = useState(false);
 

@@ -1,6 +1,7 @@
-import { products } from "@/data/products";
+import { getAllProducts } from "@/lib/products";
 
-export default function StudioProducts() {
+export default async function StudioProducts() {
+  const products = await getAllProducts();
   return (
     <div>
       <h1 className="font-editorial text-4xl">Products.</h1>

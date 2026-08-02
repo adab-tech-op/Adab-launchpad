@@ -1,6 +1,6 @@
 import "server-only";
 import { sql } from "@/lib/db";
-import { getProduct } from "@/data/products";
+import { getProductMap } from "@/lib/products";
 
 function priceToNumber(price?: string): number {
   if (!price) return 0;
@@ -41,6 +41,7 @@ export async function getAllOrders(): Promise<AdminOrder[]> {
     created_at: string;
   }[];
 
+  const productMap = await getProductMap();
   const map = new Map<string, AdminOrder>();
   for (const r of rows) {
     const key = r.order_ref ?? `no-ref-${r.email}-${r.created_at}`;
@@ -60,7 +61,7 @@ export async function getAllOrders(): Promise<AdminOrder[]> {
       });
     }
     const o = map.get(key)!;
-    const p = getProduct(r.product_slug);
+    const p = productMap.get(r.product_slug);
     const price = p?.price ?? "";
     o.items.push({ name: p?.name ?? r.product_slug, size: r.size, quantity: r.quantity, price });
     o.total += priceToNumber(price) * r.quantity;

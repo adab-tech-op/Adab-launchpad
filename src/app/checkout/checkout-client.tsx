@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { getProduct } from "@/data/products";
+import type { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { createReservation } from "@/lib/actions/reservations";
 
@@ -34,15 +34,20 @@ const contactSchema = z.object({
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 
-export function CheckoutClient() {
+export function CheckoutClient({
+  buyNowProduct,
+  size,
+  color,
+  qty,
+}: {
+  buyNowProduct: Product | null;
+  size?: string;
+  color?: string;
+  qty?: string;
+}) {
   const router = useRouter();
-  const params = useSearchParams();
   const { items, hydrated, clear } = useCart();
-
-  const slug = params.get("slug");
-  const sizeParam = params.get("size");
-  const colorParam = params.get("color") ?? undefined;
-  const qtyParam = Math.max(1, Number(params.get("qty")) || 1);
+  const qtyNum = Math.max(1, Number(qty) || 1);
 
   const [lines, setLines] = useState<Line[] | null>(null);
   const [fromCart, setFromCart] = useState(false);
@@ -51,34 +56,27 @@ export function CheckoutClient() {
 
   useEffect(() => {
     if (lines) return;
-    if (slug) {
-      const p = getProduct(slug);
-      setLines(
-        p
-          ? [{
-              slug,
-              name: p.name,
-              unitPrice: priceNum(p.price),
-              priceLabel: p.price,
-              image: p.images[0],
-              color: colorParam,
-              sizes: { [sizeParam || "L"]: qtyParam },
-            }]
-          : [],
-      );
+    if (buyNowProduct) {
+      setLines([{
+        slug: buyNowProduct.slug,
+        name: buyNowProduct.name,
+        unitPrice: priceNum(buyNowProduct.price),
+        priceLabel: buyNowProduct.price,
+        image: buyNowProduct.images[0],
+        color,
+        sizes: { [size || "L"]: qtyNum },
+      }]);
       setFromCart(false);
     } else if (hydrated) {
       const map = new Map<string, Line>();
       for (const it of items) {
-        const p = getProduct(it.slug);
-        if (!p) continue;
         if (!map.has(it.slug)) {
           map.set(it.slug, {
             slug: it.slug,
-            name: p.name,
-            unitPrice: priceNum(p.price),
-            priceLabel: p.price,
-            image: p.images[0],
+            name: it.name,
+            unitPrice: it.price,
+            priceLabel: `৳ ${it.price.toLocaleString()}`,
+            image: it.image,
             color: it.color,
             sizes: {},
           });
@@ -89,10 +87,10 @@ export function CheckoutClient() {
       setLines([...map.values()]);
       setFromCart(true);
     }
-  }, [slug, sizeParam, colorParam, qtyParam, items, hydrated, lines]);
+  }, [buyNowProduct, size, color, qtyNum, items, hydrated, lines]);
 
-  const setSizeQty = (s: string, size: string, qty: number) => {
-    setLines((prev) => prev?.map((l) => (l.slug === s ? { ...l, sizes: { ...l.sizes, [size]: Math.max(0, qty) } } : l)) ?? prev);
+  const setSizeQty = (s: string, sz: string, q: number) => {
+    setLines((prev) => prev?.map((l) => (l.slug === s ? { ...l, sizes: { ...l.sizes, [sz]: Math.max(0, q) } } : l)) ?? prev);
   };
 
   const lineUnits = (l: Line) => Object.values(l.sizes).reduce((s, q) => s + q, 0);
@@ -112,9 +110,7 @@ export function CheckoutClient() {
     }
     const orderItems: { product_slug: string; size: string; quantity: number }[] = [];
     for (const l of lines!) {
-      for (const [size, qty] of Object.entries(l.sizes)) {
-        if (qty > 0) orderItems.push({ product_slug: l.slug, size, quantity: qty });
-      }
+      for (const [sz, q] of Object.entries(l.sizes)) if (q > 0) orderItems.push({ product_slug: l.slug, size: sz, quantity: q });
     }
     setSubmitting(true);
     const res = await createReservation({
@@ -155,7 +151,6 @@ export function CheckoutClient() {
         Set how many you want in each size. You can order the same piece in multiple sizes.
       </p>
 
-      {/* Product lines */}
       <div className="mt-10 space-y-5">
         {lines.map((l) => (
           <div key={l.slug} className="rounded-2xl border border-border p-5">
@@ -194,13 +189,11 @@ export function CheckoutClient() {
         ))}
       </div>
 
-      {/* Total */}
       <div className="mt-6 flex items-center justify-between rounded-2xl border border-border p-5 paper-grain">
         <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Total · {totalUnits} piece{totalUnits === 1 ? "" : "s"}</span>
         <span className="font-editorial text-3xl tabular-nums">৳ {total.toLocaleString()}</span>
       </div>
 
-      {/* Contact */}
       <form onSubmit={submit} className="mt-10 space-y-4">
         <h2 className="font-display text-xl">Your details</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

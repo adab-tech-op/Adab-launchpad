@@ -3,14 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { currentUserId } from "@/lib/auth-guard";
-import { getProduct } from "@/data/products";
+import { getProductBySlug } from "@/lib/products";
 
 export type WishlistResult = { ok: true; saved: boolean } | { ok: false; error: string };
 
 export async function toggleWishlist(slug: string): Promise<WishlistResult> {
   const userId = await currentUserId();
   if (!userId) return { ok: false, error: "Please sign in to save pieces." };
-  if (!getProduct(slug)) return { ok: false, error: "Unknown product." };
+  if (!(await getProductBySlug(slug))) return { ok: false, error: "Unknown product." };
 
   try {
     const existing = (await sql`

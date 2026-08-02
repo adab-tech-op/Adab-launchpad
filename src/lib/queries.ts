@@ -1,6 +1,6 @@
 import "server-only";
 import { sql } from "@/lib/db";
-import { getProduct } from "@/data/products";
+import { getProductMap } from "@/lib/products";
 
 function priceToNumber(price?: string): number {
   if (!price) return 0;
@@ -44,6 +44,7 @@ export async function getOrdersByEmail(email: string): Promise<Order[]> {
     return [];
   }
 
+  const productMap = await getProductMap();
   const map = new Map<string, Order>();
   for (const r of rows) {
     const key = r.order_ref ?? `no-ref-${r.product_slug}-${r.created_at}`;
@@ -57,7 +58,7 @@ export async function getOrdersByEmail(email: string): Promise<Order[]> {
       });
     }
     const order = map.get(key)!;
-    const product = getProduct(r.product_slug);
+    const product = productMap.get(r.product_slug);
     const price = product?.price ?? "";
     order.items.push({
       slug: r.product_slug,
@@ -118,11 +119,12 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
     payment = null;
   }
 
+  const productMap = await getProductMap();
   const first = rows[0];
   const items: OrderItem[] = [];
   let total = 0;
   for (const r of rows) {
-    const p = getProduct(r.product_slug);
+    const p = productMap.get(r.product_slug);
     const price = p?.price ?? "";
     items.push({ slug: r.product_slug, name: p?.name ?? r.product_slug, price, size: r.size, quantity: r.quantity });
     total += priceToNumber(price) * r.quantity;

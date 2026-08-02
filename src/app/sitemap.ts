@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/data/products";
+import { getProductSlugs } from "@/lib/products";
 
 // Set NEXT_PUBLIC_SITE_URL (e.g. https://adab.co) to emit absolute URLs.
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paths = [
     "/",
     "/shop",
@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/scrapbook",
     "/contact",
     "/cart",
-    ...products.map((p) => `/product/${p.slug}`),
+    ...(await getProductSlugs()).map((slug) => `/product/${slug}`),
   ];
 
   return paths.map((p) => ({

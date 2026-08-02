@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import { ModalShell } from "./ModalShell";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
+import { listProducts } from "@/lib/actions/catalog";
 
 export function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    listProducts().then(setProducts).catch(() => {});
+  }, []);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

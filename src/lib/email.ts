@@ -1,6 +1,6 @@
 import "server-only";
 import { Resend } from "resend";
-import { getProduct } from "@/data/products";
+import { getProductMap, type Product } from "@/lib/products";
 
 // Resend is configured lazily. If RESEND_API_KEY is unset, sends are skipped
 // (logged) so the app works before email is wired up.
@@ -32,10 +32,10 @@ export type OrderEmailInput = {
   notes?: string;
 };
 
-function itemRows(items: OrderItem[]): string {
+function itemRows(items: OrderItem[], productMap: Map<string, Product>): string {
   return items
     .map((it) => {
-      const p = getProduct(it.product_slug);
+      const p = productMap.get(it.product_slug);
       const name = p?.name ?? it.product_slug;
       const price = p?.price ?? "";
       return `
@@ -49,7 +49,7 @@ function itemRows(items: OrderItem[]): string {
     .join("");
 }
 
-function customerHtml(o: OrderEmailInput): string {
+function customerHtml(o: OrderEmailInput, productMap: Map<string, Product>): string {
   return `
   <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
@@ -64,7 +64,7 @@ function customerHtml(o: OrderEmailInput): string {
         </div>
       </td></tr>
       <tr><td style="padding:20px 32px 8px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemRows(o.items)}</table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemRows(o.items, productMap)}</table>
       </td></tr>
       ${
         o.deliveryAddress
@@ -81,7 +81,7 @@ function customerHtml(o: OrderEmailInput): string {
   </div>`;
 }
 
-function teamHtml(o: OrderEmailInput): string {
+function teamHtml(o: OrderEmailInput, productMap: Map<string, Product>): string {
   return `
   <div style="font-family:Helvetica,Arial,sans-serif;color:${INK};">
     <h2 style="font-size:18px;">New reservation ${o.orderRef}</h2>
@@ -90,7 +90,7 @@ function teamHtml(o: OrderEmailInput): string {
       ${o.to}<br>
       ${o.phone}
     </p>
-    <table role="presentation" width="100%" style="max-width:520px;">${itemRows(o.items)}</table>
+    <table role="presentation" width="100%" style="max-width:520px;">${itemRows(o.items, productMap)}</table>
     ${o.deliveryAddress ? `<p style="font-size:13px;"><strong>Deliver to:</strong> ${o.deliveryAddress}</p>` : ""}
     ${o.notes ? `<p style="font-size:13px;"><strong>Notes:</strong> ${o.notes}</p>` : ""}
   </div>`;
@@ -99,6 +99,7 @@ function teamHtml(o: OrderEmailInput): string {
 /** Best-effort transactional emails for a new reservation. Never throws. */
 export async function sendOrderEmails(o: OrderEmailInput): Promise<void> {
   const resend = client();
+  const productMap = await getProductMap();
   if (!resend) {
     console.warn(`[email] RESEND_API_KEY not set — skipping emails for ${o.orderRef}`);
     return;
@@ -108,7 +109,7 @@ export async function sendOrderEmails(o: OrderEmailInput): Promise<void> {
       from: FROM,
       to: o.to,
       subject: `Your ADAB reservation — ${o.orderRef}`,
-      html: customerHtml(o),
+      html: customerHtml(o, productMap),
     });
   } catch (err) {
     console.error(`[email] customer confirmation failed for ${o.orderRef}`, err);
@@ -119,7 +120,7 @@ export async function sendOrderEmails(o: OrderEmailInput): Promise<void> {
         from: FROM,
         to: NOTIFY,
         subject: `New reservation ${o.orderRef} — ${o.name}`,
-        html: teamHtml(o),
+        html: teamHtml(o, productMap),
       });
     } catch (err) {
       console.error(`[email] team notification failed for ${o.orderRef}`, err);
@@ -208,6 +209,7 @@ export type PaymentEmailInput = {
 
 export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
   const resend = client();
+  const productMap = await getProductMap();
   if (!resend) {
     console.warn(`[email] RESEND_API_KEY not set — skipping payment email for ${o.orderRef}`);
     return;
@@ -259,7 +261,7 @@ export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
         <tr><td style="color:${MUTED};">TrxID</td><td style="text-align:right;"><strong>${o.trxId}</strong></td></tr>
         <tr><td style="color:${MUTED};">Customer</td><td style="text-align:right;">${o.name} · ${o.phone}</td></tr>
       </table>
-      ${itemRows(o.items)}
+      ${itemRows(o.items, productMap)}
       <p style="font-size:13px;color:${MUTED};">Verify against your bKash statement, then set status in /studio.</p>
     </div>`;
     try {

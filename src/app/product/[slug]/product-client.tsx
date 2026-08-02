@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
-import { type Product, products } from "@/data/products";
+import { type Product } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCart } from "@/context/CartContext";
@@ -23,7 +23,7 @@ const SIZE_TABLE = [
   { size: "XXL", chest: 48, length: 33, sleeve: 26, shoulder: 20 },
 ];
 
-export function ProductClient({ product }: { product: Product }) {
+export function ProductClient({ product, allProducts }: { product: Product; allProducts: Product[] }) {
   const router = useRouter();
   const { addItem } = useCart();
   const [size, setSize] = useState("L");
@@ -32,9 +32,9 @@ export function ProductClient({ product }: { product: Product }) {
   const [zoom, setZoom] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
 
-  const idx = products.findIndex((p) => p.slug === product.slug);
-  const prev = products[(idx - 1 + products.length) % products.length];
-  const next = products[(idx + 1) % products.length];
+  const idx = allProducts.findIndex((p) => p.slug === product.slug);
+  const prev = allProducts[(idx - 1 + allProducts.length) % allProducts.length];
+  const next = allProducts[(idx + 1) % allProducts.length];
 
   const isPiran = product.slug === "adab-piran-warm-charcoal";
 
@@ -310,7 +310,7 @@ export function ProductClient({ product }: { product: Product }) {
         <div className="mt-24">
           <h2 className="font-editorial text-3xl md:text-4xl">Complete the Look</h2>
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products
+            {allProducts
               .filter((p) => p.slug !== product.slug)
               .map((p) => (
                 <ProductCard key={p.slug} product={p} />

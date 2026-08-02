@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth-guard";
 import { getWishlistSlugs } from "@/lib/queries";
-import { getProduct } from "@/data/products";
+import { getProductMap } from "@/lib/products";
 import { WishlistGrid } from "./wishlist-grid";
 
 export const metadata = { title: "Your Wishlist — ADAB" };
@@ -8,9 +8,10 @@ export const metadata = { title: "Your Wishlist — ADAB" };
 export default async function WishlistPage() {
   const user = await requireUser();
   const slugs = await getWishlistSlugs(user.id);
+  const productMap = await getProductMap();
   const tiles = slugs
     .map((slug) => {
-      const p = getProduct(slug);
+      const p = productMap.get(slug);
       if (!p) return null;
       return { slug, name: p.name, price: p.price, image: p.images[0], color: p.color };
     })
