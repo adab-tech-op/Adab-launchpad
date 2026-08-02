@@ -77,9 +77,11 @@ export type OrderByRef = {
   email: string;
   phone: string;
   status: string;
+  createdAt: string;
   items: OrderItem[];
   total: number;
   hasPayment: boolean;
+  payment: { bkashNumber: string; trxId: string; amount: number | null; submittedAt: string } | null;
 };
 
 export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null> {
@@ -91,10 +93,11 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
     size: string;
     quantity: number;
     status: string;
+    created_at: string;
   }[] = [];
   try {
     rows = (await sql`
-      SELECT name, email, phone, product_slug, size, quantity, status
+      SELECT name, email, phone, product_slug, size, quantity, status, created_at
       FROM reservations WHERE order_ref = ${orderRef}
     `) as typeof rows;
   } catch (err) {
@@ -103,12 +106,16 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
   }
   if (rows.length === 0) return null;
 
-  let hasPayment = false;
+  let payment: OrderByRef["payment"] = null;
   try {
-    const pay = (await sql`SELECT 1 FROM payments WHERE order_ref = ${orderRef}`) as unknown[];
-    hasPayment = pay.length > 0;
+    const pay = (await sql`
+      SELECT bkash_number, trx_id, amount, submitted_at FROM payments WHERE order_ref = ${orderRef}
+    `) as { bkash_number: string; trx_id: string; amount: number | null; submitted_at: string }[];
+    if (pay[0]) {
+      payment = { bkashNumber: pay[0].bkash_number, trxId: pay[0].trx_id, amount: pay[0].amount, submittedAt: pay[0].submitted_at };
+    }
   } catch {
-    hasPayment = false;
+    payment = null;
   }
 
   const first = rows[0];
@@ -120,7 +127,18 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
     items.push({ slug: r.product_slug, name: p?.name ?? r.product_slug, price, size: r.size, quantity: r.quantity });
     total += priceToNumber(price) * r.quantity;
   }
-  return { orderRef, name: first.name, email: first.email, phone: first.phone, status: first.status, items, total, hasPayment };
+  return {
+    orderRef,
+    name: first.name,
+    email: first.email,
+    phone: first.phone,
+    status: first.status,
+    createdAt: first.created_at,
+    items,
+    total,
+    hasPayment: Boolean(payment),
+    payment,
+  };
 }
 
 export async function getWishlistSlugs(userId: string): Promise<string[]> {

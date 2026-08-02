@@ -27,7 +27,11 @@ export default async function OrdersPage() {
       ) : (
         <div className="mt-10 space-y-4">
           {orders.map((o) => (
-            <div key={o.orderRef} className="rounded-2xl border border-border p-6">
+            <Link
+              key={o.orderRef}
+              href={`/account/orders/${o.orderRef}`}
+              className="block rounded-2xl border border-border p-6 hover:border-foreground transition-colors"
+            >
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
                 <div>
                   <span className="font-display tracking-[0.12em] text-primary">{o.orderRef}</span>
@@ -52,7 +56,7 @@ export default async function OrdersPage() {
                 <span className="text-muted-foreground">Total</span>
                 <span className="tabular-nums">৳ {o.total.toLocaleString()}</span>
               </div>
-            </div>
+            </Link>
           ))}
           <p className="pt-2 text-xs text-muted-foreground">
             Reservations are confirmed over a call or WhatsApp. Status updates as we process each order.
