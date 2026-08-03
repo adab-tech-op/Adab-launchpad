@@ -28,7 +28,7 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
   const { addItem, items, removeItem } = useCart();
   const [size, setSize] = useState("L");
   const [qty, setQty] = useState(1);
-  const [color, setColor] = useState(product.swatches[0].name);
+  const [color, setColor] = useState(product.swatches[0]?.name ?? product.color);
   const [zoom, setZoom] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
 
