@@ -33,6 +33,7 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
   const [p, setP] = useState<EditableProduct>(initial ?? empty);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
   const set = <K extends keyof EditableProduct>(k: K, v: EditableProduct[K]) => setP((s) => ({ ...s, [k]: v }));
 
   const onNameChange = (name: string) => {
@@ -192,6 +193,38 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
             <span className="text-[10px] uppercase tracking-[0.14em]">{uploading ? "Uploading" : p.images.length ? "Add / replace" : "Upload"}</span>
             <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadFiles(e.target.files)} disabled={uploading} />
           </label>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <input
+            placeholder="…or paste an image URL and press Add"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                (document.getElementById("add-img-url") as HTMLButtonElement)?.click();
+              }
+            }}
+            className={inputCls}
+          />
+          <button
+            id="add-img-url"
+            type="button"
+            onClick={() => {
+              const url = urlInput.trim();
+              try {
+                new URL(url);
+              } catch {
+                toast.error("Enter a valid image URL (https://…)");
+                return;
+              }
+              setP((s) => ({ ...s, images: [...s.images, url] }));
+              setUrlInput("");
+            }}
+            className="shrink-0 rounded-md border border-border px-4 text-xs uppercase tracking-[0.14em] hover:border-foreground transition-colors"
+          >
+            Add
+          </button>
         </div>
       </div>
 

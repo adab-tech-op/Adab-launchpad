@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
+import { Check, ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { type Product } from "@/data/products";
 import { ProductCard } from "@/components/site/ProductCard";
 import { WishlistButton } from "@/components/site/WishlistButton";
@@ -25,7 +25,7 @@ const SIZE_TABLE = [
 
 export function ProductClient({ product, allProducts }: { product: Product; allProducts: Product[] }) {
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addItem, items, removeItem } = useCart();
   const [size, setSize] = useState("L");
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState(product.swatches[0].name);
@@ -63,23 +63,31 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
         `/checkout?slug=${product.slug}&size=${encodeURIComponent(size)}&color=${encodeURIComponent(color)}&qty=${qty}`,
       );
     } else {
-      addToCart();
+      toggleCart();
     }
   };
 
   const ctaLabel = dropModeActive ? "Reserve — Founding Drop" : "Add to Cart";
 
-  const addToCart = () => {
-    addItem({
-      slug: product.slug,
-      name: product.name,
-      size,
-      color,
-      qty,
-      price: Number(product.price.replace(/[^0-9]/g, "")) || 0,
-      image: product.images[0],
-    });
-    toast.success("Added to cart");
+  const cartId = `${product.slug}-${size}-${color}`;
+  const inCart = items.some((i) => i.id === cartId);
+
+  const toggleCart = () => {
+    if (inCart) {
+      removeItem(cartId);
+      toast("Removed from cart");
+    } else {
+      addItem({
+        slug: product.slug,
+        name: product.name,
+        size,
+        color,
+        qty,
+        price: Number(product.price.replace(/[^0-9]/g, "")) || 0,
+        image: product.images[0],
+      });
+      toast.success("Added to cart");
+    }
   };
 
   return (
@@ -241,10 +249,13 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
               <div className="hidden lg:grid grid-cols-2 gap-3">
                 <WishlistButton slug={product.slug} />
                 <button
-                  onClick={addToCart}
-                  className="flex items-center justify-center gap-2 rounded-full border border-border py-3.5 text-xs uppercase tracking-[0.2em] text-foreground transition-colors hover:border-foreground active:scale-[0.98]"
+                  onClick={toggleCart}
+                  className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-full border py-3.5 text-[11px] uppercase tracking-[0.14em] transition-colors active:scale-[0.98] ${
+                    inCart ? "border-foreground bg-foreground text-background" : "border-border text-foreground hover:border-foreground"
+                  }`}
                 >
-                  <ShoppingBag className="h-4 w-4" strokeWidth={1.5} /> Add to cart
+                  {inCart ? <Check className="h-4 w-4" strokeWidth={1.75} /> : <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />}
+                  {inCart ? "In cart" : "Add to cart"}
                 </button>
               </div>
 
@@ -330,11 +341,13 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
           )}
         </div>
         <button
-          onClick={addToCart}
-          aria-label="Add to cart"
-          className="rounded-full border border-border p-3 text-foreground active:scale-95 transition-transform"
+          onClick={toggleCart}
+          aria-label={inCart ? "Remove from cart" : "Add to cart"}
+          className={`rounded-full border p-3 active:scale-95 transition-transform ${
+            inCart ? "border-foreground bg-foreground text-background" : "border-border text-foreground"
+          }`}
         >
-          <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />
+          {inCart ? <Check className="h-5 w-5" strokeWidth={1.75} /> : <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />}
         </button>
         <button
           onClick={primaryCta}
