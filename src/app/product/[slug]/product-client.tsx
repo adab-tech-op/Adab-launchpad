@@ -36,26 +36,7 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
   const prev = allProducts[(idx - 1 + allProducts.length) % allProducts.length];
   const next = allProducts[(idx + 1) % allProducts.length];
 
-  const isPiran = product.slug === "adab-piran-warm-charcoal";
-
-  // Per-product details lists.
-  const detailsList = isPiran
-    ? [
-        "China Grace matte woven fabric",
-        "Band collar with structured placket",
-        "Concentric arch tonal embroidery on placket",
-        "Hem sits 1.5–2 inches below the crotch point",
-        "Relaxed sleeve, considered cuff",
-        "Designed and made in Bangladesh",
-      ]
-    : [
-        "Bamboo-cotton fleece blend",
-        "Three gold-toned metal buttons",
-        "Geometric linear tonal embroidery on placket",
-        "Soft-lined hood, relaxed drop shoulder",
-        "Kangaroo pocket, ribbed cuff",
-        "Designed and made in Bangladesh",
-      ];
+  const detailsList = product.details ?? [];
 
   const primaryCta = () => {
     if (dropModeActive) {
@@ -114,14 +95,18 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
               <p className="mt-6 text-sm text-muted-foreground leading-relaxed">
                 {product.short}
               </p>
-              <ul className="mt-6 space-y-2 text-sm text-foreground/80">
-                {detailsList.map((d) => (
-                  <li key={d}>· {d}</li>
-                ))}
-              </ul>
-              <p className="mt-6 text-xs text-muted-foreground italic">
-                Model is 5'9", athletic build, wearing size L.
-              </p>
+              {detailsList.length > 0 && (
+                <ul className="mt-6 space-y-2 text-sm text-foreground/80">
+                  {detailsList.map((d) => (
+                    <li key={d}>· {d}</li>
+                  ))}
+                </ul>
+              )}
+              {product.modelNote && (
+                <p className="mt-6 text-xs text-muted-foreground italic">
+                  {product.modelNote}
+                </p>
+              )}
             </div>
           </aside>
 
@@ -162,11 +147,13 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
                 {product.short}
               </p>
-              <ul className="mt-5 space-y-2 text-sm text-foreground/80">
-                {detailsList.map((d) => (
-                  <li key={d}>· {d}</li>
-                ))}
-              </ul>
+              {detailsList.length > 0 && (
+                <ul className="mt-5 space-y-2 text-sm text-foreground/80">
+                  {detailsList.map((d) => (
+                    <li key={d}>· {d}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
@@ -285,16 +272,13 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
           </Accordion>
           <Accordion title="Fabric & Craft">
             <p>
-              {isPiran
-                ? "Matte China Grace woven fabric with a soft, dry hand. Reinforced placket, tonal concentric arch embroidery, matte hardware, double-stitched hem."
-                : "Bamboo-cotton fleece blend — soft, breathable, temperature-regulating. Three gold-toned metal buttons, geometric linear tonal embroidery, ribbed cuffs and hem."}
+              {product.fabricNote || product.short}
             </p>
           </Accordion>
           <Accordion title="Fit & Sizing">
             <p>
               Adab pieces are cut with a considered, relaxed fit. Choose your
               usual size, or size up for extra room.
-              {isPiran && " The hem sits 1.5–2 inches below the crotch point."}
             </p>
           </Accordion>
           <Accordion title="Care Guide">

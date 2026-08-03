@@ -18,6 +18,9 @@ type Row = {
   swatches: { name: string; hex: string }[];
   short: string;
   images: string[];
+  details: string[] | null;
+  model_note: string | null;
+  fabric_note: string | null;
 };
 
 function rowToProduct(r: Row): Product {
@@ -31,14 +34,19 @@ function rowToProduct(r: Row): Product {
     swatches: Array.isArray(r.swatches) ? r.swatches : [],
     short: r.short,
     images: Array.isArray(r.images) ? r.images : [],
+    details: Array.isArray(r.details) ? r.details : [],
+    modelNote: r.model_note ?? undefined,
+    fabricNote: r.fabric_note ?? undefined,
   };
 }
+
+const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note";
 
 /** All products, DB-first with a static fallback if the table is empty or unreachable. */
 export async function getAllProducts(): Promise<Product[]> {
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note
       FROM products ORDER BY sort_order, created_at
     `) as Row[];
     return rows.length ? rows.map(rowToProduct) : staticProducts;
@@ -51,7 +59,7 @@ export async function getAllProducts(): Promise<Product[]> {
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note
       FROM products WHERE slug = ${slug}
     `) as Row[];
     if (rows[0]) return rowToProduct(rows[0]);

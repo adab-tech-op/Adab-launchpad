@@ -14,6 +14,9 @@ export type Product = {
   swatches: { name: string; hex: string }[];
   short: string;
   images: string[];
+  details: string[];
+  modelNote?: string;
+  fabricNote?: string;
 };
 
 export const products: Product[] = [
@@ -31,6 +34,17 @@ export const products: Product[] = [
     short:
       "A modern piran in matte China Grace woven fabric — band collar, concentric arch tonal embroidery on the placket, hem sitting 1.5–2 inches below the crotch.",
     images: [piranMain, piranDetail, piranMain, piranDetail],
+    details: [
+      "China Grace matte woven fabric",
+      "Band collar with structured placket",
+      "Concentric arch tonal embroidery on placket",
+      "Hem sits 1.5–2 inches below the crotch point",
+      "Relaxed sleeve, considered cuff",
+      "Designed and made in Bangladesh",
+    ],
+    modelNote: "Model is 5'9\", athletic build, wearing size L.",
+    fabricNote:
+      "Matte China Grace woven fabric with a soft, dry hand. Reinforced placket, tonal concentric arch embroidery, matte hardware, double-stitched hem.",
   },
   {
     slug: "adab-hoodie-steel-blue",
@@ -46,6 +60,17 @@ export const products: Product[] = [
     short:
       "Bamboo-cotton fleece hoodie with three gold-toned metal buttons and geometric linear tonal embroidery on the placket.",
     images: [hoodieMain, hoodieDetail, hoodieMain, hoodieDetail],
+    details: [
+      "Bamboo-cotton fleece blend",
+      "Three gold-toned metal buttons",
+      "Geometric linear tonal embroidery on placket",
+      "Soft-lined hood, relaxed drop shoulder",
+      "Kangaroo pocket, ribbed cuff",
+      "Designed and made in Bangladesh",
+    ],
+    modelNote: "Model is 5'9\", athletic build, wearing size L.",
+    fabricNote:
+      "Bamboo-cotton fleece blend — soft, breathable, temperature-regulating. Three gold-toned metal buttons, geometric linear tonal embroidery, ribbed cuffs and hem.",
   },
 ];
 

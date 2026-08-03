@@ -25,6 +25,9 @@ const empty: EditableProduct = {
   swatches: [{ name: "", hex: "#003153" }],
   short: "",
   images: [],
+  details: [],
+  model_note: "",
+  fabric_note: "",
   sort_order: 0,
 };
 
@@ -73,6 +76,7 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
       ...p,
       founding_note: p.founding_note || "",
       swatches: p.swatches.filter((sw) => sw.name.trim() !== ""),
+      details: p.details.filter((d) => d.trim() !== ""),
     };
     const res = mode === "create" ? await createProduct(payload) : await updateProduct(payload);
     setSaving(false);
@@ -136,6 +140,41 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
         <span className={labelCls}>Description</span>
         <textarea value={p.short} onChange={(e) => set("short", e.target.value)} rows={3} className={inputCls + " mt-2 resize-y"} />
       </label>
+
+      {/* Details / feature bullets */}
+      <div>
+        <span className={labelCls}>Details / features <span className="normal-case tracking-normal">(bullet list on the product page)</span></span>
+        <div className="mt-2 space-y-2">
+          {p.details.map((d, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-muted-foreground">·</span>
+              <input
+                value={d}
+                onChange={(e) => setP((s) => ({ ...s, details: s.details.map((x, j) => (j === i ? e.target.value : x)) }))}
+                placeholder="e.g. Bamboo-cotton fleece blend"
+                className={inputCls}
+              />
+              <button type="button" onClick={() => setP((s) => ({ ...s, details: s.details.filter((_, j) => j !== i) }))} className="shrink-0 text-muted-foreground hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          <button type="button" onClick={() => setP((s) => ({ ...s, details: [...s.details, ""] }))} className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+            <Plus className="h-3.5 w-3.5" /> Add detail
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <label className="block">
+          <span className={labelCls}>Model note (optional)</span>
+          <input value={p.model_note} onChange={(e) => set("model_note", e.target.value)} placeholder={`Model is 5'9", athletic build, wearing size L.`} className={inputCls + " mt-2"} />
+        </label>
+        <label className="block">
+          <span className={labelCls}>Fabric &amp; craft note (optional) <span className="normal-case tracking-normal">(shown in the accordion)</span></span>
+          <textarea value={p.fabric_note} onChange={(e) => set("fabric_note", e.target.value)} rows={2} className={inputCls + " mt-2 resize-y"} />
+        </label>
+      </div>
 
       {/* Swatches */}
       <div>

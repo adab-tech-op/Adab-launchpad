@@ -19,6 +19,9 @@ const schema = z.object({
     .max(12),
   short: z.string().trim().min(1, "Description is required").max(2000),
   images: z.array(z.string().trim().url()).max(12),
+  details: z.array(z.string().trim().min(1, "Empty detail line").max(200)).max(30),
+  model_note: z.string().trim().max(300).optional().or(z.literal("")),
+  fabric_note: z.string().trim().max(1000).optional().or(z.literal("")),
   sort_order: z.number().int().min(0).max(100000),
 });
 
@@ -44,9 +47,10 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
   const d = parsed.data;
   try {
     await sql`
-      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, sort_order)
+      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, sort_order)
       VALUES (${d.slug}, ${d.name}, ${d.status}, ${d.price_bdt}, ${d.founding_note || null}, ${d.color},
-              ${JSON.stringify(d.swatches)}::jsonb, ${d.short}, ${JSON.stringify(d.images)}::jsonb, ${d.sort_order})
+              ${JSON.stringify(d.swatches)}::jsonb, ${d.short}, ${JSON.stringify(d.images)}::jsonb,
+              ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.sort_order})
     `;
   } catch (err) {
     const msg = String((err as { message?: string })?.message ?? err);
@@ -69,8 +73,9 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
         name = ${d.name}, status = ${d.status}, price_bdt = ${d.price_bdt},
         founding_note = ${d.founding_note || null}, color = ${d.color},
         swatches = ${JSON.stringify(d.swatches)}::jsonb, short = ${d.short},
-        images = ${JSON.stringify(d.images)}::jsonb, sort_order = ${d.sort_order},
-        updated_at = now()
+        images = ${JSON.stringify(d.images)}::jsonb, details = ${JSON.stringify(d.details)}::jsonb,
+        model_note = ${d.model_note || null}, fabric_note = ${d.fabric_note || null},
+        sort_order = ${d.sort_order}, updated_at = now()
       WHERE slug = ${d.slug}
     `;
   } catch (err) {
@@ -103,6 +108,9 @@ export type EditableProduct = {
   swatches: { name: string; hex: string }[];
   short: string;
   images: string[];
+  details: string[];
+  model_note: string;
+  fabric_note: string;
   sort_order: number;
 };
 
@@ -110,7 +118,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
   if (!(await isAdmin())) return null;
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, sort_order
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, sort_order
       FROM products WHERE slug = ${slug}
     `) as EditableProduct[];
     const r = rows[0];
@@ -120,6 +128,9 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
       founding_note: r.founding_note ?? "",
       swatches: Array.isArray(r.swatches) ? r.swatches : [],
       images: Array.isArray(r.images) ? r.images : [],
+      details: Array.isArray(r.details) ? r.details : [],
+      model_note: r.model_note ?? "",
+      fabric_note: r.fabric_note ?? "",
     };
   } catch (err) {
     console.error("[products-admin] getProductForEdit failed", err);
