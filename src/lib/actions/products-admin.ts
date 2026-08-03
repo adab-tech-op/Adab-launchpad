@@ -15,7 +15,7 @@ const schema = z.object({
   founding_note: z.string().trim().max(200).optional().or(z.literal("")),
   color: z.string().trim().min(1, "Color is required").max(120),
   swatches: z
-    .array(z.object({ name: z.string().trim().min(1).max(80), hex: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Hex like #003153") }))
+    .array(z.object({ name: z.string().trim().min(1, "Each colour swatch needs a name").max(80), hex: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Hex like #003153") }))
     .max(12),
   short: z.string().trim().min(1, "Description is required").max(2000),
   images: z.array(z.string().trim().url()).max(12),

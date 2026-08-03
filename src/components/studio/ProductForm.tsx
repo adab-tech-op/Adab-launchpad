@@ -69,7 +69,11 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
 
   const save = async () => {
     setSaving(true);
-    const payload = { ...p, founding_note: p.founding_note || "" };
+    const payload = {
+      ...p,
+      founding_note: p.founding_note || "",
+      swatches: p.swatches.filter((sw) => sw.name.trim() !== ""),
+    };
     const res = mode === "create" ? await createProduct(payload) : await updateProduct(payload);
     setSaving(false);
     if (!res.ok) {
@@ -109,20 +113,22 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
         </label>
         <label className="block">
           <span className={labelCls}>Price (৳)</span>
-          <input type="number" value={p.price_bdt} onChange={(e) => set("price_bdt", Number(e.target.value))} className={inputCls + " mt-2"} />
+          <input type="number" min={0} placeholder="4500" value={p.price_bdt || ""} onChange={(e) => set("price_bdt", Number(e.target.value) || 0)} className={inputCls + " mt-2"} />
         </label>
         <label className="block">
           <span className={labelCls}>Main color</span>
-          <input value={p.color} onChange={(e) => set("color", e.target.value)} className={inputCls + " mt-2"} />
+          <input value={p.color} onChange={(e) => set("color", e.target.value)} placeholder="e.g. Steel Blue" className={inputCls + " mt-2"} />
+          <span className="mt-1 block text-[10px] text-muted-foreground">Color name shown on the product page.</span>
         </label>
         <label className="block">
           <span className={labelCls}>Sort order</span>
-          <input type="number" value={p.sort_order} onChange={(e) => set("sort_order", Number(e.target.value))} className={inputCls + " mt-2"} />
+          <input type="number" min={0} placeholder="0" value={p.sort_order || ""} onChange={(e) => set("sort_order", Number(e.target.value) || 0)} className={inputCls + " mt-2"} />
+          <span className="mt-1 block text-[10px] text-muted-foreground">Lower shows first on shop.</span>
         </label>
       </div>
 
       <label className="block">
-        <span className={labelCls}>Founding note (optional)</span>
+        <span className={labelCls}>Additional product note (optional)</span>
         <input value={p.founding_note} onChange={(e) => set("founding_note", e.target.value)} className={inputCls + " mt-2"} />
       </label>
 

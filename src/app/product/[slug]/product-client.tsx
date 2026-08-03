@@ -67,7 +67,7 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
     }
   };
 
-  const ctaLabel = dropModeActive ? "Reserve — Founding Drop" : "Add to Cart";
+  const ctaLabel = dropModeActive ? "Reserve your piece" : "Add to Cart";
 
   const cartId = `${product.slug}-${size}-${color}`;
   const inCart = items.some((i) => i.id === cartId);
