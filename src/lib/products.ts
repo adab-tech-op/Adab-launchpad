@@ -46,8 +46,7 @@ const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatc
 export async function getAllProducts(): Promise<Product[]> {
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note
-      FROM products ORDER BY sort_order, created_at
+      SELECT * FROM products ORDER BY sort_order, created_at
     `) as Row[];
     return rows.length ? rows.map(rowToProduct) : staticProducts;
   } catch (err) {
@@ -59,8 +58,7 @@ export async function getAllProducts(): Promise<Product[]> {
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note
-      FROM products WHERE slug = ${slug}
+      SELECT * FROM products WHERE slug = ${slug}
     `) as Row[];
     if (rows[0]) return rowToProduct(rows[0]);
   } catch (err) {
