@@ -143,6 +143,19 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
   };
 }
 
+/** True if a Better Auth account already exists for this email. */
+export async function hasAccountForEmail(email: string): Promise<boolean> {
+  try {
+    const rows = (await sql`
+      SELECT 1 FROM "user" WHERE lower("email") = lower(${email}) LIMIT 1
+    `) as unknown[];
+    return rows.length > 0;
+  } catch (err) {
+    console.error("[queries] hasAccountForEmail failed", err);
+    return false;
+  }
+}
+
 export async function getWishlistSlugs(userId: string): Promise<string[]> {
   try {
     const rows = (await sql`

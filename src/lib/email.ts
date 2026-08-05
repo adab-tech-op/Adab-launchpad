@@ -30,7 +30,17 @@ export type OrderEmailInput = {
   items: OrderItem[];
   deliveryAddress?: string;
   notes?: string;
+  /** True when this email has no account yet — show the "set a password" CTA. */
+  canCreateAccount?: boolean;
 };
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.BETTER_AUTH_URL ?? "").replace(/\/$/, "");
+
+/** Link to prefilled signup so buying can complete into an account. */
+function secureAccountUrl(o: OrderEmailInput): string {
+  const qs = new URLSearchParams({ email: o.to, ref: o.orderRef });
+  return `${SITE_URL}/signup?${qs.toString()}`;
+}
 
 function itemRows(items: OrderItem[], productMap: Map<string, Product>): string {
   return items
@@ -69,6 +79,17 @@ function customerHtml(o: OrderEmailInput, productMap: Map<string, Product>): str
       ${
         o.deliveryAddress
           ? `<tr><td style="padding:8px 32px;color:${MUTED};font-size:13px;line-height:1.6;"><strong style="color:${INK};">Deliver to:</strong> ${o.deliveryAddress}</td></tr>`
+          : ""
+      }
+      ${
+        o.canCreateAccount && SITE_URL
+          ? `<tr><td style="padding:8px 32px 4px;">
+        <div style="border:1px solid ${BORDER};border-radius:12px;padding:18px 20px;background:${PAPER};">
+          <p style="margin:0;color:${INK};font-size:14px;font-weight:600;">Secure your reservation.</p>
+          <p style="margin:6px 0 14px;color:${MUTED};font-size:13px;line-height:1.6;">Set a password to track this order's status and reserve faster next time. Optional — your reservation is safe either way.</p>
+          <a href="${secureAccountUrl(o)}" style="display:inline-block;background:${PRUSSIAN};color:#ffffff;text-decoration:none;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:11px 22px;border-radius:999px;">Set a password</a>
+        </div>
+      </td></tr>`
           : ""
       }
       <tr><td style="padding:16px 32px 28px;">
