@@ -23,6 +23,8 @@ export function PayClient({
   hasPayment,
   alreadyProcessed,
   bkashNumber,
+  email,
+  canCreateAccount,
 }: {
   orderRef: string;
   items: OrderItem[];
@@ -30,7 +32,10 @@ export function PayClient({
   hasPayment: boolean;
   alreadyProcessed: boolean;
   bkashNumber: string;
+  email: string;
+  canCreateAccount: boolean;
 }) {
+  const secureHref = `/signup?email=${encodeURIComponent(email)}&ref=${encodeURIComponent(orderRef)}`;
   const [payer, setPayer] = useState("");
   const [trxId, setTrxId] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -75,6 +80,23 @@ export function PayClient({
           We've received your payment details and will verify them against bKash. We'll call or message
           you on WhatsApp within 24 hours to confirm. Thank you.
         </p>
+
+        {canCreateAccount && (
+          <div className="mt-8 rounded-2xl border border-border p-6 text-left paper-grain">
+            <p className="font-display text-sm">Secure your reservation.</p>
+            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+              Set a password to track this order's status any time and reserve faster next time.
+              Your reservation is safe either way.
+            </p>
+            <Link
+              href={secureHref}
+              className="mt-4 inline-block rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.2em] text-white"
+            >
+              Set a password
+            </Link>
+          </div>
+        )}
+
         <Link href="/shop" className="mt-8 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
           Continue browsing
         </Link>
