@@ -70,6 +70,7 @@ export function NewsletterModal() {
       >
         <X className="h-4 w-4" strokeWidth={1.5} />
       </button>
+      <div className="p-8 sm:p-10">
       <p className="text-[11px] uppercase tracking-[0.24em] text-primary font-display">
         Founding Drop · Coming Soon
       </p>
@@ -107,6 +108,7 @@ export function NewsletterModal() {
       >
         Continue browsing →
       </button>
+      </div>
     </ModalShell>
   );
 }
