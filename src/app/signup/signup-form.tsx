@@ -8,10 +8,10 @@ import { AuthShell, authInput, authLabel } from "@/components/site/AuthShell";
 
 export default function SignUpForm({
   initialEmail = "",
-  ref: orderRef = "",
+  orderRef = "",
 }: {
   initialEmail?: string;
-  ref?: string;
+  orderRef?: string;
 }) {
   const securing = Boolean(orderRef);
   const [name, setName] = useState("");
