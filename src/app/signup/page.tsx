@@ -8,5 +8,5 @@ export default async function SignUpPage({
   searchParams: Promise<{ email?: string; ref?: string }>;
 }) {
   const sp = await searchParams;
-  return <SignUpForm initialEmail={sp.email ?? ""} ref={sp.ref ?? ""} />;
+  return <SignUpForm initialEmail={sp.email ?? ""} orderRef={sp.ref ?? ""} />;
 }
