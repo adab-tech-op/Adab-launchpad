@@ -45,14 +45,26 @@ Known-temporary or deferred items, tracked so nothing gets lost.
 ## Assets
 - Clean logo + favicon pending. Hero image carries a Gemini watermark to replace.
 
-## Admin roles / RBAC (next branch — Plan 2)
-Deferred to its own branch (`admin-rbac`), to be cut from `main` after this
-order-lifecycle work merges. Scope: three roles (root / admin / moderator)
-enforced in every server action (replaces the `ADMIN_EMAILS` env allowlist,
-seeded with one bootstrap root); an append-only **audit log** (admins/mods can't
-read it, root can) — the `order_state.confirmed_by` written here is its first
-row; **presence** (who's online, derived from Better Auth session activity);
-email **invitations** (root invites, single-use expiring token → accept →
-onboarded with role baked in) + revocation + a "can't remove the last root"
-guard. Open decisions: which email is the seeded first root; whether moderators
-see full customer PII + TrxIDs or a redacted view.
+## Admin roles / RBAC (branch `admin-rbac` — built, stacked on order-lifecycle)
+Built and pushed to `admin-rbac`, which is **stacked on `order-lifecycle`** (cut
+from it, not from main, because the audit log builds on order-lifecycle's
+`confirmed_by`). Merge order-lifecycle first, then this.
+
+Scope delivered: three roles (root / admin / moderator) in `src/lib/roles.ts`,
+enforced in every mutating server action (order actions + product actions now
+require root/admin; moderators are view-only). Role resolution is table-first
+(`admin_roles`) with an env FALLBACK — `ROOT_ADMIN_EMAIL` → root, `ADMIN_EMAILS`
+→ admin — so existing admins keep access and the first root can't be locked out.
+Append-only `audit_log` (root-only `/studio/activity`); presence + roster on the
+root-only `/studio/team` (online = active session in last 5 min, from Better Auth
+sessions); email invitations (root invites → single-use, 72h token → `/invite/accept`
+→ role written on acceptance) with revoke, role-change, remove, and a
+"can't remove/demote the last root" guard. Moderators get a REDACTED orders view
+(no customer email/phone/address, no TrxID/bKash number) and don't see the notify
+list. `/pay` signin/signup now honour a sanitized `?next=` so the invite round-trip
+returns the invitee to accept.
+
+GO-LIVE for this branch: (1) set `ROOT_ADMIN_EMAIL` in Vercel (which email is the
+seeded root); (2) run `db/admin-rbac.sql` in Neon; (3) merge — after order-lifecycle.
+DECIDED-BY-DEFAULT (flip if wanted): moderators see a redacted view (change the
+`canSeePII` threshold in roles.ts); root seed comes from `ROOT_ADMIN_EMAIL` env.

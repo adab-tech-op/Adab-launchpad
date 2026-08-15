@@ -1,9 +1,13 @@
+import { redirect } from "next/navigation";
 import { getNotifyList } from "@/lib/studio";
+import { requireStudioAccess, canSeePII } from "@/lib/roles";
 import { ExportButton } from "./export-button";
 
 export const metadata = { title: "Notify list — ADAB Studio" };
 
 export default async function NotifyPage() {
+  const actor = await requireStudioAccess();
+  if (!canSeePII(actor.role)) redirect("/studio"); // moderators don't see the marketing/PII list
   const contacts = await getNotifyList();
 
   return (

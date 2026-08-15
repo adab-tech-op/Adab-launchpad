@@ -1,9 +1,20 @@
 import Link from "next/link";
 import { User, Package, Wallet, Smartphone, Hash, Clock, ShieldCheck } from "lucide-react";
 import { getAllOrders } from "@/lib/studio";
+import { requireStudioAccess, canSeePII, atLeast } from "@/lib/roles";
+import { PAYMENT_LABELS, DELIVERY_LABELS, PAYMENT_PILL, DELIVERY_PILL } from "@/lib/order-status";
 import { StatusControl } from "./status-control";
 import { ConfirmPaymentButton } from "./confirm-dialog";
 import { FollowUpButton } from "./follow-up-dialog";
+
+/** Mask an email/phone for the moderator (view-only, redacted) view. */
+function mask(value: string): string {
+  if (value.includes("@")) {
+    const [u, d] = value.split("@");
+    return `${u.slice(0, 2)}${"•".repeat(Math.max(1, u.length - 2))}@${d}`;
+  }
+  return value.length <= 4 ? "••••" : `${"•".repeat(value.length - 3)}${value.slice(-3)}`;
+}
 
 export const metadata = { title: "Orders — ADAB Studio" };
 
@@ -24,6 +35,10 @@ export default async function StudioOrders({
 }) {
   const { status } = await searchParams;
   const active = status ?? "payment_submitted"; // default to the actionable queue
+
+  const actor = await requireStudioAccess();
+  const canMutate = atLeast(actor.role, "admin"); // moderators are view-only
+  const pii = canSeePII(actor.role);
 
   const orders = await getAllOrders();
 
@@ -82,16 +97,30 @@ export default async function StudioOrders({
                     {new Date(o.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
-                <StatusControl orderRef={o.orderRef} axes={o.axes} />
+                {canMutate ? (
+                  <StatusControl orderRef={o.orderRef} axes={o.axes} />
+                ) : (
+                  <div className="flex flex-col items-end gap-1.5">
+                    {o.axes.cancelled && (
+                      <span className="rounded-full bg-destructive/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-destructive">Cancelled</span>
+                    )}
+                    <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.16em] ${PAYMENT_PILL[o.axes.payment]}`}>
+                      {PAYMENT_LABELS[o.axes.payment]}
+                    </span>
+                    <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.16em] ${DELIVERY_PILL[o.axes.delivery]}`}>
+                      {DELIVERY_LABELS[o.axes.delivery]}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-muted-foreground"><User className="h-3.5 w-3.5" strokeWidth={1.75} /> Customer</p>
                   <p className="mt-1">{o.name}</p>
-                  <p className="text-muted-foreground break-all">{o.email}</p>
-                  <p className="text-muted-foreground">{o.phone}</p>
-                  {o.deliveryAddress && <p className="mt-1 text-muted-foreground">{o.deliveryAddress}</p>}
+                  <p className="text-muted-foreground break-all">{pii ? o.email : mask(o.email)}</p>
+                  <p className="text-muted-foreground">{pii ? o.phone : mask(o.phone)}</p>
+                  {o.deliveryAddress && <p className="mt-1 text-muted-foreground">{pii ? o.deliveryAddress : "•••• (hidden)"}</p>}
                   {o.notes && <p className="mt-1 text-xs text-muted-foreground italic">Note: {o.notes}</p>}
                 </div>
                 <div>
@@ -121,11 +150,11 @@ export default async function StudioOrders({
                     </div>
                     <div>
                       <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><Smartphone className="h-3 w-3" /> Paid from</p>
-                      <p className="tabular-nums">{o.payment.bkashNumber}</p>
+                      <p className="tabular-nums">{pii ? o.payment.bkashNumber : mask(o.payment.bkashNumber)}</p>
                     </div>
                     <div>
                       <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><Hash className="h-3 w-3" /> TrxID</p>
-                      <p className="font-medium">{o.payment.trxId}</p>
+                      <p className="font-medium">{pii ? o.payment.trxId : mask(o.payment.trxId)}</p>
                     </div>
                     <div>
                       <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><Clock className="h-3 w-3" /> Submitted</p>
@@ -139,8 +168,8 @@ export default async function StudioOrders({
                 <p className="mt-4 text-xs text-muted-foreground italic">No payment submitted yet.</p>
               )}
 
-              {/* Actions — appear once payment is verified as paid (and not cancelled) */}
-              {o.axes.payment === "paid" && !o.axes.cancelled && (
+              {/* Actions — mutators only, once payment is verified as paid (and not cancelled) */}
+              {canMutate && o.axes.payment === "paid" && !o.axes.cancelled && (
                 <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
                   <ConfirmPaymentButton
                     orderRef={o.orderRef}

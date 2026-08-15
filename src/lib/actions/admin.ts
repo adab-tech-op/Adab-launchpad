@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { sql } from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
 import { getOrderByRef } from "@/lib/queries";
+import { requireMutator, recordAudit } from "@/lib/roles";
 import {
   axesFromLegacy,
   legacyFromAxes,
@@ -24,11 +22,11 @@ import {
 
 export type AdminActionResult = { ok: true } | { ok: false; error: string };
 
-/** Resolve the acting admin's email, or null if not authorized. */
+/** Resolve the acting admin's email, or null if not authorized to mutate.
+ *  Root and admin may mutate; moderators (view-only) are refused here. */
 async function actingAdmin(): Promise<string | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session || !isAdminEmail(session.user.email)) return null;
-  return session.user.email;
+  const actor = await requireMutator();
+  return actor?.email ?? null;
 }
 
 /** Load the current two-axis state for an order, falling back to the derived
@@ -89,6 +87,7 @@ export async function setPaymentStatus(orderRef: string, payment: string): Promi
 
   try {
     await persistAxes(orderRef, next);
+    await recordAudit(admin, "order.payment_status", orderRef, { from: current.payment, to: next.payment });
     revalidateStudioAndAccount(orderRef);
     return { ok: true };
   } catch (err) {
@@ -115,6 +114,7 @@ export async function setDeliveryStatus(orderRef: string, delivery: string): Pro
 
   try {
     await persistAxes(orderRef, { ...current, delivery: delivery as DeliveryStatus });
+    await recordAudit(admin, "order.delivery_status", orderRef, { from: current.delivery, to: delivery });
     revalidateStudioAndAccount(orderRef);
     return { ok: true };
   } catch (err) {
@@ -135,6 +135,7 @@ export async function setCancelled(orderRef: string, cancelled: boolean): Promis
   const current = await loadAxes(orderRef, order.status);
   try {
     await persistAxes(orderRef, { ...current, cancelled });
+    await recordAudit(admin, cancelled ? "order.cancel" : "order.restore", orderRef);
     revalidateStudioAndAccount(orderRef);
     return { ok: true };
   } catch (err) {
@@ -200,6 +201,7 @@ export async function sendPaymentConfirmation(orderRef: string): Promise<AdminAc
     return { ok: false, error: `Email failed to send: ${sent.error}` };
   }
 
+  await recordAudit(admin, "order.payment_confirmed", orderRef, { amount: order.total });
   revalidateStudioAndAccount(orderRef);
   return { ok: true };
 }
@@ -244,6 +246,7 @@ export async function sendOrderFollowUp(
     console.error("[admin] follow-up log failed", err);
   }
 
+  await recordAudit(admin, "order.follow_up", orderRef, { template });
   revalidateStudioAndAccount(orderRef);
   return { ok: true };
 }

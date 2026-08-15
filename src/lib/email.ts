@@ -443,3 +443,33 @@ export async function sendFollowUp(o: FollowUpInput): Promise<SendResult & { sub
     return { ok: false, error: msg };
   }
 }
+
+export async function sendAdminInvite(opts: {
+  to: string;
+  role: string;
+  invitedBy: string;
+  url: string;
+}): Promise<SendResult> {
+  const resend = client();
+  if (!resend) return { ok: false, error: "Email is not configured (RESEND_API_KEY missing)." };
+  const roleLabel = opts.role.charAt(0).toUpperCase() + opts.role.slice(1);
+  try {
+    const res = await resend.emails.send({
+      from: FROM,
+      to: opts.to,
+      subject: "You've been invited to ADAB Studio",
+      html: authEmailHtml({
+        heading: "You're invited.",
+        body: `${opts.invitedBy} has invited you to ADAB Studio as <strong>${roleLabel}</strong>. Sign in (or create an account) with this email address, then accept to activate your access. This invitation expires in 72 hours.`,
+        cta: "Accept invitation",
+        url: opts.url,
+      }),
+    });
+    if (res.error) return { ok: false, error: res.error.message ?? "Send failed." };
+    return { ok: true };
+  } catch (err) {
+    const msg = String((err as { message?: string })?.message ?? err);
+    console.error(`[email] admin invite failed for ${opts.to}`, err);
+    return { ok: false, error: msg };
+  }
+}
