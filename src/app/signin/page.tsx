@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { signIn, authClient } from "@/lib/auth-client";
 import { AuthShell, authInput, authLabel } from "@/components/site/AuthShell";
 
-export default function SignInPage() {
+/** Only allow internal relative paths as a post-login redirect (no open redirect). */
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  return raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+}
+
+function SignInInner() {
   const router = useRouter();
+  const next = safeNext(useSearchParams().get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,12 +35,12 @@ export default function SignInPage() {
       toast.error(error.message ?? "Could not sign in.");
       return;
     }
-    router.push("/account");
+    router.push(next ?? "/account");
     router.refresh();
   };
 
   const resend = async () => {
-    await authClient.sendVerificationEmail({ email, callbackURL: "/account" });
+    await authClient.sendVerificationEmail({ email, callbackURL: next ?? "/account" });
     toast("Verification email sent. Check your inbox.");
   };
 
@@ -82,5 +89,13 @@ export default function SignInPage() {
         </button>
       </form>
     </AuthShell>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInInner />
+    </Suspense>
   );
 }

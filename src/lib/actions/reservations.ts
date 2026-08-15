@@ -3,7 +3,6 @@
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { generateOrderRef } from "@/lib/order-ref";
-import { sendOrderEmails } from "@/lib/email";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -78,18 +77,11 @@ export async function createReservation(input: {
     return { ok: false, error: "Something went wrong. Please try again." };
   }
 
-  // Best-effort confirmation email. Never blocks or fails the reservation.
-  // Guests (no account yet) get a "secure your reservation" CTA to set a password.
-  void sendOrderEmails({
-    to: email,
-    name,
-    phone,
-    orderRef,
-    items: items.map((it) => ({ product_slug: it.product_slug, size: it.size, quantity: it.quantity })),
-    deliveryAddress: delivery_address || undefined,
-    notes: notes || undefined,
-    canCreateAccount: existingUserId === null,
-  }).catch((err) => console.error("[reservation] confirmation email failed", err));
+  // SILENT RESERVE — intentionally no email here. In a limited-stock drop, two
+  // customers can reserve the same last piece; a "we've held your piece" email
+  // is an unkeepable written promise. The customer's first (and only automatic)
+  // email is sent at payment submission instead — see recordPayment. The order
+  // reference is shown on-screen and carried into /pay, which is how they pay.
 
   return { ok: true, orderRef };
 }

@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { z } from "zod";
 import { sql } from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { isAdminEmail } from "@/lib/admin";
+import { requireMutator, recordAudit } from "@/lib/roles";
 
 const schema = z.object({
   slug: z.string().trim().regex(/^[a-z0-9-]+$/, "Slug: lowercase letters, numbers, hyphens only").min(1).max(120),
@@ -28,9 +26,11 @@ const schema = z.object({
 export type ProductInput = z.infer<typeof schema>;
 export type ProductActionResult = { ok: true } | { ok: false; error: string };
 
-async function isAdmin(): Promise<boolean> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  return Boolean(session && isAdminEmail(session.user.email));
+/** Returns the acting admin's email if allowed to mutate (root/admin), else null.
+ *  Moderators are view-only and refused. */
+async function mutatorEmail(): Promise<string | null> {
+  const actor = await requireMutator();
+  return actor?.email ?? null;
 }
 
 function revalidateAll(slug: string) {
@@ -41,7 +41,8 @@ function revalidateAll(slug: string) {
 }
 
 export async function createProduct(input: ProductInput): Promise<ProductActionResult> {
-  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  const admin = await mutatorEmail();
+  if (!admin) return { ok: false, error: "Not authorized." };
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the form." };
   const d = parsed.data;
@@ -58,12 +59,14 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
     console.error("[products-admin] create failed", err);
     return { ok: false, error: "Could not create the product." };
   }
+  await recordAudit(admin, "product.create", d.slug, { name: d.name });
   revalidateAll(d.slug);
   return { ok: true };
 }
 
 export async function updateProduct(input: ProductInput): Promise<ProductActionResult> {
-  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  const admin = await mutatorEmail();
+  if (!admin) return { ok: false, error: "Not authorized." };
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the form." };
   const d = parsed.data;
@@ -82,18 +85,21 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
     console.error("[products-admin] update failed", err);
     return { ok: false, error: "Could not save changes." };
   }
+  await recordAudit(admin, "product.update", d.slug, { name: d.name });
   revalidateAll(d.slug);
   return { ok: true };
 }
 
 export async function deleteProduct(slug: string): Promise<ProductActionResult> {
-  if (!(await isAdmin())) return { ok: false, error: "Not authorized." };
+  const admin = await mutatorEmail();
+  if (!admin) return { ok: false, error: "Not authorized." };
   try {
     await sql`DELETE FROM products WHERE slug = ${slug}`;
   } catch (err) {
     console.error("[products-admin] delete failed", err);
     return { ok: false, error: "Could not delete the product." };
   }
+  await recordAudit(admin, "product.delete", slug);
   revalidateAll(slug);
   return { ok: true };
 }
@@ -115,7 +121,7 @@ export type EditableProduct = {
 };
 
 export async function getProductForEdit(slug: string): Promise<EditableProduct | null> {
-  if (!(await isAdmin())) return null;
+  if (!(await mutatorEmail())) return null;
   try {
     const rows = (await sql`
       SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, sort_order

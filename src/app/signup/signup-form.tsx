@@ -9,9 +9,11 @@ import { AuthShell, authInput, authLabel } from "@/components/site/AuthShell";
 export default function SignUpForm({
   initialEmail = "",
   orderRef = "",
+  next = null,
 }: {
   initialEmail?: string;
   orderRef?: string;
+  next?: string | null;
 }) {
   const securing = Boolean(orderRef);
   const [name, setName] = useState("");
@@ -34,8 +36,9 @@ export default function SignUpForm({
     setLoading(true);
     // On account creation, the Better Auth user.create hook claims any past
     // guest reservations with this email — so a buyer who sets a password here
-    // finds their order waiting in /account/orders after verifying.
-    const { error } = await signUp.email({ name, email, password, callbackURL: "/welcome" });
+    // finds their order waiting in /account/orders after verifying. When an
+    // invite sent them here, next carries them to the accept page post-verify.
+    const { error } = await signUp.email({ name, email, password, callbackURL: next ?? "/welcome" });
     setLoading(false);
     if (error) {
       toast.error(error.message ?? "Could not create your account.");

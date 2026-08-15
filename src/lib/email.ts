@@ -37,7 +37,7 @@ export type OrderEmailInput = {
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.BETTER_AUTH_URL ?? "").replace(/\/$/, "");
 
 /** Link to prefilled signup so buying can complete into an account. */
-function secureAccountUrl(o: OrderEmailInput): string {
+function secureAccountUrl(o: { to: string; orderRef: string }): string {
   const qs = new URLSearchParams({ email: o.to, ref: o.orderRef });
   return `${SITE_URL}/signup?${qs.toString()}`;
 }
@@ -226,6 +226,10 @@ export type PaymentEmailInput = {
   amount: number;
   bkashNumber: string;
   trxId: string;
+  /** True when this email has no account yet — show the "set a password" CTA.
+   *  Moved here from the (now removed) reservation email: payment submission is
+   *  the first and only automatic customer email in the drop flow. */
+  canCreateAccount?: boolean;
 };
 
 export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
@@ -252,6 +256,17 @@ export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
           <td style="text-align:right;color:${INK};font-size:13px;">৳ ${o.amount.toLocaleString()}</td>
         </tr></table>
       </td></tr>
+      ${
+        o.canCreateAccount && SITE_URL
+          ? `<tr><td style="padding:8px 32px 4px;">
+        <div style="border:1px solid ${BORDER};border-radius:12px;padding:18px 20px;background:${PAPER};">
+          <p style="margin:0;color:${INK};font-size:14px;font-weight:600;">Track this order.</p>
+          <p style="margin:6px 0 14px;color:${MUTED};font-size:13px;line-height:1.6;">Set a password to follow this order's status and reserve faster next time. Optional.</p>
+          <a href="${secureAccountUrl({ to: o.to, orderRef: o.orderRef })}" style="display:inline-block;background:${PRUSSIAN};color:#ffffff;text-decoration:none;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:11px 22px;border-radius:999px;">Set a password</a>
+        </div>
+      </td></tr>`
+          : ""
+      }
       <tr><td style="padding:16px 32px 28px;">
         <p style="margin:0;color:${MUTED};font-size:12px;line-height:1.7;">This confirms we received your submission, not that payment is verified yet. Made in Bangladesh.</p>
       </td></tr>
@@ -295,5 +310,166 @@ export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
     } catch (err) {
       console.error(`[email] payment-received (team) failed for ${o.orderRef}`, err);
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Manual, admin-triggered emails. Unlike the transactional helpers above, these
+// RETURN success/failure instead of swallowing it — the caller (a guarded,
+// once-only admin action) must know whether the send actually left, so a failed
+// send stays retryable and never burns the one-shot.
+// ---------------------------------------------------------------------------
+
+export type SendResult = { ok: true } | { ok: false; error: string };
+
+export type PaymentConfirmedInput = {
+  to: string;
+  name: string;
+  orderRef: string;
+  items: OrderItem[];
+  amount: number;
+};
+
+/** The real "your payment is confirmed" email. Sent once, only after an admin
+ *  has verified the bKash payment and attested to it. Returns a result. */
+export async function sendPaymentConfirmed(o: PaymentConfirmedInput): Promise<SendResult> {
+  const resend = client();
+  if (!resend) return { ok: false, error: "Email is not configured (RESEND_API_KEY missing)." };
+  const productMap = await getProductMap();
+
+  const html = `
+  <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
+      <tr><td style="padding:28px 32px 8px;">
+        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; Founding Drop</p>
+        <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Payment confirmed.</h1>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. We've verified your payment for <strong>${o.orderRef}</strong> — your order is confirmed. We'll be in touch about delivery.</p>
+      </td></tr>
+      <tr><td style="padding:20px 32px 8px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemRows(o.items, productMap)}</table>
+        <p style="margin:12px 0 0;display:flex;justify-content:space-between;color:${INK};font-size:14px;border-top:1px solid ${BORDER};padding-top:10px;">
+          <span style="color:${MUTED};">Total paid</span><span>৳ ${o.amount.toLocaleString()}</span>
+        </p>
+      </td></tr>
+      <tr><td style="padding:16px 32px 28px;">
+        <p style="margin:0;color:${MUTED};font-size:12px;line-height:1.7;">This is your confirmation of a verified payment. Made in Bangladesh.</p>
+      </td></tr>
+      <tr><td style="padding:16px 32px;background:${PAPER};border-top:1px solid ${BORDER};">
+        <p style="margin:0;color:${MUTED};font-size:12px;">ADAB &middot; Old Soul. New Cut. &middot; Dhaka, Bangladesh</p>
+      </td></tr>
+    </table>
+  </div>`;
+
+  try {
+    const res = await resend.emails.send({
+      from: FROM,
+      to: o.to,
+      subject: `Payment confirmed — ${o.orderRef}`,
+      html,
+    });
+    if (res.error) return { ok: false, error: res.error.message ?? "Send failed." };
+    return { ok: true };
+  } catch (err) {
+    const msg = String((err as { message?: string })?.message ?? err);
+    console.error(`[email] payment-confirmed failed for ${o.orderRef}`, err);
+    return { ok: false, error: msg };
+  }
+}
+
+export type FollowUpTemplate = "shipped" | "thank_you" | "custom";
+
+export type FollowUpInput = {
+  to: string;
+  name: string;
+  orderRef: string;
+  template: FollowUpTemplate;
+  /** For 'custom': the admin-authored body. Plain text; rendered into the shell. */
+  customBody?: string;
+  customSubject?: string;
+};
+
+const FOLLOW_UP_COPY: Record<Exclude<FollowUpTemplate, "custom">, { subject: string; heading: string; body: string }> = {
+  shipped: {
+    subject: "Your ADAB order is on its way",
+    heading: "On its way.",
+    body: "Your pieces have shipped. We'll share tracking or a delivery window over WhatsApp shortly. Thank you for your patience.",
+  },
+  thank_you: {
+    subject: "Thank you, from ADAB",
+    heading: "Thank you.",
+    body: "Thank you for being one of our founding customers. It means a great deal to a young house like ours. We hope your piece wears in beautifully — and we'd love to see it on you.",
+  },
+};
+
+/** A manual, repeatable per-order follow-up. Returns a result and the resolved
+ *  subject so the caller can log what was sent. */
+export async function sendFollowUp(o: FollowUpInput): Promise<SendResult & { subject?: string }> {
+  const resend = client();
+  if (!resend) return { ok: false, error: "Email is not configured (RESEND_API_KEY missing)." };
+
+  let subject: string;
+  let heading: string;
+  let body: string;
+  if (o.template === "custom") {
+    subject = (o.customSubject ?? "A note from ADAB").trim();
+    heading = "A note from ADAB.";
+    body = (o.customBody ?? "").trim();
+    if (!body) return { ok: false, error: "Custom message body is empty." };
+  } else {
+    ({ subject, heading, body } = FOLLOW_UP_COPY[o.template]);
+  }
+
+  const html = `
+  <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
+      <tr><td style="padding:28px 32px 8px;">
+        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; ${o.orderRef}</p>
+        <h1 style="margin:12px 0 0;font-size:22px;color:${INK};font-weight:600;">${heading}</h1>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;white-space:pre-line;">${body.replace(/\{name\}/g, o.name)}</p>
+      </td></tr>
+      <tr><td style="padding:20px 32px 28px;">
+        <p style="margin:0;color:${MUTED};font-size:12px;">ADAB &middot; Old Soul. New Cut. &middot; Dhaka, Bangladesh</p>
+      </td></tr>
+    </table>
+  </div>`;
+
+  try {
+    const res = await resend.emails.send({ from: FROM, to: o.to, subject, html });
+    if (res.error) return { ok: false, error: res.error.message ?? "Send failed." };
+    return { ok: true, subject };
+  } catch (err) {
+    const msg = String((err as { message?: string })?.message ?? err);
+    console.error(`[email] follow-up failed for ${o.orderRef}`, err);
+    return { ok: false, error: msg };
+  }
+}
+
+export async function sendAdminInvite(opts: {
+  to: string;
+  role: string;
+  invitedBy: string;
+  url: string;
+}): Promise<SendResult> {
+  const resend = client();
+  if (!resend) return { ok: false, error: "Email is not configured (RESEND_API_KEY missing)." };
+  const roleLabel = opts.role.charAt(0).toUpperCase() + opts.role.slice(1);
+  try {
+    const res = await resend.emails.send({
+      from: FROM,
+      to: opts.to,
+      subject: "You've been invited to ADAB Studio",
+      html: authEmailHtml({
+        heading: "You're invited.",
+        body: `${opts.invitedBy} has invited you to ADAB Studio as <strong>${roleLabel}</strong>. Sign in (or create an account) with this email address, then accept to activate your access. This invitation expires in 72 hours.`,
+        cta: "Accept invitation",
+        url: opts.url,
+      }),
+    });
+    if (res.error) return { ok: false, error: res.error.message ?? "Send failed." };
+    return { ok: true };
+  } catch (err) {
+    const msg = String((err as { message?: string })?.message ?? err);
+    console.error(`[email] admin invite failed for ${opts.to}`, err);
+    return { ok: false, error: msg };
   }
 }
