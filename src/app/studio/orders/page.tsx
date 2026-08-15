@@ -2,6 +2,8 @@ import Link from "next/link";
 import { User, Package, Wallet, Smartphone, Hash, Clock, ShieldCheck } from "lucide-react";
 import { getAllOrders } from "@/lib/studio";
 import { StatusControl } from "./status-control";
+import { ConfirmPaymentButton } from "./confirm-dialog";
+import { FollowUpButton } from "./follow-up-dialog";
 
 export const metadata = { title: "Orders — ADAB Studio" };
 
@@ -80,7 +82,7 @@ export default async function StudioOrders({
                     {new Date(o.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
-                <StatusControl orderRef={o.orderRef} status={o.status} />
+                <StatusControl orderRef={o.orderRef} axes={o.axes} />
               </div>
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -135,6 +137,21 @@ export default async function StudioOrders({
                 </div>
               ) : (
                 <p className="mt-4 text-xs text-muted-foreground italic">No payment submitted yet.</p>
+              )}
+
+              {/* Actions — appear once payment is verified as paid (and not cancelled) */}
+              {o.axes.payment === "paid" && !o.axes.cancelled && (
+                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+                  <ConfirmPaymentButton
+                    orderRef={o.orderRef}
+                    amount={o.payment?.amount ?? o.total}
+                    trxId={o.payment?.trxId ?? null}
+                    bkashNumber={o.payment?.bkashNumber ?? null}
+                    sentAt={o.confirmationSentAt}
+                    confirmedBy={o.confirmedBy}
+                  />
+                  <FollowUpButton orderRef={o.orderRef} followUps={o.followUps} />
+                </div>
               )}
             </div>
           ))}

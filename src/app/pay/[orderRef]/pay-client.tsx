@@ -38,13 +38,14 @@ export function PayClient({
   const secureHref = `/signup?email=${encodeURIComponent(email)}&ref=${encodeURIComponent(orderRef)}`;
   const [payer, setPayer] = useState("");
   const [trxId, setTrxId] = useState("");
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const res = await recordPayment({ orderRef, bkashNumber: payer, trxId });
+    const res = await recordPayment({ orderRef, bkashNumber: payer, trxId, marketingConsent: consent });
     setSubmitting(false);
     if (!res.ok) {
       toast.error(res.error);
@@ -168,6 +169,15 @@ export function PayClient({
             className={input + " mt-2 uppercase"}
             placeholder="e.g. 9AB7CD2EF1"
           />
+        </label>
+        <label className="flex cursor-pointer items-start gap-2.5 text-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-primary"
+          />
+          <span>Email me about future ADAB drops. No spam — just the next release.</span>
         </label>
         <button
           type="submit"

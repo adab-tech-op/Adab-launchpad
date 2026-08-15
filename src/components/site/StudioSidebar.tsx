@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/studio/orders", label: "Orders" },
   { href: "/studio/inbox", label: "Inbox" },
   { href: "/studio/products", label: "Products" },
+  { href: "/studio/notify", label: "Notify list" },
 ];
 
 export function StudioSidebar() {
