@@ -65,9 +65,19 @@ export function canSeePII(role: Role): boolean {
 // --- Page guards (redirecting) ----------------------------------------------
 /** Any studio role may view. Redirects non-admins away. Returns the actor. */
 export async function requireStudioAccess(): Promise<Actor> {
-  const actor = await currentActor();
-  if (!actor) redirect("/");
-  return actor;
+  // Distinguish "not signed in" (-> sign in, with a return link) from "signed in
+  // but not an admin" (-> home). currentActor() collapses both to null, which
+  // made a logged-out visit to /studio bounce silently to the homepage.
+  let session = null;
+  try {
+    session = await auth.api.getSession({ headers: await headers() });
+  } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) throw err;
+  }
+  if (!session) redirect("/signin?next=/studio");
+  const role = await getRoleForEmail(session.user.email);
+  if (!role) redirect("/");
+  return { email: session.user.email, role };
 }
 
 /** Root-only pages (team, activity). Redirects everyone else to /studio. */
