@@ -11,6 +11,24 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL,
 
+  // Accept auth requests from both the apex and www hosts. Vercel redirects apex
+  // -> www (or vice-versa), so a POST can legitimately arrive from either; without
+  // both here, Better Auth's origin check rejects the "other" host and sign-in
+  // fails. Extra origins can be supplied via BETTER_AUTH_TRUSTED_ORIGINS (CSV).
+  trustedOrigins: Array.from(
+    new Set(
+      [
+        process.env.BETTER_AUTH_URL,
+        process.env.NEXT_PUBLIC_SITE_URL,
+        "https://adab.world",
+        "https://www.adab.world",
+        ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") ?? []),
+      ]
+        .map((o) => o?.trim().replace(/\/$/, ""))
+        .filter((o): o is string => Boolean(o)),
+    ),
+  ),
+
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

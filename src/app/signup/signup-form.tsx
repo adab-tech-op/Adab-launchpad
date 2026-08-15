@@ -38,13 +38,19 @@ export default function SignUpForm({
     // guest reservations with this email — so a buyer who sets a password here
     // finds their order waiting in /account/orders after verifying. When an
     // invite sent them here, next carries them to the accept page post-verify.
-    const { error } = await signUp.email({ name, email, password, callbackURL: next ?? "/welcome" });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message ?? "Could not create your account.");
-      return;
+    try {
+      const { error } = await signUp.email({ name, email, password, callbackURL: next ?? "/welcome" });
+      if (error) {
+        toast.error(error.message ?? "Could not create your account.");
+        return;
+      }
+      setDone(true);
+    } catch (err) {
+      console.error("[signup] request failed", err);
+      toast.error("Couldn't reach the server. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setDone(true);
   };
 
   if (done) {

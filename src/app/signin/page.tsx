@@ -25,18 +25,25 @@ function SignInInner() {
     e.preventDefault();
     setLoading(true);
     setNeedsVerify(false);
-    const { error } = await signIn.email({ email, password });
-    setLoading(false);
-    if (error) {
-      if (error.status === 403) {
-        setNeedsVerify(true);
+    try {
+      const { error } = await signIn.email({ email, password });
+      if (error) {
+        if (error.status === 403) {
+          setNeedsVerify(true);
+          return;
+        }
+        toast.error(error.message ?? "Could not sign in.");
         return;
       }
-      toast.error(error.message ?? "Could not sign in.");
-      return;
+      router.push(next ?? "/account");
+      router.refresh();
+    } catch (err) {
+      // Network / CORS / server error — surface it instead of spinning forever.
+      console.error("[signin] request failed", err);
+      toast.error("Couldn't reach the server. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push(next ?? "/account");
-    router.refresh();
   };
 
   const resend = async () => {
