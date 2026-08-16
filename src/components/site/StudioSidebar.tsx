@@ -20,6 +20,7 @@ const LINKS: NavLink[] = [
   { href: "/studio/notify", label: "Notify list", minRole: "admin" },
   { href: "/studio/team", label: "Team", minRole: "root" },
   { href: "/studio/activity", label: "Activity", minRole: "root" },
+  { href: "/studio/data", label: "Data", minRole: "root" },
 ];
 
 const ROLE_LABEL: Record<Role, string> = { root: "Root admin", admin: "Admin", moderator: "Moderator" };

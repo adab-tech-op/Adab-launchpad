@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { sql } from "@/lib/db";
+import { emailHasRole } from "@/lib/roles";
 
 const schema = z.object({
   email: z.string().trim().email().max(320),
@@ -21,6 +22,12 @@ export async function createWaitlistSignup(input: {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const { email, phone, source } = parsed.data;
+
+  // Keep studio accounts out of the marketing/notify list — they aren't
+  // customers. Silently succeed so the form gives no different signal for an
+  // admin email vs a normal one.
+  if (await emailHasRole(email)) return { ok: true };
+
   try {
     await sql`
       INSERT INTO waitlist_signups (email, phone, source)
