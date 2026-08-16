@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { recordPayment } from "@/lib/actions/payments";
+import { signUp } from "@/lib/auth-client";
 import type { OrderItem } from "@/lib/queries";
 
 const input =
@@ -24,6 +25,7 @@ export function PayClient({
   alreadyProcessed,
   bkashNumber,
   email,
+  name,
   canCreateAccount,
 }: {
   orderRef: string;
@@ -33,14 +35,20 @@ export function PayClient({
   alreadyProcessed: boolean;
   bkashNumber: string;
   email: string;
+  name: string;
   canCreateAccount: boolean;
 }) {
-  const secureHref = `/signup?email=${encodeURIComponent(email)}&ref=${encodeURIComponent(orderRef)}`;
   const [payer, setPayer] = useState("");
   const [trxId, setTrxId] = useState("");
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Inline post-payment account creation (on the success screen).
+  const [password, setPassword] = useState("");
+  const [agree, setAgree] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [accountDone, setAccountDone] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +60,33 @@ export function PayClient({
       return;
     }
     setDone(true);
+  };
+
+  const createAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
+      return;
+    }
+    if (!agree) {
+      toast.error("Please accept the privacy policy to continue.");
+      return;
+    }
+    setCreating(true);
+    try {
+      // Land them on this order's status page once their email is verified.
+      const { error } = await signUp.email({ name, email, password, callbackURL: `/account/orders/${orderRef}` });
+      if (error) {
+        toast.error(error.message ?? "Could not create your account.");
+        return;
+      }
+      setAccountDone(true);
+    } catch (err) {
+      console.error("[pay] account creation failed", err);
+      toast.error("Couldn't reach the server. Please try again.");
+    } finally {
+      setCreating(false);
+    }
   };
 
   if (alreadyProcessed) {
@@ -70,37 +105,101 @@ export function PayClient({
   }
 
   if (done) {
+    // After account creation: quiet "verify your email" confirmation.
+    if (accountDone) {
+      return (
+        <Shell>
+          <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Almost there</p>
+          <h1 className="mt-3 font-editorial text-4xl">Check your email.</h1>
+          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+            We&rsquo;ve sent a verification link to <span className="text-foreground">{email}</span>. Confirm it to
+            access your account and track order <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span> any time.
+          </p>
+          <p className="mt-6 rounded-2xl border border-border bg-[color:var(--paper)] px-5 py-4 text-sm text-muted-foreground leading-relaxed">
+            Your payment details are recorded — we&rsquo;ll verify them against bKash and message you on WhatsApp within 24 hours.
+          </p>
+          <Link href="/shop" className="mt-8 inline-block text-xs uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
+            Continue browsing
+          </Link>
+        </Shell>
+      );
+    }
+
+    // Account offered → make setting a password the focus of the screen.
+    if (canCreateAccount) {
+      return (
+        <Shell>
+          <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Payment received</p>
+          <h1 className="mt-3 font-editorial text-4xl">One last step.</h1>
+          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+            Your payment details for <span className="font-display tracking-[0.1em] text-primary">{orderRef}</span> are recorded — we&rsquo;ll
+            verify against bKash and message you on WhatsApp within 24 hours. Set a password to track it live.
+          </p>
+
+          {/* Hero: create account inline */}
+          <div className="mt-7 rounded-2xl border border-primary/25 bg-[color:var(--paper)] p-6 shadow-sm ring-1 ring-primary/5 text-left">
+            <h2 className="font-editorial text-2xl">Track your order.</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+              Create your account to follow this order&rsquo;s status any time and check out faster next drop. Takes a few seconds.
+            </p>
+            <form onSubmit={createAccount} className="mt-5 space-y-3">
+              <div>
+                <label className={label} htmlFor="set-password">Choose a password</label>
+                <input
+                  id="set-password"
+                  type="password"
+                  autoFocus
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className={`${input} mt-1.5`}
+                />
+              </div>
+              <label className="flex cursor-pointer items-start gap-2.5 text-xs text-muted-foreground leading-relaxed">
+                <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" />
+                <span>
+                  I agree to the{" "}
+                  <Link href="/policies/privacy" className="underline underline-offset-2 hover:text-foreground" target="_blank">privacy policy</Link>.
+                </span>
+              </label>
+              <button
+                type="submit"
+                disabled={creating}
+                className="w-full rounded-full bg-primary py-3.5 text-xs uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                {creating ? "Creating account…" : "Create account & track order"}
+              </button>
+              <p className="text-center text-[11px] text-muted-foreground">Signing up as {email}</p>
+            </form>
+          </div>
+
+          <Link href="/shop" className="mt-6 inline-block text-xs uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
+            Maybe later — continue browsing
+          </Link>
+        </Shell>
+      );
+    }
+
+    // Already has an account → point them at the live status page.
     return (
       <Shell>
-        <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Payment</p>
+        <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Payment received</p>
         <h1 className="mt-3 font-editorial text-4xl">Response recorded.</h1>
         <p className="mt-5 inline-block rounded-full border border-border bg-[color:var(--paper)] px-5 py-2 text-sm">
           Reference: <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span>
         </p>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          We've received your payment details and will verify them against bKash. We'll call or message
+          We&rsquo;ve received your payment details and will verify them against bKash. We&rsquo;ll call or message
           you on WhatsApp within 24 hours to confirm. Thank you.
         </p>
-
-        {canCreateAccount && (
-          <div className="mt-8 rounded-2xl border border-border p-6 text-left paper-grain">
-            <p className="font-display text-sm">Secure your reservation.</p>
-            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-              Set a password to track this order's status any time and reserve faster next time.
-              Your reservation is safe either way.
-            </p>
-            <Link
-              href={secureHref}
-              className="mt-4 inline-block rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.2em] text-white"
-            >
-              Set a password
-            </Link>
-          </div>
-        )}
-
-        <Link href="/shop" className="mt-8 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
-          Continue browsing
-        </Link>
+        <div className="mt-8 flex flex-wrap items-center gap-4">
+          <Link href={`/account/orders/${orderRef}`} className="inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
+            View order status
+          </Link>
+          <Link href="/shop" className="text-xs uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
+            Continue browsing
+          </Link>
+        </div>
       </Shell>
     );
   }

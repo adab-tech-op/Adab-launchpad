@@ -23,6 +23,7 @@ export default async function PayPage({ params }: { params: Promise<{ orderRef: 
       alreadyProcessed={alreadyProcessed}
       bkashNumber={bkashNumber}
       email={order.email}
+      name={order.name}
       canCreateAccount={canCreateAccount}
     />
   );
