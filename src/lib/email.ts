@@ -11,7 +11,7 @@ function client(): Resend | null {
   return _resend;
 }
 
-const FROM = process.env.ADAB_FROM_EMAIL ?? "ADAB <orders@adab.co>";
+const FROM = process.env.ADAB_FROM_EMAIL ?? "ADAB <info@adab.world>";
 const NOTIFY = process.env.ADAB_NOTIFY_EMAIL; // internal ops inbox (optional)
 
 const INK = "#1c1c1c";
@@ -35,6 +35,19 @@ export type OrderEmailInput = {
 };
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.BETTER_AUTH_URL ?? "").replace(/\/$/, "");
+
+// The ADAB wordmark for emails. Resolves to the custom domain (SITE_URL) or an
+// explicit ADAB_LOGO_URL — never the Vercel deployment URL. SVG isn't reliable in
+// email clients, so this points at a rasterized PNG in /public/assets.
+const LOGO_URL = process.env.ADAB_LOGO_URL ?? (SITE_URL ? `${SITE_URL}/assets/adab-email-logo.png` : "");
+
+/** The brand mark for an email header: the logo image when a URL is available,
+ *  otherwise a text fallback so the header is never empty. */
+function brandMark(): string {
+  return LOGO_URL
+    ? `<img src="${LOGO_URL}" alt="ADAB" width="66" height="30" style="display:block;height:30px;width:auto;border:0;outline:none;text-decoration:none;margin:0 0 10px;">`
+    : `<span style="display:block;font-weight:700;letter-spacing:0.14em;color:${PRUSSIAN};font-size:18px;margin:0 0 10px;">ADAB</span>`;
+}
 
 /** Link to prefilled signup so buying can complete into an account. */
 function secureAccountUrl(o: { to: string; orderRef: string }): string {
@@ -64,7 +77,7 @@ function customerHtml(o: OrderEmailInput, productMap: Map<string, Product>): str
   <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
       <tr><td style="padding:28px 32px 8px;">
-        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; Founding Drop</p>
+        ${brandMark()}<p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">Founding Drop</p>
         <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Reservation received.</h1>
         <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. Your piece is held. Keep your reference below — we'll call or message you on WhatsApp within 24 hours to confirm payment (bKash) and delivery.</p>
       </td></tr>
@@ -154,7 +167,7 @@ function authEmailHtml(opts: { heading: string; body: string; cta: string; url: 
   <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
       <tr><td style="padding:28px 32px 8px;">
-        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB</p>
+        ${brandMark()}
         <h1 style="margin:12px 0 0;font-size:22px;color:${INK};font-weight:600;">${opts.heading}</h1>
         <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">${opts.body}</p>
       </td></tr>
@@ -243,7 +256,7 @@ export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
   <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
       <tr><td style="padding:28px 32px 8px;">
-        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; Founding Drop</p>
+        ${brandMark()}<p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">Founding Drop</p>
         <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Payment details received.</h1>
         <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. We've received your payment details for <strong>${o.orderRef}</strong> and are verifying them. We'll call or message you on WhatsApp within 24 hours to confirm.</p>
       </td></tr>
@@ -341,7 +354,7 @@ export async function sendPaymentConfirmed(o: PaymentConfirmedInput): Promise<Se
   <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
       <tr><td style="padding:28px 32px 8px;">
-        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; Founding Drop</p>
+        ${brandMark()}<p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">Founding Drop</p>
         <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Payment confirmed.</h1>
         <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. We've verified your payment for <strong>${o.orderRef}</strong> — your order is confirmed. We'll be in touch about delivery.</p>
       </td></tr>
@@ -423,7 +436,7 @@ export async function sendFollowUp(o: FollowUpInput): Promise<SendResult & { sub
   <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
       <tr><td style="padding:28px 32px 8px;">
-        <p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">ADAB &middot; ${o.orderRef}</p>
+        ${brandMark()}<p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">${o.orderRef}</p>
         <h1 style="margin:12px 0 0;font-size:22px;color:${INK};font-weight:600;">${heading}</h1>
         <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;white-space:pre-line;">${body.replace(/\{name\}/g, o.name)}</p>
       </td></tr>
