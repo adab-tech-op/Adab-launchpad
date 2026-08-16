@@ -18,6 +18,9 @@ const ACTION_LABEL: Record<string, string> = {
   "team.invite_accept": "accepted invitation",
   "team.role_change": "changed role of",
   "team.remove": "removed member",
+  "data.purge_orders": "cleared all orders",
+  "data.purge_messages_signups": "cleared inbox & signups",
+  "data.delete_customers": "deleted customer accounts",
 };
 
 function detailText(detail: Record<string, unknown> | null): string {

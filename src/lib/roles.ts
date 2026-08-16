@@ -56,6 +56,28 @@ export function atLeast(role: Role, min: Role): boolean {
   return RANK[role] >= RANK[min];
 }
 
+/** True if this email holds any studio role. Used to keep staff accounts out of
+ *  the customer surface (no reserving, cart, wishlist, or waitlist). */
+export async function emailHasRole(email: string): Promise<boolean> {
+  return (await getRoleForEmail(email)) !== null;
+}
+
+/** True if the CURRENT signed-in user holds any studio role. Guests → false.
+ *  Customer actions call this to refuse staff accounts. Never throws on a plain
+ *  auth/DB error (fails open to "not staff" so real customers are never blocked);
+ *  Next control-flow signals still propagate. */
+export async function currentUserIsStaff(): Promise<boolean> {
+  let session = null;
+  try {
+    session = await auth.api.getSession({ headers: await headers() });
+  } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) throw err;
+    return false;
+  }
+  if (!session) return false;
+  return emailHasRole(session.user.email);
+}
+
 /** Moderators get a redacted view (no customer contact PII, no TrxIDs). Flip the
  *  threshold here to change what a moderator can see across the studio. */
 export function canSeePII(role: Role): boolean {

@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { generateOrderRef } from "@/lib/order-ref";
+import { currentUserIsStaff } from "@/lib/roles";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -42,6 +43,13 @@ export async function createReservation(input: {
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the form." };
   }
+
+  // Studio accounts (root/admin/moderator) can't place orders — they have no
+  // customer footprint. A staff member who wants to buy uses a personal account.
+  if (await currentUserIsStaff()) {
+    return { ok: false, error: "Admin accounts can't place orders. Please use a personal account to shop." };
+  }
+
   const { name, email, phone, delivery_address, notes, items } = parsed.data;
   const orderRef = generateOrderRef();
 

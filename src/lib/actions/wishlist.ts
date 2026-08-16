@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { currentUserId } from "@/lib/auth-guard";
+import { currentUserIsStaff } from "@/lib/roles";
 import { getProductBySlug } from "@/lib/products";
 
 export type WishlistResult = { ok: true; saved: boolean } | { ok: false; error: string };
@@ -10,6 +11,7 @@ export type WishlistResult = { ok: true; saved: boolean } | { ok: false; error: 
 export async function toggleWishlist(slug: string): Promise<WishlistResult> {
   const userId = await currentUserId();
   if (!userId) return { ok: false, error: "Please sign in to save pieces." };
+  if (await currentUserIsStaff()) return { ok: false, error: "Admin accounts don't have a wishlist." };
   if (!(await getProductBySlug(slug))) return { ok: false, error: "Unknown product." };
 
   try {
