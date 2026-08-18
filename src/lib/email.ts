@@ -22,17 +22,6 @@ const BORDER = "#d9d2c4";
 
 export type OrderItem = { product_slug: string; size: string; quantity: number };
 
-export type OrderEmailInput = {
-  to: string;
-  name: string;
-  phone: string;
-  orderRef: string;
-  items: OrderItem[];
-  deliveryAddress?: string;
-  notes?: string;
-  /** True when this email has no account yet — show the "set a password" CTA. */
-  canCreateAccount?: boolean;
-};
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.BETTER_AUTH_URL ?? "").replace(/\/$/, "");
 
@@ -72,95 +61,6 @@ function itemRows(items: OrderItem[], productMap: Map<string, Product>): string 
     .join("");
 }
 
-function customerHtml(o: OrderEmailInput, productMap: Map<string, Product>): string {
-  return `
-  <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
-      <tr><td style="padding:28px 32px 8px;">
-        ${brandMark()}<p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">Founding Drop</p>
-        <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Reservation received.</h1>
-        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. Your piece is held. Keep your reference below — we'll call or message you on WhatsApp within 24 hours to confirm payment (bKash) and delivery.</p>
-      </td></tr>
-      <tr><td style="padding:20px 32px 0;">
-        <div style="display:inline-block;border:1px solid ${BORDER};border-radius:999px;padding:8px 18px;font-size:14px;color:${INK};">
-          Reference: <strong style="letter-spacing:0.12em;color:${PRUSSIAN};">${o.orderRef}</strong>
-        </div>
-      </td></tr>
-      <tr><td style="padding:20px 32px 8px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemRows(o.items, productMap)}</table>
-      </td></tr>
-      ${
-        o.deliveryAddress
-          ? `<tr><td style="padding:8px 32px;color:${MUTED};font-size:13px;line-height:1.6;"><strong style="color:${INK};">Deliver to:</strong> ${o.deliveryAddress}</td></tr>`
-          : ""
-      }
-      ${
-        o.canCreateAccount && SITE_URL
-          ? `<tr><td style="padding:8px 32px 4px;">
-        <div style="border:1px solid ${BORDER};border-radius:12px;padding:18px 20px;background:${PAPER};">
-          <p style="margin:0;color:${INK};font-size:14px;font-weight:600;">Secure your reservation.</p>
-          <p style="margin:6px 0 14px;color:${MUTED};font-size:13px;line-height:1.6;">Set a password to track this order's status and reserve faster next time. Optional — your reservation is safe either way.</p>
-          <a href="${secureAccountUrl(o)}" style="display:inline-block;background:${PRUSSIAN};color:#ffffff;text-decoration:none;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:11px 22px;border-radius:999px;">Set a password</a>
-        </div>
-      </td></tr>`
-          : ""
-      }
-      <tr><td style="padding:16px 32px 28px;">
-        <p style="margin:0;color:${MUTED};font-size:12px;line-height:1.7;">Advance payment secures your piece. This is a reservation, not a confirmed order, until we reach out. Made in Bangladesh.</p>
-      </td></tr>
-      <tr><td style="padding:16px 32px;background:${PAPER};border-top:1px solid ${BORDER};">
-        <p style="margin:0;color:${MUTED};font-size:12px;">ADAB &middot; Old Soul. New Cut. &middot; Dhaka, Bangladesh</p>
-      </td></tr>
-    </table>
-  </div>`;
-}
-
-function teamHtml(o: OrderEmailInput, productMap: Map<string, Product>): string {
-  return `
-  <div style="font-family:Helvetica,Arial,sans-serif;color:${INK};">
-    <h2 style="font-size:18px;">New reservation ${o.orderRef}</h2>
-    <p style="font-size:14px;line-height:1.6;">
-      <strong>${o.name}</strong><br>
-      ${o.to}<br>
-      ${o.phone}
-    </p>
-    <table role="presentation" width="100%" style="max-width:520px;">${itemRows(o.items, productMap)}</table>
-    ${o.deliveryAddress ? `<p style="font-size:13px;"><strong>Deliver to:</strong> ${o.deliveryAddress}</p>` : ""}
-    ${o.notes ? `<p style="font-size:13px;"><strong>Notes:</strong> ${o.notes}</p>` : ""}
-  </div>`;
-}
-
-/** Best-effort transactional emails for a new reservation. Never throws. */
-export async function sendOrderEmails(o: OrderEmailInput): Promise<void> {
-  const resend = client();
-  const productMap = await getProductMap();
-  if (!resend) {
-    console.warn(`[email] RESEND_API_KEY not set — skipping emails for ${o.orderRef}`);
-    return;
-  }
-  try {
-    await resend.emails.send({
-      from: FROM,
-      to: o.to,
-      subject: `Your ADAB reservation — ${o.orderRef}`,
-      html: customerHtml(o, productMap),
-    });
-  } catch (err) {
-    console.error(`[email] customer confirmation failed for ${o.orderRef}`, err);
-  }
-  if (NOTIFY) {
-    try {
-      await resend.emails.send({
-        from: FROM,
-        to: NOTIFY,
-        subject: `New reservation ${o.orderRef} — ${o.name}`,
-        html: teamHtml(o, productMap),
-      });
-    } catch (err) {
-      console.error(`[email] team notification failed for ${o.orderRef}`, err);
-    }
-  }
-}
 
 function authEmailHtml(opts: { heading: string; body: string; cta: string; url: string }): string {
   return `
@@ -252,13 +152,17 @@ export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
     console.warn(`[email] RESEND_API_KEY not set — skipping payment email for ${o.orderRef}`);
     return;
   }
+  // Name the piece(s) in the copy, so the email is clearly about a specific order.
+  const itemNames = o.items.map((i) => productMap.get(i.product_slug)?.name ?? i.product_slug);
+  const productLabel =
+    itemNames.length === 1 ? itemNames[0] : `your ${itemNames.length} pieces`;
   const customer = `
   <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
       <tr><td style="padding:28px 32px 8px;">
         ${brandMark()}<p style="margin:0;letter-spacing:0.22em;text-transform:uppercase;font-size:11px;color:${PRUSSIAN};">Founding Drop</p>
         <h1 style="margin:12px 0 0;font-size:24px;color:${INK};font-weight:600;">Payment details received.</h1>
-        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. We've received your payment details for <strong>${o.orderRef}</strong> and are verifying them. We'll call or message you on WhatsApp within 24 hours to confirm.</p>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thank you, ${o.name}. You&rsquo;ve submitted your payment details for <strong>${productLabel}</strong> (order ${o.orderRef}). We&rsquo;ll verify them against bKash and message you on WhatsApp within 24 hours. Nothing is confirmed until we do &mdash; this isn&rsquo;t a confirmed order yet.</p>
       </td></tr>
       <tr><td style="padding:18px 32px 0;">
         <table role="presentation" width="100%"><tr>
@@ -274,7 +178,7 @@ export async function sendPaymentReceived(o: PaymentEmailInput): Promise<void> {
           ? `<tr><td style="padding:8px 32px 4px;">
         <div style="border:1px solid ${BORDER};border-radius:12px;padding:18px 20px;background:${PAPER};">
           <p style="margin:0;color:${INK};font-size:14px;font-weight:600;">Track this order.</p>
-          <p style="margin:6px 0 14px;color:${MUTED};font-size:13px;line-height:1.6;">Set a password to follow this order's status and reserve faster next time. Optional.</p>
+          <p style="margin:6px 0 14px;color:${MUTED};font-size:13px;line-height:1.6;">Set a password to follow this order's status and check out faster next time. Optional.</p>
           <a href="${secureAccountUrl({ to: o.to, orderRef: o.orderRef })}" style="display:inline-block;background:${PRUSSIAN};color:#ffffff;text-decoration:none;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;padding:11px 22px;border-radius:999px;">Set a password</a>
         </div>
       </td></tr>`

@@ -44,9 +44,14 @@ export function SiteHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-40 transition-all duration-300 ease-out",
+          // Animate only color/background — NOT backdrop-filter. Firefox mishandles
+          // transitioning backdrop-filter via transition-all, which broke the
+          // transparent→frosted change on scroll. With supports-[], browsers that
+          // do backdrop-filter get the more translucent frosted bar; the rest fall
+          // back to a near-solid white so the "scrolled" state always reads.
+          "fixed inset-x-0 top-0 z-40 transition-[background-color,color] duration-300 ease-out",
           scrolled
-            ? "bg-white/95 backdrop-blur-md text-foreground"
+            ? "bg-white/95 supports-[backdrop-filter]:bg-white/80 backdrop-blur-md text-foreground"
             : "bg-transparent text-white"
         )}
       >
