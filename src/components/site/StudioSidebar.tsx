@@ -18,6 +18,7 @@ const LINKS: NavLink[] = [
   { href: "/studio/inbox", label: "Inbox" },
   { href: "/studio/products", label: "Products" },
   { href: "/studio/notify", label: "Notify list", minRole: "admin" },
+  { href: "/studio/announcement", label: "Announcement", minRole: "admin" },
   { href: "/studio/team", label: "Team", minRole: "root" },
   { href: "/studio/activity", label: "Activity", minRole: "root" },
   { href: "/studio/data", label: "Data", minRole: "root" },
