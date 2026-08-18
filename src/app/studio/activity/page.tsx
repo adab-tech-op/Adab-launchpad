@@ -21,6 +21,7 @@ const ACTION_LABEL: Record<string, string> = {
   "data.purge_orders": "cleared all orders",
   "data.purge_messages_signups": "cleared inbox & signups",
   "data.delete_customers": "deleted customer accounts",
+  "announcement.update": "updated the announcement",
 };
 
 function detailText(detail: Record<string, unknown> | null): string {

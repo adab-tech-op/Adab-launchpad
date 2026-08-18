@@ -19,7 +19,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <SiteHeader />
-        {isHome && <NewsletterModal />}
+        <NewsletterModal />
         <ScrollReveal />
         <main className={isHome ? "" : "pt-16"}>{children}</main>
         <SiteFooter />
