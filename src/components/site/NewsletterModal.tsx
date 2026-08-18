@@ -1,37 +1,68 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { createWaitlistSignup } from "@/lib/actions/waitlist";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ModalShell } from "./ModalShell";
+import type { AnnouncementSettings, Frequency } from "@/lib/announcement";
 
-const KEY = "adab-newsletter-seen";
+const STORAGE_KEY = "adab-announcement-seen";
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email").max(320),
-  phone: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .or(z.literal("")),
+  phone: z.string().trim().max(40).optional().or(z.literal("")),
 });
 
+// Frequency → which storage gates re-showing. "always" never records, so it
+// shows every visit; "session" uses sessionStorage; "once" uses localStorage.
+function alreadySeen(freq: Frequency): boolean {
+  if (typeof window === "undefined" || freq === "always") return false;
+  const store = freq === "session" ? window.sessionStorage : window.localStorage;
+  return store.getItem(STORAGE_KEY) === "1";
+}
+
+function markSeen(freq: Frequency) {
+  if (typeof window === "undefined" || freq === "always") return;
+  const store = freq === "session" ? window.sessionStorage : window.localStorage;
+  store.setItem(STORAGE_KEY, "1");
+}
+
 export function NewsletterModal() {
+  const pathname = usePathname();
+  const [settings, setSettings] = useState<AnnouncementSettings | null>(null);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Fetch admin settings once on mount (tiny cached endpoint).
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (localStorage.getItem(KEY)) return;
-    const t = setTimeout(() => setOpen(true), 2000);
-    return () => clearTimeout(t);
+    let cancelled = false;
+    fetch("/api/announcement")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s: AnnouncementSettings | null) => {
+        if (!cancelled) setSettings(s);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  // Decide whether to show: enabled, on a targeted page, and not already seen
+  // per the configured frequency.
+  useEffect(() => {
+    if (!settings) return;
+    if (!settings.enabled) return;
+    if (!settings.pages.includes(pathname)) return;
+    if (alreadySeen(settings.frequency)) return;
+    const t = setTimeout(() => setOpen(true), 2000);
+    return () => clearTimeout(t);
+  }, [settings, pathname]);
+
   const close = () => {
-    localStorage.setItem(KEY, "1");
+    if (settings) markSeen(settings.frequency);
     setOpen(false);
   };
 
@@ -61,6 +92,8 @@ export function NewsletterModal() {
     close();
   };
 
+  if (!settings) return null;
+
   return (
     <ModalShell open={open} onClose={close} labelledBy="newsletter-modal-title" className="max-w-md">
       <button
@@ -71,43 +104,41 @@ export function NewsletterModal() {
         <X className="h-4 w-4" strokeWidth={1.5} />
       </button>
       <div className="p-8 sm:p-10">
-      <p className="text-[11px] uppercase tracking-[0.24em] text-primary font-display">
-        Founding Drop · Coming Soon
-      </p>
-      <h3 id="newsletter-modal-title" className="mt-3 font-sans text-3xl leading-tight">
-        Be first to know when Adab drops.
-      </h3>
-      <p className="mt-3 text-sm text-muted-foreground">
-        Join the list for launch access and limited-drop notifications.
-      </p>
-      <form onSubmit={onSubmit} className="mt-6 space-y-3">
-        <input
-          type="email"
-          name="email"
-          required
-          placeholder="Email address"
-          className="w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary"
-        />
-        <input
-          type="tel"
-          name="phone"
-          placeholder="Phone (optional)"
-          className="w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary"
-        />
+        {settings.eyebrow && (
+          <p className="text-[11px] uppercase tracking-[0.24em] text-primary font-display">{settings.eyebrow}</p>
+        )}
+        <h3 id="newsletter-modal-title" className="mt-3 font-sans text-3xl leading-tight">
+          {settings.title}
+        </h3>
+        {settings.body && <p className="mt-3 text-sm text-muted-foreground">{settings.body}</p>}
+        <form onSubmit={onSubmit} className="mt-6 space-y-3">
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="Email address"
+            className="w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary"
+          />
+          <input
+            type="tel"
+            name="phone"
+            placeholder="Phone (optional)"
+            className="w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary"
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full rounded-md bg-foreground py-3 text-sm uppercase tracking-[0.18em] text-background hover:bg-foreground/90 transition-colors disabled:opacity-60"
+          >
+            {submitting ? "Adding…" : "Notify Me"}
+          </button>
+        </form>
         <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-md bg-foreground py-3 text-sm uppercase tracking-[0.18em] text-background hover:bg-foreground/90 transition-colors disabled:opacity-60"
+          onClick={close}
+          className="mt-4 w-full text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
         >
-          {submitting ? "Adding…" : "Notify Me"}
+          Continue browsing →
         </button>
-      </form>
-      <button
-        onClick={close}
-        className="mt-4 w-full text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
-      >
-        Continue browsing →
-      </button>
       </div>
     </ModalShell>
   );
