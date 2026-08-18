@@ -5,10 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Cinzel", ui-serif, Georgia, serif;
-  --font-editorial: "Cormorant Garamond", ui-serif, Georgia, serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cinzel", "Hind Siliguri", ui-serif, Georgia, serif;
+  --font-editorial: "Cormorant Garamond", "Hind Siliguri", ui-serif, Georgia, serif;
+  --font-sans: "DM Sans", "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "DM Sans", "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -197,3 +197,12 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-badge-pop, .animate-page-in { animation: none; }
 }
+
+/* Rendered markdown in editorial content blocks (manifesto/care). */
+.prose-editorial p { margin: 0; }
+.prose-editorial p + p { margin-top: 0.75em; }
+.prose-editorial a { text-decoration: underline; text-underline-offset: 3px; }
+.prose-editorial strong { font-weight: 600; color: var(--foreground); }
+.prose-editorial ul { margin: 0.5em 0; padding-left: 1.1em; list-style: disc; }
+.prose-editorial ol { margin: 0.5em 0; padding-left: 1.1em; list-style: decimal; }
+.prose-editorial li { margin: 0.15em 0; }
