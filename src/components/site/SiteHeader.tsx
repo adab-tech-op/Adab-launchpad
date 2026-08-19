@@ -55,6 +55,17 @@ export function SiteHeader() {
             : "bg-transparent text-white"
         )}
       >
+        {/* Legibility scrim for the transparent (top-of-hero) state: a soft
+            top-down shade so the white logo and nav stay readable over a LIGHT
+            hero, not just a dark one. Fades out once the bar goes solid on
+            scroll. Purely decorative; never intercepts clicks. */}
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 via-black/25 to-transparent transition-opacity duration-300 ease-out",
+            scrolled ? "opacity-0" : "opacity-100"
+          )}
+        />
         <div className="relative mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:px-8">
           <button
             onClick={() => setOpen(true)}
