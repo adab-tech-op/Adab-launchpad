@@ -57,7 +57,9 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
     const msg = String((err as { message?: string })?.message ?? err);
     if (/unique|duplicate|23505/i.test(msg)) return { ok: false, error: "A product with that slug already exists." };
     console.error("[products-admin] create failed", err);
-    return { ok: false, error: "Could not create the product." };
+    // Surface the real cause to the admin (trusted, mutator-gated). A common one:
+    // "column ... does not exist" means a pending migration (e.g. product-details.sql).
+    return { ok: false, error: `Could not create the product: ${msg}` };
   }
   await recordAudit(admin, "product.create", d.slug, { name: d.name });
   revalidateAll(d.slug);
@@ -82,8 +84,9 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
       WHERE slug = ${d.slug}
     `;
   } catch (err) {
+    const msg = String((err as { message?: string })?.message ?? err);
     console.error("[products-admin] update failed", err);
-    return { ok: false, error: "Could not save changes." };
+    return { ok: false, error: `Could not save changes: ${msg}` };
   }
   await recordAudit(admin, "product.update", d.slug, { name: d.name });
   revalidateAll(d.slug);
