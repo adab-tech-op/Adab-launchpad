@@ -29,6 +29,9 @@ const empty: EditableProduct = {
   model_note: "",
   fabric_note: "",
   story: "",
+  fit_note: "",
+  care_note: "",
+  delivery_note: "",
   sort_order: 0,
 };
 
@@ -179,6 +182,22 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
         <label className="block">
           <span className={labelCls}>Fabric &amp; craft note (optional) <span className="normal-case tracking-normal">(shown in the accordion)</span></span>
           <textarea value={p.fabric_note} onChange={(e) => set("fabric_note", e.target.value)} rows={2} className={inputCls + " mt-2 resize-y"} />
+        </label>
+      </div>
+
+      {/* PDP accordions — each overrides the standard copy; blank falls back to the default shown on every product */}
+      <div className="grid grid-cols-1 gap-4">
+        <label className="block">
+          <span className={labelCls}>Fit &amp; sizing (optional) <span className="normal-case tracking-normal">(accordion — blank shows the standard fit copy)</span></span>
+          <textarea value={p.fit_note} onChange={(e) => set("fit_note", e.target.value)} rows={2} placeholder="Adab pieces are cut with a considered, relaxed fit. Choose your usual size, or size up for extra room." className={inputCls + " mt-2 resize-y"} />
+        </label>
+        <label className="block">
+          <span className={labelCls}>Care guide — this product (optional) <span className="normal-case tracking-normal">(accordion — blank shows the standard care copy; separate from the site-wide Care page)</span></span>
+          <textarea value={p.care_note} onChange={(e) => set("care_note", e.target.value)} rows={2} placeholder="Cold machine wash, inside out. Line dry in shade. Iron on medium with cloth in between." className={inputCls + " mt-2 resize-y"} />
+        </label>
+        <label className="block">
+          <span className={labelCls}>Delivery &amp; returns (optional) <span className="normal-case tracking-normal">(accordion — blank shows the standard policy; usually leave blank)</span></span>
+          <textarea value={p.delivery_note} onChange={(e) => set("delivery_note", e.target.value)} rows={2} placeholder="Dispatched from Dhaka within 48 hours of drop fulfilment. 7-day returns on unworn pieces with tags." className={inputCls + " mt-2 resize-y"} />
         </label>
       </div>
 
