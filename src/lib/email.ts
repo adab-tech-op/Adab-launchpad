@@ -168,7 +168,7 @@ export async function sendWaitlistThankYou(opts: { to: string }): Promise<void> 
     await resend.emails.send({
       from: FROM,
       to: opts.to,
-      subject: "You're on the list — ADAB",
+      subject: "You're welcome",
       html,
     });
   } catch (err) {
