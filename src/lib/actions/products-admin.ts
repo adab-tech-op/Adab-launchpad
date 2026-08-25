@@ -20,6 +20,7 @@ const schema = z.object({
   details: z.array(z.string().trim().min(1, "Empty detail line").max(200)).max(30),
   model_note: z.string().trim().max(300).optional().or(z.literal("")),
   fabric_note: z.string().trim().max(1000).optional().or(z.literal("")),
+  story: z.string().trim().max(4000).optional().or(z.literal("")),
   sort_order: z.number().int().min(0).max(100000),
 });
 
@@ -48,10 +49,10 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
   const d = parsed.data;
   try {
     await sql`
-      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, sort_order)
+      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, sort_order)
       VALUES (${d.slug}, ${d.name}, ${d.status}, ${d.price_bdt}, ${d.founding_note || null}, ${d.color},
               ${JSON.stringify(d.swatches)}::jsonb, ${d.short}, ${JSON.stringify(d.images)}::jsonb,
-              ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.sort_order})
+              ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.story || null}, ${d.sort_order})
     `;
   } catch (err) {
     const msg = String((err as { message?: string })?.message ?? err);
@@ -80,6 +81,7 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
         swatches = ${JSON.stringify(d.swatches)}::jsonb, short = ${d.short},
         images = ${JSON.stringify(d.images)}::jsonb, details = ${JSON.stringify(d.details)}::jsonb,
         model_note = ${d.model_note || null}, fabric_note = ${d.fabric_note || null},
+        story = ${d.story || null},
         sort_order = ${d.sort_order}, updated_at = now()
       WHERE slug = ${d.slug}
     `;
@@ -120,6 +122,7 @@ export type EditableProduct = {
   details: string[];
   model_note: string;
   fabric_note: string;
+  story: string;
   sort_order: number;
 };
 
@@ -127,7 +130,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
   if (!(await mutatorEmail())) return null;
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, sort_order
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, sort_order
       FROM products WHERE slug = ${slug}
     `) as EditableProduct[];
     const r = rows[0];
@@ -140,6 +143,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
       details: Array.isArray(r.details) ? r.details : [],
       model_note: r.model_note ?? "",
       fabric_note: r.fabric_note ?? "",
+      story: r.story ?? "",
     };
   } catch (err) {
     console.error("[products-admin] getProductForEdit failed", err);

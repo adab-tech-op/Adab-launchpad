@@ -28,6 +28,7 @@ const empty: EditableProduct = {
   details: [],
   model_note: "",
   fabric_note: "",
+  story: "",
   sort_order: 0,
 };
 
@@ -139,6 +140,11 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
       <label className="block">
         <span className={labelCls}>Description</span>
         <textarea value={p.short} onChange={(e) => set("short", e.target.value)} rows={3} className={inputCls + " mt-2 resize-y"} />
+      </label>
+
+      <label className="block">
+        <span className={labelCls}>Product story (optional) <span className="normal-case tracking-normal">(the lead accordion on the product page — hidden if left empty)</span></span>
+        <textarea value={p.story} onChange={(e) => set("story", e.target.value)} rows={4} placeholder="The narrative behind the piece — heritage, references, the idea. Bengali and English can mix on the same line." className={inputCls + " mt-2 resize-y"} />
       </label>
 
       {/* Details / feature bullets */}

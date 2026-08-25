@@ -21,6 +21,7 @@ type Row = {
   details: string[] | null;
   model_note: string | null;
   fabric_note: string | null;
+  story: string | null;
 };
 
 function rowToProduct(r: Row): Product {
@@ -37,10 +38,11 @@ function rowToProduct(r: Row): Product {
     details: Array.isArray(r.details) ? r.details : [],
     modelNote: r.model_note ?? undefined,
     fabricNote: r.fabric_note ?? undefined,
+    story: r.story ?? undefined,
   };
 }
 
-const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note";
+const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story";
 
 /** All products, DB-first with a static fallback if the table is empty or unreachable. */
 export async function getAllProducts(): Promise<Product[]> {
