@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { emailHasRole } from "@/lib/roles";
+import { sendWaitlistThankYou } from "@/lib/email";
 
 const schema = z.object({
   email: z.string().trim().email().max(320),
@@ -28,15 +29,32 @@ export async function createWaitlistSignup(input: {
   // admin email vs a normal one.
   if (await emailHasRole(email)) return { ok: true };
 
+  let isNewSignup = false;
   try {
-    await sql`
+    const rows = (await sql`
       INSERT INTO waitlist_signups (email, phone, source)
       VALUES (${email}, ${phone || null}, ${source || null})
       ON CONFLICT (lower(email)) DO NOTHING
-    `;
-    return { ok: true };
+      RETURNING email
+    `) as { email: string }[];
+    // A repeat signup hits ON CONFLICT and returns no row, so this is only true
+    // the first time an address joins — the guard that stops re-spamming.
+    isNewSignup = rows.length > 0;
   } catch (err) {
     console.error("[waitlist] insert failed", err);
     return { ok: false, error: "Something went wrong. Please try again." };
   }
+
+  // Send the one-time thank-you only on a genuinely new signup. Awaited so the
+  // send completes before a serverless function can freeze, but wrapped so an
+  // email failure never turns a successful signup into an error for the visitor.
+  if (isNewSignup) {
+    try {
+      await sendWaitlistThankYou({ to: email });
+    } catch (err) {
+      console.error("[waitlist] thank-you email failed", err);
+    }
+  }
+
+  return { ok: true };
 }
