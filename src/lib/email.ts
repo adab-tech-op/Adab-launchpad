@@ -130,6 +130,52 @@ export async function sendPasswordResetEmail(opts: { to: string; url: string; na
   }
 }
 
+/** Warm, honest acknowledgment when someone joins the notify list from the popup.
+ *  It's user-initiated and one-time, so it's transactional — but it never
+ *  over-promises: the list's stated purpose (drop access + notifications) and
+ *  nothing more, no "held/secured" language. Fire-and-forget like the auth
+ *  emails: returns void and swallows failures so a signup never fails on email
+ *  trouble. The caller must only invoke this on a genuinely new signup. */
+export async function sendWaitlistThankYou(opts: { to: string }): Promise<void> {
+  const resend = client();
+  if (!resend) {
+    console.warn(`[email] RESEND_API_KEY not set — skipping waitlist thank-you for ${opts.to}`);
+    return;
+  }
+  const explore = SITE_URL
+    ? `<tr><td style="padding:20px 32px 4px;">
+        <a href="${SITE_URL}" style="display:inline-block;background:${PRUSSIAN};color:#ffffff;text-decoration:none;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;padding:13px 26px;border-radius:999px;">Explore the collection</a>
+      </td></tr>`
+    : "";
+  const html = `
+  <div style="background:${PAPER};padding:32px 0;font-family:Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid ${BORDER};border-radius:16px;overflow:hidden;">
+      <tr><td style="padding:28px 32px 8px;">
+        ${brandMark()}
+        <p style="margin:0;color:${MUTED};font-size:11px;letter-spacing:0.18em;text-transform:uppercase;">Founding Drop &middot; Coming Soon</p>
+        <h1 style="margin:10px 0 0;font-size:22px;color:${INK};font-weight:600;">You&rsquo;re on the list.</h1>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">Thanks for your interest in ADAB. We&rsquo;ve added you to the list for founding-drop access and limited-drop notifications.</p>
+        <p style="margin:12px 0 0;color:${INK};font-size:15px;line-height:1.6;">When the founding drop opens, list members hear first. There&rsquo;s nothing you need to do until then.</p>
+      </td></tr>
+      ${explore}
+      <tr><td style="padding:20px 32px;background:${PAPER};border-top:1px solid ${BORDER};">
+        <p style="margin:0 0 6px;color:${MUTED};font-size:12px;">ADAB &middot; Old Soul. New Cut. &middot; Dhaka, Bangladesh</p>
+        <p style="margin:0;color:${MUTED};font-size:11px;line-height:1.6;">You&rsquo;re receiving this because you joined the ADAB list at adab.world. Not you? You can safely ignore this email.</p>
+      </td></tr>
+    </table>
+  </div>`;
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: opts.to,
+      subject: "You're on the list — ADAB",
+      html,
+    });
+  } catch (err) {
+    console.error(`[email] waitlist thank-you failed for ${opts.to}`, err);
+  }
+}
+
 export type PaymentEmailInput = {
   to: string;
   name: string;
