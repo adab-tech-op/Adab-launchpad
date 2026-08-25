@@ -14,6 +14,16 @@ import { toast } from "sonner";
 // Flip to false once fulfilment + cart checkout are live.
 const dropModeActive = true;
 
+// Standard copy for the Fit / Care / Delivery accordions. Each product may
+// override these from the studio form; when its field is blank we fall back to
+// this, so the section always renders and boilerplate never needs retyping.
+const DEFAULT_FIT =
+  "Adab pieces are cut with a considered, relaxed fit. Choose your usual size, or size up for extra room.";
+const DEFAULT_CARE =
+  "Cold machine wash, inside out. Line dry in shade. Iron on medium with cloth in between.";
+const DEFAULT_DELIVERY =
+  "Dispatched from Dhaka within 48 hours of drop fulfilment. 7-day returns on unworn pieces with tags.";
+
 const SIZES = ["S", "M", "L", "XL", "XXL"];
 const SIZE_TABLE = [
   { size: "S", chest: 40, length: 30, sleeve: 24, shoulder: 17 },
@@ -274,16 +284,13 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
             </p>
           </Accordion>
           <Accordion title="Fit & Sizing">
-            <p>
-              Adab pieces are cut with a considered, relaxed fit. Choose your
-              usual size, or size up for extra room.
-            </p>
+            <p className="whitespace-pre-line">{product.fitNote || DEFAULT_FIT}</p>
           </Accordion>
           <Accordion title="Care Guide">
-            <p>Cold machine wash, inside out. Line dry in shade. Iron on medium with cloth in between.</p>
+            <p className="whitespace-pre-line">{product.careNote || DEFAULT_CARE}</p>
           </Accordion>
           <Accordion title="Delivery & Returns">
-            <p>Dispatched from Dhaka within 48 hours of drop fulfilment. 7-day returns on unworn pieces with tags.</p>
+            <p className="whitespace-pre-line">{product.deliveryNote || DEFAULT_DELIVERY}</p>
           </Accordion>
         </div>
 

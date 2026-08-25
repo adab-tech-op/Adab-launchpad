@@ -18,6 +18,9 @@ export type Product = {
   modelNote?: string;
   fabricNote?: string;
   story?: string;
+  fitNote?: string;
+  careNote?: string;
+  deliveryNote?: string;
 };
 
 export const products: Product[] = [

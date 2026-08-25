@@ -21,6 +21,9 @@ const schema = z.object({
   model_note: z.string().trim().max(300).optional().or(z.literal("")),
   fabric_note: z.string().trim().max(1000).optional().or(z.literal("")),
   story: z.string().trim().max(4000).optional().or(z.literal("")),
+  fit_note: z.string().trim().max(2000).optional().or(z.literal("")),
+  care_note: z.string().trim().max(2000).optional().or(z.literal("")),
+  delivery_note: z.string().trim().max(2000).optional().or(z.literal("")),
   sort_order: z.number().int().min(0).max(100000),
 });
 
@@ -49,10 +52,11 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
   const d = parsed.data;
   try {
     await sql`
-      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, sort_order)
+      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, sort_order)
       VALUES (${d.slug}, ${d.name}, ${d.status}, ${d.price_bdt}, ${d.founding_note || null}, ${d.color},
               ${JSON.stringify(d.swatches)}::jsonb, ${d.short}, ${JSON.stringify(d.images)}::jsonb,
-              ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.story || null}, ${d.sort_order})
+              ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.story || null},
+              ${d.fit_note || null}, ${d.care_note || null}, ${d.delivery_note || null}, ${d.sort_order})
     `;
   } catch (err) {
     const msg = String((err as { message?: string })?.message ?? err);
@@ -82,6 +86,7 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
         images = ${JSON.stringify(d.images)}::jsonb, details = ${JSON.stringify(d.details)}::jsonb,
         model_note = ${d.model_note || null}, fabric_note = ${d.fabric_note || null},
         story = ${d.story || null},
+        fit_note = ${d.fit_note || null}, care_note = ${d.care_note || null}, delivery_note = ${d.delivery_note || null},
         sort_order = ${d.sort_order}, updated_at = now()
       WHERE slug = ${d.slug}
     `;
@@ -123,6 +128,9 @@ export type EditableProduct = {
   model_note: string;
   fabric_note: string;
   story: string;
+  fit_note: string;
+  care_note: string;
+  delivery_note: string;
   sort_order: number;
 };
 
@@ -130,7 +138,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
   if (!(await mutatorEmail())) return null;
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, sort_order
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, sort_order
       FROM products WHERE slug = ${slug}
     `) as EditableProduct[];
     const r = rows[0];
@@ -144,6 +152,9 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
       model_note: r.model_note ?? "",
       fabric_note: r.fabric_note ?? "",
       story: r.story ?? "",
+      fit_note: r.fit_note ?? "",
+      care_note: r.care_note ?? "",
+      delivery_note: r.delivery_note ?? "",
     };
   } catch (err) {
     console.error("[products-admin] getProductForEdit failed", err);
