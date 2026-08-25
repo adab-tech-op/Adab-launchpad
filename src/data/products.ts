@@ -17,6 +17,7 @@ export type Product = {
   details: string[];
   modelNote?: string;
   fabricNote?: string;
+  story?: string;
 };
 
 export const products: Product[] = [
@@ -45,6 +46,8 @@ export const products: Product[] = [
     modelNote: "Model is 5'9\", athletic build, wearing size L.",
     fabricNote:
       "Matte China Grace woven fabric with a soft, dry hand. Reinforced placket, tonal concentric arch embroidery, matte hardware, double-stitched hem.",
+    story:
+      "A modern reinterpretation of the piran — the short-hemmed shirt worn across East Bengal in the 1950s and 60s, referenced by Bengali writer Rajshekhar Basu in 1958. Same DNA, new language.",
   },
   {
     slug: "adab-hoodie-steel-blue",

@@ -263,13 +263,11 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
 
         {/* Accordions */}
         <div className="mt-20 max-w-3xl mx-auto">
-          <Accordion title="Product Story" defaultOpen>
-            <p>
-              A modern reinterpretation of the piran — the short-hemmed shirt
-              worn across East Bengal in the 1950s and 60s, referenced by
-              Bengali writer Rajshekhar Basu in 1958. Same DNA, new language.
-            </p>
-          </Accordion>
+          {product.story && (
+            <Accordion title="Product Story" defaultOpen>
+              <p className="whitespace-pre-line">{product.story}</p>
+            </Accordion>
+          )}
           <Accordion title="Fabric & Craft">
             <p>
               {product.fabricNote || product.short}
