@@ -23,7 +23,17 @@ const COMING_SOON = [
   "Pattern in development",
 ];
 
-export function ShopClient({ products }: { products: Product[] }) {
+export function ShopClient({
+  products,
+  eyebrow = "Drop 01",
+  heading = "Shop.",
+  showComingSoon = true,
+}: {
+  products: Product[];
+  eyebrow?: string;
+  heading?: string;
+  showComingSoon?: boolean;
+}) {
   const [sort, setSort] = useState("Featured");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -39,8 +49,8 @@ export function ShopClient({ products }: { products: Product[] }) {
       </div>
 
       <section className="mx-auto max-w-7xl px-5 md:px-8 pt-16 md:pt-24 pb-12">
-        <p className="font-display text-[11px] text-primary">Drop 01</p>
-        <h1 className="mt-3 font-editorial text-5xl md:text-6xl">Shop.</h1>
+        <p className="font-display text-[11px] text-primary">{eyebrow}</p>
+        <h1 className="mt-3 font-editorial text-5xl md:text-6xl">{heading}</h1>
         <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
           Founding pieces in limited quantities. No guaranteed restock.
         </p>
@@ -77,9 +87,10 @@ export function ShopClient({ products }: { products: Product[] }) {
           {products.map((p) => (
             <ProductCard key={p.slug} product={p} />
           ))}
-          {COMING_SOON.map((label, i) => (
-            <ComingSoonCard key={i} label={label} />
-          ))}
+          {showComingSoon &&
+            COMING_SOON.map((label, i) => (
+              <ComingSoonCard key={i} label={label} />
+            ))}
         </div>
       </section>
 
