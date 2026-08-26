@@ -6,7 +6,7 @@ import { ROMAN } from "@/lib/page-content";
 import { renderMarkdown } from "@/lib/markdown";
 
 export const metadata: Metadata = {
-  title: "The Adab Manifesto — Old Soul. New Cut.",
+  title: "The Adab Manifesto & History — Old Soul. New Cut.",
   description:
     "Adab reinterprets the piran, a short-hemmed shirt worn across East Bengal in the 1950s-60s. Heritage-fusion menswear made in Bangladesh.",
 };
@@ -23,7 +23,7 @@ export default async function Manifesto() {
       {/* Hero */}
       <section className="bg-foreground text-background px-5 py-24 md:py-32">
         <div className="mx-auto max-w-5xl">
-          <p className="font-display text-[11px] uppercase tracking-[0.22em] text-background/60">Manifesto</p>
+          <p className="font-display text-[11px] uppercase tracking-[0.22em] text-background/60">Manifesto &amp; History</p>
           <h1 className="mt-6 font-editorial text-4xl md:text-6xl lg:text-7xl leading-[1.1]">
             We don&rsquo;t believe history gets lost.
             <br />

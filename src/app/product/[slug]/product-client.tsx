@@ -323,11 +323,6 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur px-4 py-3 flex items-center gap-3">
         <div className="flex-1">
           <p className="text-sm font-sans">{product.price}</p>
-          {product.foundingNote && (
-            <p className="text-[10px] uppercase tracking-[0.16em] text-primary">
-              {product.foundingNote}
-            </p>
-          )}
         </div>
         <button
           onClick={toggleCart}
