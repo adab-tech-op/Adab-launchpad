@@ -63,6 +63,21 @@ export async function getAllProducts(): Promise<Product[]> {
   }
 }
 
+/** Newest products first, capped at `limit` — feeds the /latest page. Falls back
+ *  to the static list (sliced) if the DB read fails or is empty. */
+export async function getLatestProducts(limit: number): Promise<Product[]> {
+  const n = Math.max(1, Math.min(50, Math.floor(limit) || 1));
+  try {
+    const rows = (await sql`
+      SELECT * FROM products ORDER BY created_at DESC, sort_order LIMIT ${n}
+    `) as Row[];
+    if (rows.length) return rows.map(rowToProduct);
+  } catch (err) {
+    console.error("[products] getLatestProducts failed, using static fallback", err);
+  }
+  return staticProducts.slice(0, n);
+}
+
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const rows = (await sql`
