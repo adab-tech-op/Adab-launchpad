@@ -25,6 +25,7 @@ type Row = {
   fit_note: string | null;
   care_note: string | null;
   delivery_note: string | null;
+  fabric_type_id: number | null;
 };
 
 function rowToProduct(r: Row): Product {
@@ -45,10 +46,11 @@ function rowToProduct(r: Row): Product {
     fitNote: r.fit_note ?? undefined,
     careNote: r.care_note ?? undefined,
     deliveryNote: r.delivery_note ?? undefined,
+    fabricTypeId: r.fabric_type_id ?? undefined,
   };
 }
 
-const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note";
+const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id";
 
 /** All products, DB-first with a static fallback if the table is empty or unreachable. */
 export async function getAllProducts(): Promise<Product[]> {
