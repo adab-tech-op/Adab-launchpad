@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getAllProducts } from "@/lib/products";
+import { getBanner } from "@/lib/settings-server";
 import { ShopClient } from "./shop-client";
 
 // Revalidate so catalog edits from /studio appear within a minute.
@@ -12,6 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ShopPage() {
-  const products = await getAllProducts();
-  return <ShopClient products={products} />;
+  const [products, banner] = await Promise.all([getAllProducts(), getBanner()]);
+  return <ShopClient products={products} banner={banner} />;
 }

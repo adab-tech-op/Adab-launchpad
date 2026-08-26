@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireStudioAccess, atLeast } from "@/lib/roles";
-import { getLatestCount } from "@/lib/settings-server";
+import { getLatestCount, getBanner } from "@/lib/settings-server";
 import { SettingsClient } from "./settings-client";
 
 export const metadata = { title: "Settings — ADAB Studio" };
@@ -8,7 +8,7 @@ export const metadata = { title: "Settings — ADAB Studio" };
 export default async function SettingsPage() {
   const actor = await requireStudioAccess();
   if (!atLeast(actor.role, "admin")) redirect("/studio"); // moderators can't edit
-  const latestCount = await getLatestCount();
+  const [latestCount, banner] = await Promise.all([getLatestCount(), getBanner()]);
 
   return (
     <div>
@@ -17,7 +17,7 @@ export default async function SettingsPage() {
         Site-wide controls. More options will land here as they&rsquo;re built.
       </p>
       <div className="mt-8 max-w-lg">
-        <SettingsClient latestCount={latestCount} />
+        <SettingsClient latestCount={latestCount} banner={banner} />
       </div>
     </div>
   );
