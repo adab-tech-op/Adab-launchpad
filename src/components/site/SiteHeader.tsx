@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Menu, Search, ShoppingBag, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth-client";
@@ -20,59 +20,29 @@ const NAV = [
   { to: "/contact", label: "Contact" },
 ];
 
+// One solid, opaque bar on every page and every scroll position — no
+// transparency, no backdrop-filter, no per-page colour inversion, no scroll
+// listener. This is deliberate: those were the source of the cross-browser and
+// per-page inconsistencies. `sticky` lets the bar occupy its own space so
+// content flows below it with no offset hack.
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [scrollState, setScrollState] = useState(false);
   const { count } = useCart();
   const { data: session } = useSession();
-
   const pathname = usePathname();
-  const isHome = pathname === "/";
-  const scrolled = isHome ? scrollState : true;
 
-  useEffect(() => {
-    if (!isHome) return;
-    const onScroll = () => setScrollState(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  const iconCls =
+    "p-2 text-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2";
 
   return (
     <>
-      <header
-        className={cn(
-          // Animate only color/background — NOT backdrop-filter. Firefox mishandles
-          // transitioning backdrop-filter via transition-all, which broke the
-          // transparent→frosted change on scroll. With supports-[], browsers that
-          // do backdrop-filter get the more translucent frosted bar; the rest fall
-          // back to a near-solid white so the "scrolled" state always reads.
-          "fixed inset-x-0 top-0 z-40 transition-[background-color,color] duration-300 ease-out",
-          scrolled
-            ? "bg-white/95 supports-[backdrop-filter]:bg-white/80 backdrop-blur-md text-foreground"
-            : "bg-transparent text-white"
-        )}
-      >
-        {/* Legibility scrim for the transparent (top-of-hero) state: a soft
-            top-down shade so the white logo and nav stay readable over a LIGHT
-            hero, not just a dark one. Fades out once the bar goes solid on
-            scroll. Purely decorative; never intercepts clicks. */}
-        <div
-          aria-hidden
-          className={cn(
-            "pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 via-black/25 to-transparent transition-opacity duration-300 ease-out",
-            scrolled ? "opacity-0" : "opacity-100"
-          )}
-        />
-        <div className="relative mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:px-8">
+      <header className="sticky top-0 z-40 border-b border-border bg-background text-foreground">
+        <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-5 md:grid-cols-[auto_minmax(0,1fr)_auto] md:px-8">
           <button
             onClick={() => setOpen(true)}
-            className={cn(
-              "-ml-2 justify-self-start p-2 transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:hidden",
-              scrolled ? "text-foreground" : "text-white"
-            )}
+            className="-ml-2 justify-self-start p-2 text-foreground focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:hidden"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" strokeWidth={1.5} />
@@ -84,14 +54,14 @@ export function SiteHeader() {
             aria-label="ADAB home"
           >
             <img
-              src={scrolled ? "/assets/adab-logo-lockup.svg" : "/assets/adab-logo-lockup-white.svg"}
+              src="/assets/adab-logo-lockup.svg"
               alt="ADAB"
-              className="h-[2.275rem] w-auto object-contain transition-all duration-300 md:h-[2.6rem]"
+              className="h-[2.275rem] w-auto object-contain md:h-[2.6rem]"
               loading="eager"
             />
           </Link>
 
-          <nav className="hidden min-w-0 items-center justify-center gap-8 text-[13px] tracking-wide md:flex">
+          <nav className="hidden min-w-0 items-center justify-center gap-6 text-[13px] tracking-wide md:flex lg:gap-8">
             {NAV.map((n) => {
               const active = pathname === n.to;
               return (
@@ -99,12 +69,8 @@ export function SiteHeader() {
                   key={n.label}
                   href={n.to}
                   className={cn(
-                    "transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4",
-                    active
-                      ? "text-primary"
-                      : scrolled
-                        ? "text-foreground/80 hover:text-primary"
-                        : "text-white/80 hover:text-white"
+                    "whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4",
+                    active ? "text-primary" : "text-foreground/80 hover:text-primary"
                   )}
                 >
                   {n.label}
@@ -114,34 +80,13 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex shrink-0 items-center justify-self-end gap-1">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className={cn(
-                "p-2 transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
-                scrolled ? "text-foreground hover:text-primary" : "text-white hover:text-white/70"
-              )}
-              aria-label="Search"
-            >
+            <button onClick={() => setSearchOpen(true)} className={iconCls} aria-label="Search">
               <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
             </button>
-            <Link
-              href={session ? "/account" : "/signin"}
-              className={cn(
-                "p-2 transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
-                scrolled ? "text-foreground hover:text-primary" : "text-white hover:text-white/70"
-              )}
-              aria-label={session ? "Account" : "Sign in"}
-            >
+            <Link href={session ? "/account" : "/signin"} className={iconCls} aria-label={session ? "Account" : "Sign in"}>
               <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
             </Link>
-            <button
-              onClick={() => setCartOpen(true)}
-              className={cn(
-                "relative p-2 transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
-                scrolled ? "text-foreground hover:text-primary" : "text-white hover:text-white/70"
-              )}
-              aria-label="Cart"
-            >
+            <button onClick={() => setCartOpen(true)} className={cn(iconCls, "relative")} aria-label="Cart">
               <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
               {count > 0 && (
                 <span
