@@ -36,7 +36,7 @@ export function HomeClient({ products }: { products: Product[] }) {
         <AuthErrorCatcher />
       </Suspense>
       {/* Hero */}
-      <section data-reveal-images-skip className="relative h-screen min-h-[600px] w-full overflow-hidden">
+      <section data-reveal-images-skip className="relative h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden">
         <picture
           ref={pictureRef}
           className="absolute -top-[10%] left-0 h-[120%] w-full will-change-transform"
