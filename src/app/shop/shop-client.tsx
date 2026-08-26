@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import type { Product } from "@/data/products";
+import { BANNER_DEFAULT, type BannerSettings } from "@/lib/settings";
 import { SlidersHorizontal, X } from "lucide-react";
 
 const placeholderImg = "/assets/coming-soon-placeholder.jpg";
@@ -28,25 +29,35 @@ export function ShopClient({
   eyebrow = "Drop 01",
   heading = "Shop.",
   showComingSoon = true,
+  banner,
 }: {
   products: Product[];
   eyebrow?: string;
   heading?: string;
   showComingSoon?: boolean;
+  banner?: BannerSettings;
 }) {
   const [sort, setSort] = useState("Featured");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
-      {/* Top banner */}
-      <div className="border-b border-border bg-[color:var(--paper)]">
-        <div className="mx-auto max-w-7xl px-5 md:px-8 py-3 text-center">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-foreground/80">
-            Founding Drop — this price will not repeat.
-          </p>
+      {/* Top banner (editable in Studio → Settings) */}
+      {(banner ?? BANNER_DEFAULT).enabled && (banner ?? BANNER_DEFAULT).text.trim() !== "" && (
+        <div
+          className="border-b border-border"
+          style={{ backgroundColor: (banner ?? BANNER_DEFAULT).bgColor }}
+        >
+          <div className="mx-auto max-w-7xl px-5 md:px-8 py-3 text-center">
+            <p
+              className="text-[11px] uppercase tracking-[0.2em]"
+              style={{ color: (banner ?? BANNER_DEFAULT).textColor }}
+            >
+              {(banner ?? BANNER_DEFAULT).text}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 md:px-8 pt-16 md:pt-24 pb-12">
         <p className="font-display text-[11px] text-primary">{eyebrow}</p>

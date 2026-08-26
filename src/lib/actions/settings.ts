@@ -35,3 +35,38 @@ export async function saveLatestCount(input: unknown): Promise<SettingsResult> {
     return { ok: false, error: "Could not save. Make sure db/site-settings.sql has been run." };
   }
 }
+
+const HEX = /^#[0-9a-fA-F]{6}$/;
+const bannerSchema = z.object({
+  enabled: z.boolean(),
+  text: z.string().trim().max(160),
+  bgColor: z.string().regex(HEX, "Use a hex colour like #ede6d8."),
+  textColor: z.string().regex(HEX, "Use a hex colour like #1c1c1c."),
+});
+
+/** Root/admin only. Saves the editable top banner (Shop + Latest). */
+export async function saveBanner(input: unknown): Promise<SettingsResult> {
+  const actor = await requireMutator();
+  if (!actor) return { ok: false, error: "Not authorized." };
+
+  const parsed = bannerSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the banner fields." };
+  // Enabled with empty text would render a blank strip — guard it.
+  const d = parsed.data;
+  if (d.enabled && d.text.trim() === "") return { ok: false, error: "Add banner text, or turn the banner off." };
+
+  try {
+    await sql`
+      INSERT INTO site_settings (key, value, updated_at)
+      VALUES ('banner', ${JSON.stringify(d)}::jsonb, now())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `;
+    await recordAudit(actor.email, "settings.update", null, { banner: d.enabled ? "on" : "off" });
+    revalidatePath("/shop");
+    revalidatePath("/latest");
+    return { ok: true };
+  } catch (err) {
+    console.error("[settings] saveBanner failed", err);
+    return { ok: false, error: "Could not save. Make sure db/site-settings.sql has been run." };
+  }
+}

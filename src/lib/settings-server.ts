@@ -1,5 +1,6 @@
 import "server-only";
 import { sql } from "@/lib/db";
+import { BANNER_DEFAULT, type BannerSettings } from "@/lib/settings";
 
 /** Default count of newest products shown on /latest when the setting or table
  *  is missing (pre-migration). */
@@ -25,4 +26,15 @@ export async function getLatestCount(): Promise<number> {
   const n = typeof raw === "number" ? raw : parseInt(String(raw), 10);
   if (Number.isFinite(n) && n >= LATEST_COUNT_MIN && n <= LATEST_COUNT_MAX) return n;
   return LATEST_COUNT_DEFAULT;
+}
+
+/** Reads the editable top banner (shown on Shop + Latest). Merges over defaults
+ *  so a missing key/table (pre-save) keeps the original look. Tolerant of a bad
+ *  stored shape. */
+export async function getBanner(): Promise<BannerSettings> {
+  const raw = await getSetting("banner");
+  if (raw && typeof raw === "object") {
+    return { ...BANNER_DEFAULT, ...(raw as Partial<BannerSettings>) };
+  }
+  return BANNER_DEFAULT;
 }

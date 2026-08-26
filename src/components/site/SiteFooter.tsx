@@ -42,7 +42,7 @@ export function SiteFooter() {
           <FooterCol
             title="Shop"
             links={[
-              { to: "/shop", label: "Drop 01" },
+              { to: "/latest", label: "Latest" },
               { to: "/shop", label: "Piran" },
               { to: "/shop", label: "Hoodie" },
             ]}
