@@ -4,7 +4,17 @@
 
 export type Block = { title: string; body: string };
 
+export type ManifestoHero = {
+  image: string; // Cloudinary URL; "" = solid colour block (no image)
+  eyebrow: string;
+  heading: string; // newlines become line breaks
+  subcopy: string; // optional
+  textTheme: "light" | "dark"; // legibility over the image/background
+  scrim: number; // 0–80: dark overlay % for legibility over a busy image
+};
+
 export type ManifestoContent = {
+  hero: ManifestoHero;
   storyParts: Block[];
   values: Block[];
 };
@@ -17,6 +27,14 @@ export type CareContent = {
 // fallback when no row exists. The page chrome (hero, pull-quote, closing, and
 // the icons/numerals) stays in code; only these blocks are editable.
 export const MANIFESTO_DEFAULT: ManifestoContent = {
+  hero: {
+    image: "",
+    eyebrow: "Manifesto & History",
+    heading: "We don't believe history gets lost.\nIt just waits.",
+    subcopy: "",
+    textTheme: "light",
+    scrim: 0,
+  },
   storyParts: [
     { title: "ORIGIN TENSION", body: "Bangladeshi men have had two options: Western clothing that isn't really theirs, or the panjabi — reserved for occasions. Nothing to wear every day that carries their own history." },
     { title: "THE HERITAGE", body: "In the mid-20th century, men across East Bengal — today's Bangladesh — wore a short-hemmed, full-sleeve shirt called the piran. In 1958, Bengali writer Rajshekhar Basu wrote: 'The piran's shape is like today's panjabi — but shorter.'" },

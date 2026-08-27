@@ -4,6 +4,7 @@ import { BookOpen, Minus, Forward, MapPin, type LucideIcon } from "lucide-react"
 import { getManifestoContent } from "@/lib/page-content-server";
 import { ROMAN } from "@/lib/page-content";
 import { renderMarkdown } from "@/lib/markdown";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "The Adab Manifesto & History — Old Soul. New Cut.",
@@ -17,18 +18,40 @@ const VALUE_ICONS: LucideIcon[] = [BookOpen, Minus, Forward, MapPin];
 
 export default async function Manifesto() {
   const content = await getManifestoContent();
+  const hero = content.hero;
+  const light = hero.textTheme === "light";
 
   return (
     <div className="bg-background text-foreground">
-      {/* Hero */}
-      <section className="bg-foreground text-background px-5 py-24 md:py-32">
-        <div className="mx-auto max-w-5xl">
-          <p className="font-display text-[11px] uppercase tracking-[0.22em] text-background/60">Manifesto &amp; History</p>
-          <h1 className="mt-6 font-editorial text-4xl md:text-6xl lg:text-7xl leading-[1.1]">
-            We don&rsquo;t believe history gets lost.
-            <br />
-            It just waits.
+      {/* Hero (editable in Studio → Content) */}
+      <section
+        className={cn(
+          "relative px-5 py-24 md:py-32",
+          !hero.image && (light ? "bg-foreground" : "bg-background")
+        )}
+        style={
+          hero.image
+            ? { backgroundImage: `url(${hero.image})`, backgroundSize: "cover", backgroundPosition: "center" }
+            : undefined
+        }
+      >
+        {hero.image && hero.scrim > 0 && (
+          <div aria-hidden className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${hero.scrim / 100})` }} />
+        )}
+        <div className={cn("relative mx-auto max-w-5xl", light ? "text-background" : "text-foreground")}>
+          {hero.eyebrow && (
+            <p className={cn("font-display text-[11px] uppercase tracking-[0.22em]", light ? "text-background/60" : "text-foreground/60")}>
+              {hero.eyebrow}
+            </p>
+          )}
+          <h1 className="mt-6 whitespace-pre-line font-editorial text-4xl leading-[1.1] md:text-6xl lg:text-7xl">
+            {hero.heading}
           </h1>
+          {hero.subcopy && (
+            <p className={cn("mt-6 max-w-2xl text-base md:text-lg", light ? "text-background/80" : "text-foreground/80")}>
+              {hero.subcopy}
+            </p>
+          )}
         </div>
       </section>
 
