@@ -17,8 +17,10 @@ async function readContent<T>(slug: string, fallback: T): Promise<T> {
   return fallback;
 }
 
-export function getManifestoContent(): Promise<ManifestoContent> {
-  return readContent("manifesto", MANIFESTO_DEFAULT);
+export async function getManifestoContent(): Promise<ManifestoContent> {
+  const c = await readContent("manifesto", MANIFESTO_DEFAULT);
+  // Tolerate rows saved before the hero existed: always merge over the default.
+  return { ...c, hero: { ...MANIFESTO_DEFAULT.hero, ...(c.hero ?? {}) } };
 }
 
 export function getCareContent(): Promise<CareContent> {

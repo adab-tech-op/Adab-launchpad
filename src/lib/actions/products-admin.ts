@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
+import { deleteManyFromCloudinary } from "@/lib/cloudinary-server";
 
 const schema = z.object({
   slug: z.string().trim().regex(/^[a-z0-9-]+$/, "Slug: lowercase letters, numbers, hyphens only").min(1).max(120),
@@ -24,6 +25,7 @@ const schema = z.object({
   fit_note: z.string().trim().max(2000).optional().or(z.literal("")),
   care_note: z.string().trim().max(2000).optional().or(z.literal("")),
   delivery_note: z.string().trim().max(2000).optional().or(z.literal("")),
+  fabric_type_id: z.coerce.number().int().positive().nullable().optional(),
   sort_order: z.number().int().min(0).max(100000),
 });
 
@@ -52,11 +54,11 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
   const d = parsed.data;
   try {
     await sql`
-      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, sort_order)
+      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, sort_order)
       VALUES (${d.slug}, ${d.name}, ${d.status}, ${d.price_bdt}, ${d.founding_note || null}, ${d.color},
               ${JSON.stringify(d.swatches)}::jsonb, ${d.short}, ${JSON.stringify(d.images)}::jsonb,
               ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.story || null},
-              ${d.fit_note || null}, ${d.care_note || null}, ${d.delivery_note || null}, ${d.sort_order})
+              ${d.fit_note || null}, ${d.care_note || null}, ${d.delivery_note || null}, ${d.fabric_type_id ?? null}, ${d.sort_order})
     `;
   } catch (err) {
     const msg = String((err as { message?: string })?.message ?? err);
@@ -77,6 +79,14 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the form." };
   const d = parsed.data;
+  // Grab the current images so we can clean up any that the edit removed.
+  let previousImages: string[] = [];
+  try {
+    const rows = (await sql`SELECT images FROM products WHERE slug = ${d.slug}`) as { images: string[] }[];
+    previousImages = Array.isArray(rows[0]?.images) ? rows[0].images : [];
+  } catch {
+    previousImages = [];
+  }
   try {
     await sql`
       UPDATE products SET
@@ -87,6 +97,7 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
         model_note = ${d.model_note || null}, fabric_note = ${d.fabric_note || null},
         story = ${d.story || null},
         fit_note = ${d.fit_note || null}, care_note = ${d.care_note || null}, delivery_note = ${d.delivery_note || null},
+        fabric_type_id = ${d.fabric_type_id ?? null},
         sort_order = ${d.sort_order}, updated_at = now()
       WHERE slug = ${d.slug}
     `;
@@ -96,6 +107,9 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
     return { ok: false, error: `Could not save changes: ${msg}` };
   }
   await recordAudit(admin, "product.update", d.slug, { name: d.name });
+  // Best-effort: delete images that are no longer referenced by this product.
+  const removed = previousImages.filter((u) => !d.images.includes(u));
+  if (removed.length) await deleteManyFromCloudinary(removed);
   revalidateAll(d.slug);
   return { ok: true };
 }
@@ -103,6 +117,14 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
 export async function deleteProduct(slug: string): Promise<ProductActionResult> {
   const admin = await mutatorEmail();
   if (!admin) return { ok: false, error: "Not authorized." };
+  // Read the images first so we can clean them up after the row is gone.
+  let images: string[] = [];
+  try {
+    const rows = (await sql`SELECT images FROM products WHERE slug = ${slug}`) as { images: string[] }[];
+    images = Array.isArray(rows[0]?.images) ? rows[0].images : [];
+  } catch {
+    images = [];
+  }
   try {
     await sql`DELETE FROM products WHERE slug = ${slug}`;
   } catch (err) {
@@ -110,6 +132,7 @@ export async function deleteProduct(slug: string): Promise<ProductActionResult> 
     return { ok: false, error: "Could not delete the product." };
   }
   await recordAudit(admin, "product.delete", slug);
+  if (images.length) await deleteManyFromCloudinary(images); // best-effort
   revalidateAll(slug);
   return { ok: true };
 }
@@ -131,6 +154,7 @@ export type EditableProduct = {
   fit_note: string;
   care_note: string;
   delivery_note: string;
+  fabric_type_id: number | null;
   sort_order: number;
 };
 
@@ -138,7 +162,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
   if (!(await mutatorEmail())) return null;
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, sort_order
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, sort_order
       FROM products WHERE slug = ${slug}
     `) as EditableProduct[];
     const r = rows[0];
@@ -155,6 +179,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
       fit_note: r.fit_note ?? "",
       care_note: r.care_note ?? "",
       delivery_note: r.delivery_note ?? "",
+      fabric_type_id: r.fabric_type_id ?? null,
     };
   } catch (err) {
     console.error("[products-admin] getProductForEdit failed", err);

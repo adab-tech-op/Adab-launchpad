@@ -15,6 +15,14 @@ const blockSchema = z.object({
 // Each page has a known shape; validate against it before storing.
 const shapes = {
   manifesto: z.object({
+    hero: z.object({
+      image: z.string().trim().max(600),
+      eyebrow: z.string().trim().max(120),
+      heading: z.string().trim().max(400),
+      subcopy: z.string().trim().max(1000),
+      textTheme: z.enum(["light", "dark"]),
+      scrim: z.coerce.number().int().min(0).max(80),
+    }),
     storyParts: z.array(blockSchema).max(12),
     values: z.array(blockSchema).max(12),
   }),

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Droplets, Wind, Flame, Package, type LucideIcon } from "lucide-react";
 import { getCareContent } from "@/lib/page-content-server";
+import { getFabricTypes } from "@/lib/fabrics-server";
 import { renderMarkdown } from "@/lib/markdown";
+import { FabricSearch } from "./fabric-search";
 
 export const metadata: Metadata = {
   title: "Care Guide — Adab",
@@ -15,7 +17,7 @@ export const revalidate = 60; // ISR: admin edits appear within ~1 min
 const SECTION_ICONS: LucideIcon[] = [Droplets, Wind, Flame, Package];
 
 export default async function CareGuide() {
-  const content = await getCareContent();
+  const [content, fabrics] = await Promise.all([getCareContent(), getFabricTypes()]);
 
   return (
     <div className="mx-auto max-w-4xl px-5 md:px-8 py-24 md:py-32">
@@ -40,6 +42,19 @@ export default async function CareGuide() {
           );
         })}
       </div>
+
+      {fabrics.length > 0 && (
+        <div className="mt-24">
+          <p className="font-display text-[11px] uppercase tracking-[0.22em] text-primary">By fabric</p>
+          <h2 className="mt-4 font-sans text-3xl md:text-4xl">Care by fabric.</h2>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Each ADAB fabric has its own care. Search yours below.
+          </p>
+          <div className="mt-10">
+            <FabricSearch fabrics={fabrics} />
+          </div>
+        </div>
+      )}
 
       <div className="mt-20 text-center">
         <p className="text-sm text-muted-foreground">

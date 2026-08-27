@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
-import type { Block, ManifestoContent, CareContent } from "@/lib/page-content";
+import type { Block, ManifestoContent, ManifestoHero, CareContent } from "@/lib/page-content";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 const labelCls = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
@@ -71,6 +72,89 @@ function BlockList({
   );
 }
 
+function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: ManifestoHero) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const set = <K extends keyof ManifestoHero>(k: K, v: ManifestoHero[K]) => onChange({ ...hero, [k]: v });
+  const light = hero.textTheme === "light";
+
+  const onUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      set("image", url);
+      toast.success("Image uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-border p-5">
+      <p className={labelCls}>Hero</p>
+
+      {/* Live preview */}
+      <div
+        className={`mt-3 overflow-hidden rounded-lg ${!hero.image ? (light ? "bg-foreground" : "bg-background border border-border") : ""} relative`}
+        style={hero.image ? { backgroundImage: `url(${hero.image})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+      >
+        {hero.image && hero.scrim > 0 && <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${hero.scrim / 100})` }} />}
+        <div className={`relative px-5 py-10 ${light ? "text-background" : "text-foreground"}`}>
+          {hero.eyebrow && <p className="text-[10px] uppercase tracking-[0.22em] opacity-70">{hero.eyebrow}</p>}
+          <p className="mt-2 whitespace-pre-line font-editorial text-2xl leading-tight">{hero.heading || "Heading"}</p>
+          {hero.subcopy && <p className="mt-2 text-sm opacity-80">{hero.subcopy}</p>}
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <label className="cursor-pointer rounded-full border border-border px-4 py-2 text-sm hover:border-primary">
+          {uploading ? "Uploading…" : hero.image ? "Replace image" : "Upload image"}
+          <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
+        </label>
+        {hero.image && (
+          <button onClick={() => set("image", "")} className="text-sm text-muted-foreground hover:text-foreground">Remove image</button>
+        )}
+      </div>
+
+      <div className="mt-4 space-y-3">
+        <div>
+          <label className={labelCls}>Eyebrow</label>
+          <input className={`${inputCls} mt-1`} value={hero.eyebrow} onChange={(e) => set("eyebrow", e.target.value)} />
+        </div>
+        <div>
+          <label className={labelCls}>Heading <span className="normal-case tracking-normal">(line breaks allowed)</span></label>
+          <textarea className={`${inputCls} mt-1 resize-y`} rows={2} value={hero.heading} onChange={(e) => set("heading", e.target.value)} />
+        </div>
+        <div>
+          <label className={labelCls}>Subcopy (optional)</label>
+          <textarea className={`${inputCls} mt-1 resize-y`} rows={2} value={hero.subcopy} onChange={(e) => set("subcopy", e.target.value)} />
+        </div>
+        <div className="flex flex-wrap items-center gap-6">
+          <div>
+            <label className={labelCls}>Text colour</label>
+            <div className="mt-1 flex gap-2">
+              {(["light", "dark"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => set("textTheme", t)}
+                  className={`rounded-full px-4 py-1.5 text-sm capitalize ${hero.textTheme === t ? "bg-foreground text-background" : "border border-border"}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Image scrim — {hero.scrim}%</label>
+            <input type="range" min={0} max={80} value={hero.scrim} onChange={(e) => set("scrim", Number(e.target.value))} className="mt-2 block w-40 accent-primary" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ContentEditor({
   manifesto,
   care,
@@ -117,6 +201,7 @@ export function ContentEditor({
       <div className="mt-6 space-y-8">
         {tab === "manifesto" ? (
           <>
+            <HeroEditor hero={m.hero} onChange={(hero) => setM({ ...m, hero })} />
             <BlockList label="Story parts (numbered I, II, III…)" blocks={m.storyParts} onChange={(storyParts) => setM({ ...m, storyParts })} />
             <BlockList label="Values (icon cards)" blocks={m.values} onChange={(values) => setM({ ...m, values })} />
           </>

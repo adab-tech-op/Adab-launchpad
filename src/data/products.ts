@@ -22,6 +22,7 @@ export type Product = {
   fitNote?: string;
   careNote?: string;
   deliveryNote?: string;
+  fabricTypeId?: number;
 };
 
 export const products: Product[] = [

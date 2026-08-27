@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { createProduct, updateProduct, type EditableProduct } from "@/lib/actions/products-admin";
 import { saveProductStock, markSoldOut } from "@/lib/actions/inventory";
+import type { FabricType } from "@/lib/fabrics";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -35,17 +36,20 @@ const empty: EditableProduct = {
   fit_note: "",
   care_note: "",
   delivery_note: "",
+  fabric_type_id: null,
   sort_order: 0,
 };
 
 export function ProductForm({
   initial,
   mode,
+  fabricTypes,
   initialStock,
   initialSoldOut,
 }: {
   initial?: EditableProduct;
   mode: "create" | "edit";
+  fabricTypes: FabricType[];
   initialStock?: Record<string, number>;
   initialSoldOut?: boolean;
 }) {
@@ -212,8 +216,22 @@ export function ProductForm({
           <textarea value={p.fit_note} onChange={(e) => set("fit_note", e.target.value)} rows={2} placeholder="Adab pieces are cut with a considered, relaxed fit. Choose your usual size, or size up for extra room." className={inputCls + " mt-2 resize-y"} />
         </label>
         <label className="block">
-          <span className={labelCls}>Care guide — this product (optional) <span className="normal-case tracking-normal">(accordion — blank shows the standard care copy; separate from the site-wide Care page)</span></span>
-          <textarea value={p.care_note} onChange={(e) => set("care_note", e.target.value)} rows={2} placeholder="Cold machine wash, inside out. Line dry in shade. Iron on medium with cloth in between." className={inputCls + " mt-2 resize-y"} />
+          <span className={labelCls}>Fabric type <span className="normal-case tracking-normal">(sets the Care Guide shown on the product; manage the list in Studio → Fabrics)</span></span>
+          <select
+            value={p.fabric_type_id ?? ""}
+            onChange={(e) => set("fabric_type_id", e.target.value ? Number(e.target.value) : null)}
+            className={inputCls + " mt-2"}
+          >
+            <option value="">— None —</option>
+            {fabricTypes.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className={labelCls}>Care guide override (optional) <span className="normal-case tracking-normal">(leave blank to use the fabric type&rsquo;s care guide above; falls back to the standard copy if no type is set)</span></span>
+          <textarea value={p.care_note} onChange={(e) => set("care_note", e.target.value)} rows={2} placeholder="Only fill this to override the fabric type's care for this one product." className={inputCls + " mt-2 resize-y"} />
         </label>
         <label className="block">
           <span className={labelCls}>Delivery &amp; returns (optional) <span className="normal-case tracking-normal">(accordion — blank shows the standard policy; usually leave blank)</span></span>
