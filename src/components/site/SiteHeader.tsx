@@ -15,7 +15,7 @@ const NAV = [
   { to: "/shop", label: "Shop" },
   { to: "/latest", label: "Latest" },
   { to: "/manifesto", label: "Manifesto & History" },
-  { to: "/care-guide", label: "Care" },
+  { to: "/care-guide", label: "Care Guide" },
   { to: "/scrapbook", label: "Scrapbook" },
   { to: "/contact", label: "Contact" },
 ];

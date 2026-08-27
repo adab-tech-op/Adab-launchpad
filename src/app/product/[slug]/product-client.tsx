@@ -33,7 +33,7 @@ const SIZE_TABLE = [
   { size: "XXL", chest: 48, length: 33, sleeve: 26, shoulder: 20 },
 ];
 
-export function ProductClient({ product, allProducts }: { product: Product; allProducts: Product[] }) {
+export function ProductClient({ product, allProducts, fabricCare }: { product: Product; allProducts: Product[]; fabricCare?: string | null }) {
   const router = useRouter();
   const { addItem, items, removeItem } = useCart();
   const [size, setSize] = useState("L");
@@ -287,7 +287,7 @@ export function ProductClient({ product, allProducts }: { product: Product; allP
             <p className="whitespace-pre-line">{product.fitNote || DEFAULT_FIT}</p>
           </Accordion>
           <Accordion title="Care Guide">
-            <p className="whitespace-pre-line">{product.careNote || DEFAULT_CARE}</p>
+            <p className="whitespace-pre-line">{product.careNote || fabricCare || DEFAULT_CARE}</p>
           </Accordion>
           <Accordion title="Delivery & Returns">
             <p className="whitespace-pre-line">{product.deliveryNote || DEFAULT_DELIVERY}</p>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProductBySlug, getProductSlugs, getAllProducts } from "@/lib/products";
+import { getFabricCare } from "@/lib/fabrics-server";
 import { ProductClient } from "./product-client";
 
 // New products (added in /studio) render on-demand; edits refresh within a minute.
@@ -36,6 +37,6 @@ export default async function ProductPage({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
-  const allProducts = await getAllProducts();
-  return <ProductClient product={product} allProducts={allProducts} />;
+  const [allProducts, fabricCare] = await Promise.all([getAllProducts(), getFabricCare(product.fabricTypeId)]);
+  return <ProductClient product={product} allProducts={allProducts} fabricCare={fabricCare} />;
 }
