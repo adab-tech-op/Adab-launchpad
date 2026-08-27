@@ -17,6 +17,7 @@ export type Product = {
   details: string[];
   modelNote?: string;
   fabricNote?: string;
+  soldOut?: boolean;
   story?: string;
   fitNote?: string;
   careNote?: string;

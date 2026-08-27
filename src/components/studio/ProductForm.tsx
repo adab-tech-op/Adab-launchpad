@@ -6,6 +6,9 @@ import { Plus, Trash2, ArrowUp, ArrowDown, Loader2, UploadCloud } from "lucide-r
 import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { createProduct, updateProduct, type EditableProduct } from "@/lib/actions/products-admin";
+import { saveProductStock, markSoldOut } from "@/lib/actions/inventory";
+
+const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
 const inputCls =
   "w-full rounded-md border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors";
@@ -35,9 +38,21 @@ const empty: EditableProduct = {
   sort_order: 0,
 };
 
-export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode: "create" | "edit" }) {
+export function ProductForm({
+  initial,
+  mode,
+  initialStock,
+  initialSoldOut,
+}: {
+  initial?: EditableProduct;
+  mode: "create" | "edit";
+  initialStock?: Record<string, number>;
+  initialSoldOut?: boolean;
+}) {
   const router = useRouter();
   const [p, setP] = useState<EditableProduct>(initial ?? empty);
+  const [stock, setStock] = useState<Record<string, number>>(initialStock ?? {});
+  const [soldOut, setSoldOut] = useState<boolean>(initialSoldOut ?? false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -83,6 +98,11 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
       details: p.details.filter((d) => d.trim() !== ""),
     };
     const res = mode === "create" ? await createProduct(payload) : await updateProduct(payload);
+    if (res.ok) {
+      // Product row now exists — persist per-size stock (best-effort; own toast on failure).
+      const stockRes = await saveProductStock(payload.slug, stock);
+      if (!stockRes.ok) toast.error(stockRes.error);
+    }
     setSaving(false);
     if (!res.ok) {
       toast.error(res.error);
@@ -296,6 +316,59 @@ export function ProductForm({ initial, mode }: { initial?: EditableProduct; mode
             Add
           </button>
         </div>
+      </div>
+
+      {/* Inventory */}
+      <div className="rounded-xl border border-border p-5">
+        <p className={labelCls}>Stock per size</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          A size at 0 can&rsquo;t be reserved. Leave a size blank to keep it untracked (always available).
+          Stock is decremented automatically when a customer submits payment.
+        </p>
+        <div className="mt-3 grid grid-cols-5 gap-2">
+          {SIZES.map((s) => (
+            <label key={s} className="block">
+              <span className="block text-center text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{s}</span>
+              <input
+                type="number"
+                min={0}
+                value={stock[s] ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setStock((prev) => {
+                    const next = { ...prev };
+                    if (v === "") delete next[s];
+                    else next[s] = Math.max(0, Number(v));
+                    return next;
+                  });
+                }}
+                className={inputCls + " mt-1 text-center"}
+                placeholder="—"
+              />
+            </label>
+          ))}
+        </div>
+
+        {mode === "edit" && (
+          <div className="mt-5 border-t border-border pt-4">
+            {soldOut ? (
+              <p className="text-xs uppercase tracking-[0.16em] text-red-600">This product is marked sold out.</p>
+            ) : (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!confirm("Mark this product SOLD OUT? This is permanent — it can't be undone, and the product will no longer be reservable.")) return;
+                  const res = await markSoldOut(p.slug);
+                  if (res.ok) { setSoldOut(true); toast.success("Marked sold out"); router.refresh(); }
+                  else toast.error(res.error);
+                }}
+                className="rounded-full border border-red-600/40 px-4 py-2 text-xs uppercase tracking-[0.16em] text-red-600 hover:bg-red-600/5"
+              >
+                Mark sold out (permanent)
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3 pt-2">

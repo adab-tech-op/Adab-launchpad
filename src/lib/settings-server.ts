@@ -38,3 +38,9 @@ export async function getBanner(): Promise<BannerSettings> {
   }
   return BANNER_DEFAULT;
 }
+
+/** Whether customers may order multiple products/sizes in one order. Default
+ *  false (one piece per order); flipped on for occasional offers. */
+export async function getAllowMultiOrder(): Promise<boolean> {
+  return (await getSetting("allow_multi_order")) === true;
+}

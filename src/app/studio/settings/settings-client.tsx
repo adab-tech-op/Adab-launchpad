@@ -2,19 +2,29 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { saveLatestCount, saveBanner } from "@/lib/actions/settings";
+import { saveLatestCount, saveBanner, saveAllowMultiOrder } from "@/lib/actions/settings";
 import type { BannerSettings } from "@/lib/settings";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 const labelCls = "text-xs uppercase tracking-[0.16em] text-muted-foreground";
 
-export function SettingsClient({ latestCount, banner }: { latestCount: number; banner: BannerSettings }) {
+export function SettingsClient({ latestCount, banner, allowMulti }: { latestCount: number; banner: BannerSettings; allowMulti: boolean }) {
   const [count, setCount] = useState(String(latestCount));
   const [b, setB] = useState<BannerSettings>(banner);
+  const [multi, setMulti] = useState(allowMulti);
   const [pendingCount, startCount] = useTransition();
   const [pendingBanner, startBanner] = useTransition();
+  const [pendingMulti, startMulti] = useTransition();
 
   const setBanner = <K extends keyof BannerSettings>(k: K, v: BannerSettings[K]) => setB((p) => ({ ...p, [k]: v }));
+
+  const toggleMulti = (next: boolean) =>
+    startMulti(async () => {
+      setMulti(next);
+      const res = await saveAllowMultiOrder(next);
+      if (res.ok) toast.success("Saved");
+      else { toast.error(res.error); setMulti(!next); }
+    });
 
   const saveCount = () =>
     startCount(async () => {
@@ -119,6 +129,27 @@ export function SettingsClient({ latestCount, banner }: { latestCount: number; b
         >
           {pendingBanner ? "Saving\u2026" : "Save banner"}
         </button>
+      </div>
+
+      {/* Offer: multi-item ordering */}
+      <div className="rounded-xl border border-border p-5">
+        <div className="flex items-center justify-between">
+          <span className={labelCls}>Ordering</span>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-primary"
+              checked={multi}
+              disabled={pendingMulti}
+              onChange={(e) => toggleMulti(e.target.checked)}
+            />
+            Allow multiple items per order
+          </label>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Off (default): one product / one size per order — the standard drop rule. Turn on for occasional
+          offers where customers may combine several pieces in a single order.
+        </p>
       </div>
     </div>
   );

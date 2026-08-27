@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getOrderByRef, hasAccountForEmail } from "@/lib/queries";
+import { commitOrderStock } from "@/lib/product-stock-server";
 import { sendPaymentReceived } from "@/lib/email";
 
 const schema = z.object({
@@ -86,6 +87,9 @@ export async function recordPayment(input: {
   } catch (err) {
     console.error("[payments] order_state update skipped/failed", err);
   }
+
+  // Option C: decrement stock now (exactly once — see commitOrderStock).
+  await commitOrderStock(orderRef);
 
   // Record opt-in marketing consent against this order's rows (best-effort).
   if (marketingConsent) {

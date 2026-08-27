@@ -70,3 +70,21 @@ export async function saveBanner(input: unknown): Promise<SettingsResult> {
     return { ok: false, error: "Could not save. Make sure db/site-settings.sql has been run." };
   }
 }
+
+/** Root/admin. Toggles multi-product/multi-size ordering (offer feature). */
+export async function saveAllowMultiOrder(enabled: boolean): Promise<SettingsResult> {
+  const actor = await requireMutator();
+  if (!actor) return { ok: false, error: "Not authorized." };
+  try {
+    await sql`
+      INSERT INTO site_settings (key, value, updated_at)
+      VALUES ('allow_multi_order', ${JSON.stringify(!!enabled)}::jsonb, now())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `;
+    await recordAudit(actor.email, "settings.update", null, { allow_multi_order: !!enabled });
+    return { ok: true };
+  } catch (err) {
+    console.error("[settings] saveAllowMultiOrder failed", err);
+    return { ok: false, error: "Could not save." };
+  }
+}
