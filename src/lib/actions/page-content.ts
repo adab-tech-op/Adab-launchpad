@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
+import { deleteFromCloudinary } from "@/lib/cloudinary-server";
 
 export type PageContentResult = { ok: true } | { ok: false; error: string };
 
@@ -44,6 +45,18 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
   const parsed = shape.safeParse(content);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the content." };
 
+  // If the manifesto hero image is being replaced or removed, clean up the old
+  // Cloudinary asset. Read the previous image before the write. Best-effort.
+  let oldHeroImage: string | null = null;
+  if (slug === "manifesto") {
+    try {
+      const rows = (await sql`SELECT content FROM page_content WHERE slug = ${slug}`) as { content: { hero?: { image?: string } } }[];
+      oldHeroImage = rows[0]?.content?.hero?.image ?? null;
+    } catch {
+      oldHeroImage = null;
+    }
+  }
+
   try {
     await sql`
       INSERT INTO page_content (slug, content, updated_at)
@@ -51,6 +64,10 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
       ON CONFLICT (slug) DO UPDATE SET content = EXCLUDED.content, updated_at = now()
     `;
     await recordAudit(actor.email, "content.update", slug);
+    if (slug === "manifesto") {
+      const newHeroImage = (parsed.data as { hero?: { image?: string } })?.hero?.image ?? "";
+      if (oldHeroImage && oldHeroImage !== newHeroImage) await deleteFromCloudinary(oldHeroImage);
+    }
     revalidatePath(slug === "manifesto" ? "/manifesto" : "/care-guide");
     revalidatePath("/studio/content");
     return { ok: true };
