@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
+import { deleteManyFromCloudinary } from "@/lib/cloudinary-server";
 
 const schema = z.object({
   slug: z.string().trim().regex(/^[a-z0-9-]+$/, "Slug: lowercase letters, numbers, hyphens only").min(1).max(120),
@@ -78,6 +79,14 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the form." };
   const d = parsed.data;
+  // Grab the current images so we can clean up any that the edit removed.
+  let previousImages: string[] = [];
+  try {
+    const rows = (await sql`SELECT images FROM products WHERE slug = ${d.slug}`) as { images: string[] }[];
+    previousImages = Array.isArray(rows[0]?.images) ? rows[0].images : [];
+  } catch {
+    previousImages = [];
+  }
   try {
     await sql`
       UPDATE products SET
@@ -98,6 +107,9 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
     return { ok: false, error: `Could not save changes: ${msg}` };
   }
   await recordAudit(admin, "product.update", d.slug, { name: d.name });
+  // Best-effort: delete images that are no longer referenced by this product.
+  const removed = previousImages.filter((u) => !d.images.includes(u));
+  if (removed.length) await deleteManyFromCloudinary(removed);
   revalidateAll(d.slug);
   return { ok: true };
 }
@@ -105,6 +117,14 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
 export async function deleteProduct(slug: string): Promise<ProductActionResult> {
   const admin = await mutatorEmail();
   if (!admin) return { ok: false, error: "Not authorized." };
+  // Read the images first so we can clean them up after the row is gone.
+  let images: string[] = [];
+  try {
+    const rows = (await sql`SELECT images FROM products WHERE slug = ${slug}`) as { images: string[] }[];
+    images = Array.isArray(rows[0]?.images) ? rows[0].images : [];
+  } catch {
+    images = [];
+  }
   try {
     await sql`DELETE FROM products WHERE slug = ${slug}`;
   } catch (err) {
@@ -112,6 +132,7 @@ export async function deleteProduct(slug: string): Promise<ProductActionResult> 
     return { ok: false, error: "Could not delete the product." };
   }
   await recordAudit(admin, "product.delete", slug);
+  if (images.length) await deleteManyFromCloudinary(images); // best-effort
   revalidateAll(slug);
   return { ok: true };
 }
