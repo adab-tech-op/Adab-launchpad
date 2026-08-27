@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
+import { deleteFromCloudinary } from "@/lib/cloudinary-server";
 
 export type ScrapbookResult = { ok: true } | { ok: false; error: string };
 
@@ -65,8 +66,17 @@ export async function deleteScrapbookImage(id: number): Promise<ScrapbookResult>
   const actor = await requireMutator();
   if (!actor) return { ok: false, error: "Not authorized." };
   try {
+    // Read the URL first so we can clean up the asset after the row is gone.
+    let url: string | null = null;
+    try {
+      const rows = (await sql`SELECT image_url FROM scrapbook_images WHERE id = ${id}`) as { image_url: string }[];
+      url = rows[0]?.image_url ?? null;
+    } catch {
+      url = null;
+    }
     await sql`DELETE FROM scrapbook_images WHERE id = ${id}`;
     await recordAudit(actor.email, "scrapbook.delete", String(id));
+    await deleteFromCloudinary(url); // best-effort; no-ops for /assets seeds
     revalidate();
     return { ok: true };
   } catch (err) {
