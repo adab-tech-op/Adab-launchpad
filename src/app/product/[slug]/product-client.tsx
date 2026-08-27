@@ -33,10 +33,13 @@ const SIZE_TABLE = [
   { size: "XXL", chest: 48, length: 33, sleeve: 26, shoulder: 20 },
 ];
 
-export function ProductClient({ product, allProducts, fabricCare }: { product: Product; allProducts: Product[]; fabricCare?: string | null }) {
+export function ProductClient({ product, allProducts, stock = {}, fabricCare }: { product: Product; allProducts: Product[]; stock?: Record<string, number>; fabricCare?: string | null }) {
   const router = useRouter();
   const { addItem, items, removeItem } = useCart();
-  const [size, setSize] = useState("L");
+  const soldOut = product.soldOut === true;
+  const sizeAvailable = (s: string) => !soldOut && !(s in stock && stock[s] <= 0);
+  const allOut = soldOut || SIZES.every((s) => s in stock && stock[s] <= 0);
+  const [size, setSize] = useState(SIZES.find((s) => sizeAvailable(s)) ?? "L");
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState(product.swatches[0]?.name ?? product.color);
   const [zoom, setZoom] = useState<string | null>(null);
@@ -49,6 +52,7 @@ export function ProductClient({ product, allProducts, fabricCare }: { product: P
   const detailsList = product.details ?? [];
 
   const primaryCta = () => {
+    if (allOut || !sizeAvailable(size)) return;
     if (dropModeActive) {
       router.push(
         `/checkout?slug=${product.slug}&size=${encodeURIComponent(size)}&color=${encodeURIComponent(color)}&qty=${qty}`,
@@ -58,7 +62,7 @@ export function ProductClient({ product, allProducts, fabricCare }: { product: P
     }
   };
 
-  const ctaLabel = dropModeActive ? "Reserve your piece" : "Add to Cart";
+  const ctaLabel = allOut ? "Sold out" : dropModeActive ? "Reserve your piece" : "Add to Cart";
 
   const cartId = `${product.slug}-${size}-${color}`;
   const inCart = items.some((i) => i.id === cartId);
@@ -209,16 +213,30 @@ export function ProductClient({ product, allProducts, fabricCare }: { product: P
                   </button>
                 </div>
                 <div className="mt-2 grid grid-cols-5 gap-2">
-                  {SIZES.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSize(s)}
-                      className={`rounded-md border py-2 text-sm transition-colors ${size === s ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground"}`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  {SIZES.map((s) => {
+                    const avail = sizeAvailable(s);
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => avail && setSize(s)}
+                        disabled={!avail}
+                        className={`rounded-md border py-2 text-sm transition-colors ${
+                          size === s
+                            ? "border-foreground bg-foreground text-background"
+                            : avail
+                              ? "border-border hover:border-foreground"
+                              : "cursor-not-allowed border-border text-muted-foreground/40 line-through"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
                 </div>
+                {!allOut && size in stock && stock[size] > 0 && stock[size] <= 5 && (
+                  <p className="mt-2 text-xs text-primary">Only {stock[size]} left in {size}.</p>
+                )}
+                {allOut && <p className="mt-2 text-xs text-muted-foreground">Sold out.</p>}
               </div>
 
               <div>
@@ -238,7 +256,8 @@ export function ProductClient({ product, allProducts, fabricCare }: { product: P
 
               <button
                 onClick={primaryCta}
-                className="hidden lg:block w-full rounded-full py-4 text-xs uppercase tracking-[0.2em] bg-foreground text-background hover:bg-foreground/85 transition-colors"
+                disabled={allOut}
+                className="hidden lg:block w-full rounded-full py-4 text-xs uppercase tracking-[0.2em] bg-foreground text-background hover:bg-foreground/85 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {ctaLabel}
               </button>
@@ -335,7 +354,8 @@ export function ProductClient({ product, allProducts, fabricCare }: { product: P
         </button>
         <button
           onClick={primaryCta}
-          className="rounded-full bg-foreground text-background px-5 py-3 text-xs uppercase tracking-[0.2em]"
+          disabled={allOut}
+          className="rounded-full bg-foreground text-background px-5 py-3 text-xs uppercase tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {ctaLabel}
         </button>

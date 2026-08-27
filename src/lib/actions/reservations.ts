@@ -4,6 +4,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { generateOrderRef } from "@/lib/order-ref";
 import { currentUserIsStaff } from "@/lib/roles";
+import { getAllowMultiOrder } from "@/lib/settings-server";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -52,6 +53,31 @@ export async function createReservation(input: {
 
   const { name, email, phone, delivery_address, notes, items } = parsed.data;
   const orderRef = generateOrderRef();
+
+  // Offer gate: one product/one size per order by default; the offer toggle
+  // (Studio → Settings) relaxes it for occasional promotions.
+  if (items.length > 1 && !(await getAllowMultiOrder())) {
+    return { ok: false, error: "Just one piece per order right now — please place separate orders." };
+  }
+
+  // Availability gate: a size tracked at 0 stock, or a product marked sold out,
+  // is not reservable. Untracked sizes (no stock row yet) count as available, so
+  // products without stock set up keep working. Tolerant if tables are missing.
+  try {
+    for (const it of items) {
+      const rows = (await sql`
+        SELECT ps.stock AS stock, p.sold_out AS sold_out
+        FROM products p
+        LEFT JOIN product_sizes ps ON ps.product_slug = p.slug AND ps.size = ${it.size}
+        WHERE p.slug = ${it.product_slug} LIMIT 1
+      `) as { stock: number | null; sold_out: boolean | null }[];
+      const r = rows[0];
+      if (r?.sold_out) return { ok: false, error: "That piece has just sold out." };
+      if (r && r.stock !== null && r.stock <= 0) return { ok: false, error: `Size ${it.size} has just sold out.` };
+    }
+  } catch (err) {
+    console.error("[reservation] stock gate skipped (tables missing?)", err);
+  }
 
   // If this email already belongs to an account, the order is owned from the
   // start (real user_id). Otherwise it's a guest order (user_id NULL) that a

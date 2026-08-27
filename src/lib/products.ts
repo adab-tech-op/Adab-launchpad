@@ -21,6 +21,7 @@ type Row = {
   details: string[] | null;
   model_note: string | null;
   fabric_note: string | null;
+  sold_out: boolean | null;
   story: string | null;
   fit_note: string | null;
   care_note: string | null;
@@ -42,6 +43,7 @@ function rowToProduct(r: Row): Product {
     details: Array.isArray(r.details) ? r.details : [],
     modelNote: r.model_note ?? undefined,
     fabricNote: r.fabric_note ?? undefined,
+    soldOut: r.sold_out ?? false,
     story: r.story ?? undefined,
     fitNote: r.fit_note ?? undefined,
     careNote: r.care_note ?? undefined,
