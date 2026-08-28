@@ -436,3 +436,53 @@ export async function sendAdminInvite(opts: {
     return { ok: false, error: msg };
   }
 }
+
+// ─── Marketing broadcast ─────────────────────────────────────────────────────
+// Sent from a SEPARATE address (offers@) so a promo marked as spam never hurts
+// transactional deliverability (info@). reply_to points back to the ops inbox.
+
+const MARKETING_FROM = process.env.MARKETING_FROM ?? "ADAB Offers <offers@adab.world>";
+const MARKETING_REPLY_TO = process.env.ADAB_REPLY_TO ?? "info@adab.world";
+
+function marketingShell(bodyHtml: string, unsubscribeUrl: string): string {
+  return `
+  <div style="background:${PAPER};padding:32px 0;font-family:Georgia,'Times New Roman',serif;color:${INK};">
+    <div style="max-width:560px;margin:0 auto;padding:0 24px;">
+      <div style="text-align:center;margin-bottom:24px;">${brandMark()}</div>
+      <div style="background:#fff;border:1px solid ${BORDER};border-radius:14px;padding:28px;font-size:15px;line-height:1.6;">
+        ${bodyHtml}
+      </div>
+      <p style="color:${MUTED};font-size:12px;line-height:1.5;text-align:center;margin:20px 0 0;">
+        You're receiving this because you joined the ADAB list or opted in at checkout.<br>
+        <a href="${unsubscribeUrl}" style="color:${MUTED};text-decoration:underline;">Unsubscribe</a>
+      </p>
+    </div>
+  </div>`;
+}
+
+/** Send one marketing email. Best-effort; returns whether it was accepted.
+ *  No-ops (returns false) when RESEND_API_KEY is unset. */
+export async function sendMarketingEmail(opts: { to: string; subject: string; html: string; unsubscribeUrl: string }): Promise<boolean> {
+  const resend = client();
+  if (!resend) {
+    console.log(`[email] (skipped, no API key) marketing → ${opts.to}`);
+    return false;
+  }
+  try {
+    await resend.emails.send({
+      from: MARKETING_FROM,
+      to: opts.to,
+      replyTo: MARKETING_REPLY_TO,
+      subject: opts.subject,
+      html: marketingShell(opts.html, opts.unsubscribeUrl),
+      headers: {
+        "List-Unsubscribe": `<${opts.unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
+    return true;
+  } catch (err) {
+    console.error(`[email] marketing send failed → ${opts.to}`, err);
+    return false;
+  }
+}
