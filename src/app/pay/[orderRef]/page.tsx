@@ -19,6 +19,7 @@ export default async function PayPage({ params }: { params: Promise<{ orderRef: 
       orderRef={order.orderRef}
       items={order.items}
       total={order.total}
+      discount={order.discount}
       hasPayment={order.hasPayment}
       alreadyProcessed={alreadyProcessed}
       bkashNumber={bkashNumber}
