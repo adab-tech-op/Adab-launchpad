@@ -1,6 +1,7 @@
 import "server-only";
 import { sql } from "@/lib/db";
 import { getProductMap } from "@/lib/products";
+import { saleFor, formatPrice } from "@/lib/pricing";
 
 function priceToNumber(price?: string): number {
   if (!price) return 0;
@@ -59,7 +60,9 @@ export async function getOrdersByEmail(email: string): Promise<Order[]> {
     }
     const order = map.get(key)!;
     const product = productMap.get(r.product_slug);
-    const price = product?.price ?? "";
+    const sale = product ? saleFor(product.priceBdt ?? priceToNumber(product.price), product.discountPercent, product.discountUntil) : null;
+    const unit = sale ? sale.salePrice : priceToNumber(product?.price);
+    const price = sale?.onSale ? formatPrice(sale.salePrice) : (product?.price ?? "");
     order.items.push({
       slug: r.product_slug,
       name: product?.name ?? r.product_slug,
@@ -67,7 +70,7 @@ export async function getOrdersByEmail(email: string): Promise<Order[]> {
       size: r.size,
       quantity: r.quantity,
     });
-    order.total += priceToNumber(price) * r.quantity;
+    order.total += unit * r.quantity;
   }
   return [...map.values()];
 }
@@ -125,9 +128,11 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
   let total = 0;
   for (const r of rows) {
     const p = productMap.get(r.product_slug);
-    const price = p?.price ?? "";
+    const sale = p ? saleFor(p.priceBdt ?? priceToNumber(p.price), p.discountPercent, p.discountUntil) : null;
+    const unit = sale ? sale.salePrice : priceToNumber(p?.price);
+    const price = sale?.onSale ? formatPrice(sale.salePrice) : (p?.price ?? "");
     items.push({ slug: r.product_slug, name: p?.name ?? r.product_slug, price, size: r.size, quantity: r.quantity });
-    total += priceToNumber(price) * r.quantity;
+    total += unit * r.quantity;
   }
   return {
     orderRef,

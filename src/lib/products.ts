@@ -1,12 +1,10 @@
 import "server-only";
 import { sql } from "@/lib/db";
 import { products as staticProducts, type Product } from "@/data/products";
+import { formatPrice } from "@/lib/pricing";
 
 export type { Product };
-
-export function formatPrice(n: number): string {
-  return `৳ ${n.toLocaleString("en-US")}`;
-}
+export { formatPrice };
 
 type Row = {
   slug: string;
@@ -27,6 +25,8 @@ type Row = {
   care_note: string | null;
   delivery_note: string | null;
   fabric_type_id: number | null;
+  discount_percent: number | null;
+  discount_until: string | null;
 };
 
 function rowToProduct(r: Row): Product {
@@ -35,6 +35,9 @@ function rowToProduct(r: Row): Product {
     name: r.name,
     status: r.status,
     price: formatPrice(r.price_bdt),
+    priceBdt: r.price_bdt,
+    discountPercent: r.discount_percent ?? 0,
+    discountUntil: r.discount_until ?? undefined,
     foundingNote: r.founding_note ?? undefined,
     color: r.color,
     swatches: Array.isArray(r.swatches) ? r.swatches : [],
@@ -52,7 +55,7 @@ function rowToProduct(r: Row): Product {
   };
 }
 
-const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id";
+const PRODUCT_COLS = "slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until";
 
 /** All products, DB-first with a static fallback if the table is empty or unreachable. */
 export async function getAllProducts(): Promise<Product[]> {

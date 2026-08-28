@@ -37,6 +37,8 @@ const empty: EditableProduct = {
   care_note: "",
   delivery_note: "",
   fabric_type_id: null,
+  discount_percent: 0,
+  discount_until: "",
   sort_order: 0,
 };
 
@@ -147,6 +149,26 @@ export function ProductForm({
           <span className={labelCls}>Price (৳)</span>
           <input type="number" min={0} placeholder="4500" value={p.price_bdt || ""} onChange={(e) => set("price_bdt", Number(e.target.value) || 0)} className={inputCls + " mt-2"} />
         </label>
+
+        <div className="rounded-xl border border-border p-4">
+          <span className={labelCls}>Sale (optional)</span>
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-[11px] text-muted-foreground">Discount %</span>
+              <input type="number" min={0} max={90} placeholder="0" value={p.discount_percent || ""} onChange={(e) => set("discount_percent", Math.min(90, Math.max(0, Number(e.target.value) || 0)))} className={inputCls + " mt-1"} />
+            </label>
+            <label className="block">
+              <span className="text-[11px] text-muted-foreground">Ends (optional)</span>
+              <input type="date" value={p.discount_until || ""} onChange={(e) => set("discount_until", e.target.value)} className={inputCls + " mt-1"} />
+            </label>
+          </div>
+          {p.discount_percent > 0 && p.price_bdt > 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Sale price: <span className="text-primary">৳ {Math.round(p.price_bdt * (1 - p.discount_percent / 100)).toLocaleString("en-US")}</span>
+              {" "}(was ৳ {p.price_bdt.toLocaleString("en-US")}){p.discount_until ? ` · until ${p.discount_until}` : ""}
+            </p>
+          )}
+        </div>
         <label className="block">
           <span className={labelCls}>Main color</span>
           <input value={p.color} onChange={(e) => set("color", e.target.value)} placeholder="e.g. Steel Blue" className={inputCls + " mt-2"} />
