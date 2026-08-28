@@ -21,6 +21,7 @@ export function PayClient({
   orderRef,
   items,
   total,
+  discount,
   hasPayment,
   alreadyProcessed,
   bkashNumber,
@@ -31,6 +32,7 @@ export function PayClient({
   orderRef: string;
   items: OrderItem[];
   total: number;
+  discount?: { subtotal: number; pct: number; code: string | null } | null;
   hasPayment: boolean;
   alreadyProcessed: boolean;
   bkashNumber: string;
@@ -211,6 +213,18 @@ export function PayClient({
 
       {/* Amount + instructions */}
       <div className="mt-8 rounded-2xl border border-border p-6 paper-grain">
+        {discount && discount.pct > 0 && (
+          <div className="mb-3 space-y-1 border-b border-border/60 pb-3 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Subtotal</span>
+              <span className="tabular-nums line-through">৳ {discount.subtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between text-primary">
+              <span>{discount.code ? `Code ${discount.code}` : "Discount"} · −{discount.pct}%</span>
+              <span className="tabular-nums">− ৳ {(discount.subtotal - total).toLocaleString()}</span>
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Amount to send</span>
           <span className="font-editorial text-3xl tabular-nums">৳ {total.toLocaleString()}</span>
