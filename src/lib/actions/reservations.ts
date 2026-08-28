@@ -5,6 +5,7 @@ import { sql } from "@/lib/db";
 import { generateOrderRef } from "@/lib/order-ref";
 import { currentUserIsStaff } from "@/lib/roles";
 import { getAllowMultiOrder } from "@/lib/settings-server";
+import { validateCoupon, freezeOrderPricing } from "@/lib/coupons-server";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -39,6 +40,7 @@ export async function createReservation(input: {
   delivery_address?: string;
   notes?: string;
   items: { product_slug: string; size: string; quantity: number }[];
+  couponCode?: string;
 }): Promise<ReservationResult> {
   const parsed = schema.safeParse(input);
   if (!parsed.success) {
@@ -116,6 +118,17 @@ export async function createReservation(input: {
   // is an unkeepable written promise. The customer's first (and only automatic)
   // email is sent at payment submission instead — see recordPayment. The order
   // reference is shown on-screen and carried into /pay, which is how they pay.
+
+  // Freeze the price (and, if a valid code was applied, its redemption) onto the
+  // order — the amount the customer is quoted must never drift. Re-validate the
+  // coupon server-side; an invalid code just means no coupon (L1 sale still
+  // applies). Best-effort: never blocks the confirmed order.
+  let validCoupon = null;
+  if (input.couponCode && input.couponCode.trim()) {
+    const v = await validateCoupon(input.couponCode, items, email);
+    if (v.ok) validCoupon = v.coupon;
+  }
+  await freezeOrderPricing(orderRef, items, email, validCoupon);
 
   return { ok: true, orderRef };
 }

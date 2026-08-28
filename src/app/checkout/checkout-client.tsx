@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import type { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { createReservation } from "@/lib/actions/reservations";
+import { checkCoupon } from "@/lib/actions/coupons";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"];
 const priceNum = (s?: string) => Number((s ?? "").replace(/[^0-9]/g, "")) || 0;
@@ -53,6 +54,10 @@ export function CheckoutClient({
   const [fromCart, setFromCart] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", email: "", delivery_address: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [codeInput, setCodeInput] = useState("");
+  const [appliedCode, setAppliedCode] = useState("");
+  const [couponPct, setCouponPct] = useState(0);
+  const [applying, setApplying] = useState(false);
 
   useEffect(() => {
     if (lines) return;
@@ -97,6 +102,32 @@ export function CheckoutClient({
   const total = useMemo(() => (lines ?? []).reduce((sum, l) => sum + lineUnits(l) * l.unitPrice, 0), [lines]);
   const totalUnits = useMemo(() => (lines ?? []).reduce((sum, l) => sum + lineUnits(l), 0), [lines]);
 
+  const discountedTotal = couponPct > 0 ? Math.round(total * (1 - couponPct / 100)) : total;
+
+  const applyCoupon = async () => {
+    if (!codeInput.trim()) return;
+    const orderItems: { product_slug: string; size: string; quantity: number }[] = [];
+    for (const l of lines ?? []) {
+      for (const [sz, q] of Object.entries(l.sizes)) if (q > 0) orderItems.push({ product_slug: l.slug, size: sz, quantity: q });
+    }
+    setApplying(true);
+    const res = await checkCoupon(codeInput, orderItems, form.email);
+    setApplying(false);
+    if (res.ok) {
+      setAppliedCode(res.code);
+      setCouponPct(res.percent);
+      toast.success(`Code ${res.code} applied — ${res.percent}% off`);
+    } else {
+      toast.error(res.error);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCode("");
+    setCouponPct(0);
+    setCodeInput("");
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = contactSchema.safeParse(form);
@@ -120,6 +151,7 @@ export function CheckoutClient({
       delivery_address: parsed.data.delivery_address || undefined,
       notes: parsed.data.notes || undefined,
       items: orderItems,
+      couponCode: appliedCode || undefined,
     });
     if (!res.ok) {
       setSubmitting(false);
@@ -191,7 +223,37 @@ export function CheckoutClient({
 
       <div className="mt-6 flex items-center justify-between rounded-2xl border border-border p-5 paper-grain">
         <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Total · {totalUnits} piece{totalUnits === 1 ? "" : "s"}</span>
-        <span className="font-editorial text-3xl tabular-nums">৳ {total.toLocaleString()}</span>
+        {couponPct > 0 ? (
+          <span className="flex items-baseline gap-2">
+            <span className="font-editorial text-3xl tabular-nums">৳ {discountedTotal.toLocaleString()}</span>
+            <span className="text-sm text-muted-foreground line-through tabular-nums">৳ {total.toLocaleString()}</span>
+          </span>
+        ) : (
+          <span className="font-editorial text-3xl tabular-nums">৳ {total.toLocaleString()}</span>
+        )}
+      </div>
+
+      {/* Coupon */}
+      <div className="mt-3">
+        {appliedCode ? (
+          <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+            <span><span className="font-medium text-primary">{appliedCode}</span> · {couponPct}% off applied</span>
+            <button type="button" onClick={removeCoupon} className="text-muted-foreground hover:text-foreground">Remove</button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+              placeholder="Discount code"
+              className={field + " flex-1 uppercase"}
+            />
+            <button type="button" onClick={applyCoupon} disabled={applying || !codeInput.trim()} className="rounded-xl border border-border px-5 text-sm hover:border-foreground disabled:opacity-40">
+              {applying ? "…" : "Apply"}
+            </button>
+          </div>
+        )}
+        <p className="mt-1.5 text-[11px] text-muted-foreground">Enter your email above before applying a code. Final amount is confirmed on the next screen.</p>
       </div>
 
       <form onSubmit={submit} className="mt-10 space-y-4">

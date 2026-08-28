@@ -5,6 +5,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { getOrderByRef, hasAccountForEmail } from "@/lib/queries";
 import { commitOrderStock } from "@/lib/product-stock-server";
+import { commitCoupon } from "@/lib/coupons-server";
 import { sendPaymentReceived } from "@/lib/email";
 
 const schema = z.object({
@@ -90,6 +91,8 @@ export async function recordPayment(input: {
 
   // Option C: decrement stock now (exactly once — see commitOrderStock).
   await commitOrderStock(orderRef);
+  // Claim the coupon use now too (once, #11-style).
+  await commitCoupon(orderRef);
 
   // Record opt-in marketing consent against this order's rows (best-effort).
   if (marketingConsent) {

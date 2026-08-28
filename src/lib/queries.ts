@@ -2,6 +2,7 @@ import "server-only";
 import { sql } from "@/lib/db";
 import { getProductMap } from "@/lib/products";
 import { saleFor, formatPrice } from "@/lib/pricing";
+import { getFrozenPricing } from "@/lib/coupons-server";
 
 function priceToNumber(price?: string): number {
   if (!price) return 0;
@@ -84,6 +85,7 @@ export type OrderByRef = {
   createdAt: string;
   items: OrderItem[];
   total: number;
+  discount: { subtotal: number; pct: number; code: string | null } | null;
   hasPayment: boolean;
   payment: { bkashNumber: string; trxId: string; amount: number | null; submittedAt: string } | null;
 };
@@ -134,6 +136,13 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
     items.push({ slug: r.product_slug, name: p?.name ?? r.product_slug, price, size: r.size, quantity: r.quantity });
     total += unit * r.quantity;
   }
+
+  // Prefer the frozen price (quoted at checkout, includes any coupon) over the
+  // live recompute, so the amount never drifts after the order is placed.
+  const frozen = await getFrozenPricing(orderRef);
+  const finalTotal = frozen ? frozen.amount : total;
+  const discount = frozen && frozen.pct > 0 ? { subtotal: frozen.subtotal, pct: frozen.pct, code: frozen.code } : null;
+
   return {
     orderRef,
     name: first.name,
@@ -142,7 +151,8 @@ export async function getOrderByRef(orderRef: string): Promise<OrderByRef | null
     status: first.status,
     createdAt: first.created_at,
     items,
-    total,
+    total: finalTotal,
+    discount,
     hasPayment: Boolean(payment),
     payment,
   };
