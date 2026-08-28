@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Product } from "@/data/products";
+import { saleFor, formatPrice } from "@/lib/pricing";
 
 export function ProductCard({ product }: { product: Product }) {
   const primary = product.images[0];
@@ -39,7 +40,17 @@ export function ProductCard({ product }: { product: Product }) {
           <p className="mt-1 text-xs text-muted-foreground">{product.color}</p>
         </div>
         <div className="shrink-0 text-left md:text-right">
-          <p className="text-sm tabular-nums">{product.price}</p>
+          {(() => {
+            const sale = saleFor(product.priceBdt ?? 0, product.discountPercent, product.discountUntil);
+            if (!sale.onSale || !product.priceBdt) return <p className="text-sm tabular-nums">{product.price}</p>;
+            return (
+              <p className="flex items-center gap-2 text-sm tabular-nums">
+                <span className="text-primary">{formatPrice(sale.salePrice)}</span>
+                <span className="text-muted-foreground line-through">{formatPrice(sale.original)}</span>
+                <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">−{sale.pct}%</span>
+              </p>
+            );
+          })()}
           {product.foundingNote && (
             <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-primary">
               {product.foundingNote}

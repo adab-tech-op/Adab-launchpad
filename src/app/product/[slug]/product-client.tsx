@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { type Product } from "@/data/products";
+import { saleFor, formatPrice } from "@/lib/pricing";
 import { ProductCard } from "@/components/site/ProductCard";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCart } from "@/context/CartContext";
@@ -37,6 +38,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
   const router = useRouter();
   const { addItem, items, removeItem } = useCart();
   const soldOut = product.soldOut === true;
+  const sale = saleFor(product.priceBdt ?? 0, product.discountPercent, product.discountUntil);
   const sizeAvailable = (s: string) => !soldOut && !(s in stock && stock[s] <= 0);
   const allOut = soldOut || SIZES.every((s) => s in stock && stock[s] <= 0);
   const [size, setSize] = useState(SIZES.find((s) => sizeAvailable(s)) ?? "L");
@@ -78,7 +80,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
         size,
         color,
         qty,
-        price: Number(product.price.replace(/[^0-9]/g, "")) || 0,
+        price: sale.onSale && product.priceBdt ? sale.salePrice : Number(product.price.replace(/[^0-9]/g, "")) || 0,
         image: product.images[0],
       });
       toast.success("Added to cart");
@@ -175,7 +177,15 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
           <aside className="lg:col-span-3">
             <div className="lg:sticky lg:top-24 space-y-6">
               <div>
-                <p className="text-xl font-sans">{product.price}</p>
+                {sale.onSale && product.priceBdt ? (
+                  <p className="flex items-center gap-2 text-xl font-sans">
+                    <span className="text-primary">{formatPrice(sale.salePrice)}</span>
+                    <span className="text-base text-muted-foreground line-through">{formatPrice(sale.original)}</span>
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">−{sale.pct}%</span>
+                  </p>
+                ) : (
+                  <p className="text-xl font-sans">{product.price}</p>
+                )}
                 {product.foundingNote && (
                   <p className="mt-1 text-xs text-primary uppercase tracking-[0.16em]">
                     {product.foundingNote}
@@ -341,7 +351,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
       {/* Mobile sticky Add-to-Cart / Reserve bar */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur px-4 py-3 flex items-center gap-3">
         <div className="flex-1">
-          <p className="text-sm font-sans">{product.price}</p>
+          <p className="text-sm font-sans">{sale.onSale && product.priceBdt ? formatPrice(sale.salePrice) : product.price}</p>
         </div>
         <button
           onClick={toggleCart}

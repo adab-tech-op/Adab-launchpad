@@ -9,6 +9,9 @@ export type Product = {
   name: string;
   status: "Preview" | "Available" | "Coming Soon";
   price: string;
+  priceBdt?: number;
+  discountPercent?: number;
+  discountUntil?: string;
   foundingNote?: string;
   color: string;
   swatches: { name: string; hex: string }[];

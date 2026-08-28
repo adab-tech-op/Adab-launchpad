@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { getOrderByRef } from "@/lib/queries";
 import { releaseOrderStock } from "@/lib/product-stock-server";
+import { releaseCoupon } from "@/lib/coupons-server";
 import { requireMutator, recordAudit } from "@/lib/roles";
 import {
   axesFromLegacy,
@@ -91,6 +92,7 @@ export async function setPaymentStatus(orderRef: string, payment: string): Promi
     await recordAudit(admin, "order.payment_status", orderRef, { from: current.payment, to: next.payment });
     // Free stock if the payment won't complete; commit happens at submission.
     if (next.payment === "not_received" || next.payment === "pending") await releaseOrderStock(orderRef);
+    if (next.payment === "not_received" || next.payment === "pending") await releaseCoupon(orderRef);
     revalidateStudioAndAccount(orderRef);
     return { ok: true };
   } catch (err) {
@@ -140,6 +142,7 @@ export async function setCancelled(orderRef: string, cancelled: boolean): Promis
     await persistAxes(orderRef, { ...current, cancelled });
     await recordAudit(admin, cancelled ? "order.cancel" : "order.restore", orderRef);
     if (cancelled) await releaseOrderStock(orderRef);
+    if (cancelled) await releaseCoupon(orderRef);
     revalidateStudioAndAccount(orderRef);
     return { ok: true };
   } catch (err) {
