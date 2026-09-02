@@ -145,6 +145,25 @@
   }
 }
 
+/* Scrapbook CTA tile: fade/slide-in when scrolled into view. Hidden start
+   state is gated to (scripting: enabled) so no-JS visitors still see it; the
+   JS adds .is-revealed. The reduced-motion block below zeroes the transition. */
+@media (scripting: enabled) {
+  .cta-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+.cta-reveal {
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cta-reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
