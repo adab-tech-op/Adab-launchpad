@@ -4,6 +4,11 @@
 
 export type Block = { title: string; body: string };
 
+// A story part additionally carries an optional paired image (Cloudinary URL),
+// shown in the scroll-driven editorial layout on the manifesto page. Empty/unset
+// = no image (the layout falls back to a titled placeholder panel).
+export type StoryBlock = Block & { image?: string };
+
 export type ManifestoHero = {
   image: string; // Cloudinary URL; "" = solid colour block (no image)
   eyebrow: string;
@@ -15,7 +20,7 @@ export type ManifestoHero = {
 
 export type ManifestoContent = {
   hero: ManifestoHero;
-  storyParts: Block[];
+  storyParts: StoryBlock[];
   values: Block[];
 };
 

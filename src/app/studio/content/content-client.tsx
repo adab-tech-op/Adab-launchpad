@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
-import type { Block, ManifestoContent, ManifestoHero, CareContent } from "@/lib/page-content";
+import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent } from "@/lib/page-content";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
@@ -61,6 +61,98 @@ function BlockList({
                 <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
                 <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
               </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+        <Plus className="h-3.5 w-3.5" /> Add block
+      </button>
+    </div>
+  );
+}
+
+// Like BlockList, but each story part also has a paired image (Cloudinary
+// upload) shown in the scroll-driven editorial on the manifesto page.
+function StoryBlockList({
+  label,
+  blocks,
+  onChange,
+}: {
+  label: string;
+  blocks: StoryBlock[];
+  onChange: (next: StoryBlock[]) => void;
+}) {
+  const [uploadingAt, setUploadingAt] = useState<number | null>(null);
+  const update = (i: number, patch: Partial<StoryBlock>) =>
+    onChange(blocks.map((b, j) => (j === i ? { ...b, ...patch } : b)));
+  const remove = (i: number) => onChange(blocks.filter((_, j) => j !== i));
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= blocks.length) return;
+    const next = [...blocks];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const add = () => onChange([...blocks, { title: "", body: "", image: "" }]);
+
+  const onUpload = async (i: number, file: File) => {
+    setUploadingAt(i);
+    try {
+      const url = await uploadToCloudinary(file);
+      update(i, { image: url });
+      toast.success("Image uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingAt(null);
+    }
+  };
+
+  return (
+    <div>
+      <p className={labelCls}>{label}</p>
+      <div className="mt-3 space-y-4">
+        {blocks.map((b, i) => (
+          <div key={i} className="rounded-xl border border-border p-4">
+            <div className="flex items-center gap-2">
+              <input
+                className={inputCls}
+                value={b.title}
+                onChange={(e) => update(i, { title: e.target.value })}
+                placeholder="Block title"
+              />
+              <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move up"><ArrowUp className="h-4 w-4" /></button>
+              <button type="button" onClick={() => move(i, 1)} disabled={i === blocks.length - 1} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move down"><ArrowDown className="h-4 w-4" /></button>
+              <button type="button" onClick={() => remove(i)} className="p-1.5 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-4 w-4" /></button>
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <textarea
+                className={`${inputCls} min-h-28 resize-y font-mono text-xs`}
+                value={b.body}
+                onChange={(e) => update(i, { body: e.target.value })}
+                placeholder="Body — markdown supported. Bengali + English can be mixed freely."
+              />
+              <div className="rounded-lg border border-dashed border-border p-3">
+                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
+                <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
+              </div>
+            </div>
+            {/* Paired image — sticks/transitions beside this section as it scrolls */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {b.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={b.image} alt="" className="h-16 w-14 shrink-0 rounded object-cover ring-1 ring-border" />
+              ) : (
+                <div className="grid h-16 w-14 shrink-0 place-items-center rounded bg-muted text-[9px] uppercase tracking-wide text-muted-foreground">No image</div>
+              )}
+              <label className="cursor-pointer rounded-full border border-border px-4 py-2 text-sm hover:border-primary">
+                {uploadingAt === i ? "Uploading…" : b.image ? "Replace image" : "Upload paired image"}
+                <input type="file" accept="image/*" className="hidden" disabled={uploadingAt === i} onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(i, f); }} />
+              </label>
+              {b.image && (
+                <button type="button" onClick={() => update(i, { image: "" })} className="text-sm text-muted-foreground hover:text-foreground">Remove image</button>
+              )}
             </div>
           </div>
         ))}
@@ -202,7 +294,7 @@ export function ContentEditor({
         {tab === "manifesto" ? (
           <>
             <HeroEditor hero={m.hero} onChange={(hero) => setM({ ...m, hero })} />
-            <BlockList label="Story parts (numbered I, II, III…)" blocks={m.storyParts} onChange={(storyParts) => setM({ ...m, storyParts })} />
+            <StoryBlockList label="Story parts (numbered I, II, III… — each with a paired image)" blocks={m.storyParts} onChange={(storyParts) => setM({ ...m, storyParts })} />
             <BlockList label="Values (icon cards)" blocks={m.values} onChange={(values) => setM({ ...m, values })} />
           </>
         ) : (

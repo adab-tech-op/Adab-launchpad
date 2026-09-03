@@ -4,13 +4,19 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
-import { deleteFromCloudinary } from "@/lib/cloudinary-server";
+import { deleteFromCloudinary, deleteManyFromCloudinary } from "@/lib/cloudinary-server";
 
 export type PageContentResult = { ok: true } | { ok: false; error: string };
 
 const blockSchema = z.object({
   title: z.string().trim().max(200),
   body: z.string().trim().max(4000),
+});
+
+// Story parts also carry an optional paired image (Cloudinary URL). Without
+// this, zod would strip the image key on save.
+const storyBlockSchema = blockSchema.extend({
+  image: z.string().trim().max(600).optional().default(""),
 });
 
 // Each page has a known shape; validate against it before storing.
@@ -24,7 +30,7 @@ const shapes = {
       textTheme: z.enum(["light", "dark"]),
       scrim: z.coerce.number().int().min(0).max(80),
     }),
-    storyParts: z.array(blockSchema).max(12),
+    storyParts: z.array(storyBlockSchema).max(12),
     values: z.array(blockSchema).max(12),
   }),
   care: z.object({
@@ -45,15 +51,23 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
   const parsed = shape.safeParse(content);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the content." };
 
-  // If the manifesto hero image is being replaced or removed, clean up the old
-  // Cloudinary asset. Read the previous image before the write. Best-effort.
+  // If the manifesto hero image or any story-part image is being replaced or
+  // removed, clean up the orphaned Cloudinary asset(s). Read the previous
+  // images before the write. Best-effort.
   let oldHeroImage: string | null = null;
+  let oldStoryImages: string[] = [];
   if (slug === "manifesto") {
     try {
-      const rows = (await sql`SELECT content FROM page_content WHERE slug = ${slug}`) as { content: { hero?: { image?: string } } }[];
+      const rows = (await sql`SELECT content FROM page_content WHERE slug = ${slug}`) as {
+        content: { hero?: { image?: string }; storyParts?: { image?: string }[] };
+      }[];
       oldHeroImage = rows[0]?.content?.hero?.image ?? null;
+      oldStoryImages = (rows[0]?.content?.storyParts ?? [])
+        .map((p) => p?.image)
+        .filter((u): u is string => !!u);
     } catch {
       oldHeroImage = null;
+      oldStoryImages = [];
     }
   }
 
@@ -65,8 +79,14 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
     `;
     await recordAudit(actor.email, "content.update", slug);
     if (slug === "manifesto") {
-      const newHeroImage = (parsed.data as { hero?: { image?: string } })?.hero?.image ?? "";
+      const data = parsed.data as { hero?: { image?: string }; storyParts?: { image?: string }[] };
+      const newHeroImage = data?.hero?.image ?? "";
       if (oldHeroImage && oldHeroImage !== newHeroImage) await deleteFromCloudinary(oldHeroImage);
+      const newStoryImages = new Set(
+        (data?.storyParts ?? []).map((p) => p?.image).filter((u): u is string => !!u),
+      );
+      const removedStoryImages = oldStoryImages.filter((u) => !newStoryImages.has(u));
+      if (removedStoryImages.length) await deleteManyFromCloudinary(removedStoryImages);
     }
     revalidatePath(slug === "manifesto" ? "/manifesto" : "/care-guide");
     revalidatePath("/studio/content");
