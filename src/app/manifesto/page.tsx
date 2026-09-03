@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, Minus, Forward, MapPin, type LucideIcon } from "lucide-react";
 import { getManifestoContent } from "@/lib/page-content-server";
-import { ROMAN } from "@/lib/page-content";
 import { renderMarkdown } from "@/lib/markdown";
+import { ManifestoEditorial } from "@/components/site/ManifestoEditorial";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -62,23 +62,15 @@ export default async function Manifesto() {
         </div>
       </section>
 
-      {/* Four-part story */}
-      <section className="mx-auto max-w-4xl px-5 py-24 md:py-32">
-        <div className="space-y-20 md:space-y-28">
-          {content.storyParts.map((part, i) => (
-            <div key={i} className="grid grid-cols-[auto_1fr] gap-6 md:gap-12">
-              <p className="font-display text-xl md:text-2xl text-primary tabular-nums">{ROMAN[i] ?? i + 1}.</p>
-              <div>
-                <h2 className="font-display text-lg md:text-xl uppercase tracking-[0.18em]">{part.title}</h2>
-                <div
-                  className="prose-editorial mt-4 text-base md:text-lg leading-relaxed text-foreground/85"
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(part.body) }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Four-part story — scroll-driven editorial: paired images stick beside
+          the text and transition as each section enters view (see component). */}
+      <ManifestoEditorial
+        sections={content.storyParts.map((part) => ({
+          title: part.title,
+          bodyHtml: renderMarkdown(part.body),
+          image: part.image || undefined,
+        }))}
+      />
 
       {/* Pull quote */}
       <section className="border-y border-border bg-paper px-5 py-20 md:py-28">
