@@ -44,8 +44,15 @@ export default async function Manifesto() {
               {hero.eyebrow}
             </p>
           )}
-          <h1 className="mt-6 whitespace-pre-line font-editorial text-4xl leading-[1.1] md:text-6xl lg:text-7xl">
-            {hero.heading}
+          {/* Each author line (split on \n) is its own non-wrapping block:
+              honours intentional line breaks AND stops a single line — e.g. the
+              Bengali "আদব ম্যানিফেস্টো" — from soft-wrapping mid-phrase. */}
+          <h1 className="mt-6 font-editorial text-4xl leading-[1.1] md:text-6xl lg:text-7xl">
+            {hero.heading.split("\n").map((line, i) => (
+              <span key={i} className="block whitespace-nowrap">
+                {line || "\u00A0"}
+              </span>
+            ))}
           </h1>
           {hero.subcopy && (
             <p className={cn("mt-6 max-w-2xl text-base md:text-lg", light ? "text-background/80" : "text-foreground/80")}>
