@@ -23,22 +23,27 @@ export default async function Manifesto() {
 
   return (
     <div className="bg-background text-foreground">
-      {/* Hero (editable in Studio → Content) */}
+      {/* Hero (editable in Studio → Content) — full-screen cover image.
+          min-h calc subtracts the 4rem solid sticky nav so it fills the
+          viewport below it (matches the home hero). */}
       <section
         className={cn(
-          "relative px-5 py-24 md:py-32",
+          "relative flex min-h-[calc(100dvh-4rem)] items-center overflow-hidden px-5 py-24 md:py-32",
           !hero.image && (light ? "bg-foreground" : "bg-background")
         )}
-        style={
-          hero.image
-            ? { backgroundImage: `url(${hero.image})`, backgroundSize: "cover", backgroundPosition: "center" }
-            : undefined
-        }
       >
+        {hero.image && (
+          <img
+            src={hero.image}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         {hero.image && hero.scrim > 0 && (
           <div aria-hidden className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${hero.scrim / 100})` }} />
         )}
-        <div className={cn("relative mx-auto max-w-5xl", light ? "text-background" : "text-foreground")}>
+        <div className={cn("relative z-10 mx-auto w-full max-w-5xl", light ? "text-background" : "text-foreground")}>
           {hero.eyebrow && (
             <p className={cn("font-display text-[11px] uppercase tracking-[0.22em]", light ? "text-background/60" : "text-foreground/60")}>
               {hero.eyebrow}
