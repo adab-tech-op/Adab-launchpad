@@ -8,13 +8,17 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/product/${product.slug}`} className="group block">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[color:var(--paper)]">
+        {/* images[0] is the cover; images[1] is a hover-reveal. The swap is
+            gated to hover-capable pointers ([@media(hover:hover)]) so touch
+            devices — where :hover sticks after a tap — never get left showing
+            the second image. On touch, the cover (images[0]) always stays. */}
         <img
           src={primary}
           alt={product.name}
           loading="lazy"
           width={1024}
           height={1280}
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-0"
         />
         <img
           src={hover}
@@ -23,7 +27,7 @@ export function ProductCard({ product }: { product: Product }) {
           width={1024}
           height={1280}
           aria-hidden
-          className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-100"
         />
         <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground">
           {product.status}
