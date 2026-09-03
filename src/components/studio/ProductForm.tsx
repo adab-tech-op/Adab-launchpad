@@ -95,6 +95,17 @@ export function ProductForm({
     });
   };
 
+  // Promote an image straight to position 0 — the cover, i.e. the card thumbnail.
+  const makeCover = (i: number) => {
+    setP((s) => {
+      if (i <= 0 || i >= s.images.length) return s;
+      const imgs = [...s.images];
+      const [picked] = imgs.splice(i, 1);
+      imgs.unshift(picked);
+      return { ...s, images: imgs };
+    });
+  };
+
   const save = async () => {
     setSaving(true);
     const payload = {
@@ -298,12 +309,23 @@ export function ProductForm({
 
       {/* Images */}
       <div>
-        <span className={labelCls}>Images <span className="normal-case tracking-normal">(first is the cover)</span></span>
+        <span className={labelCls}>Images <span className="normal-case tracking-normal">(first is the cover — shown on the card)</span></span>
         <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 gap-3">
           {p.images.map((url, i) => (
             <div key={url + i} className="relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-[color:var(--paper)]">
               <img src={url} alt="" className="h-full w-full object-cover" />
-              {i === 0 && <span className="absolute left-1 top-1 rounded bg-foreground/80 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-background">Cover</span>}
+              {i === 0 ? (
+                <span className="absolute left-1 top-1 rounded bg-foreground/80 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-background">Cover</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => makeCover(i)}
+                  title="Make this the cover (the card thumbnail)"
+                  className="absolute left-1 top-1 rounded bg-background/85 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-foreground shadow-sm transition-colors hover:bg-foreground hover:text-background"
+                >
+                  Set cover
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setP((s) => ({ ...s, images: s.images.filter((_, j) => j !== i) }))}

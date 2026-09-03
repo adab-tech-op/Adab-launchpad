@@ -1,0 +1,13 @@
+import { chromium } from 'playwright-core';
+const CHROME = process.env.CHROME;
+const OUT = process.env.OUT || 'shot.png';
+const URL = process.env.URL;
+const H = Number(process.env.H || 900);
+const b = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox','--disable-dev-shm-usage'] });
+const p = await b.newPage({ viewport: { width: 1280, height: H }, deviceScaleFactor: 2 });
+await p.goto(URL, { waitUntil: 'load', timeout: 30000 }).catch(e=>console.error('goto warn:', e.message));
+await p.evaluate(() => (document.fonts && document.fonts.ready) ? document.fonts.ready : null).catch(()=>{});
+await p.waitForTimeout(1000);
+await p.screenshot({ path: OUT });
+await b.close();
+console.log('shot ->', OUT);
