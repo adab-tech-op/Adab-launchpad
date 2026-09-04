@@ -4,6 +4,7 @@ import { BookOpen, Minus, Forward, MapPin, type LucideIcon } from "lucide-react"
 import { getManifestoContent } from "@/lib/page-content-server";
 import { renderMarkdown } from "@/lib/markdown";
 import { ManifestoEditorial } from "@/components/site/ManifestoEditorial";
+import { HeroBackground } from "@/components/site/HeroBackground";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -29,18 +30,11 @@ export default async function Manifesto() {
       <section
         className={cn(
           "relative flex min-h-[calc(100dvh-4rem)] items-center overflow-hidden px-5 py-24 md:py-32",
-          !hero.image && (light ? "bg-foreground" : "bg-background")
+          !hero.images.desktop && (light ? "bg-foreground" : "bg-background")
         )}
       >
-        {hero.image && (
-          <img
-            src={hero.image}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        )}
-        {hero.image && hero.scrim > 0 && (
+        <HeroBackground images={hero.images} />
+        {hero.images.desktop && hero.scrim > 0 && (
           <div aria-hidden className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${hero.scrim / 100})` }} />
         )}
         <div className={cn("relative z-10 mx-auto w-full max-w-5xl", light ? "text-background" : "text-foreground")}>

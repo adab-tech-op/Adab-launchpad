@@ -7,6 +7,7 @@ import { Trash2, UploadCloud } from "lucide-react";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { addScrapbookImage, updateScrapbookImage, deleteScrapbookImage } from "@/lib/actions/scrapbook";
 import type { ScrapbookImage } from "@/lib/scrapbook";
+import { UploadHint } from "@/components/studio/UploadHint";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 
@@ -81,6 +82,7 @@ export function ScrapbookAdmin({ initial }: { initial: ScrapbookImage[] }) {
         <span>{uploading ? "Uploading…" : "Upload image(s)"}</span>
         <input type="file" accept="image/*" multiple className="hidden" disabled={uploading} onChange={(e) => onUpload(e.target.files)} />
       </label>
+      <UploadHint spec="scrapbook" className="-mt-3" />
 
       {initial.length === 0 ? (
         <p className="text-sm text-muted-foreground">No images yet. Upload the first above.</p>

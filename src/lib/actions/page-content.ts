@@ -4,7 +4,8 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
-import { deleteFromCloudinary, deleteManyFromCloudinary } from "@/lib/cloudinary-server";
+import { deleteManyFromCloudinary } from "@/lib/cloudinary-server";
+import { heroImageUrls, type HeroImages } from "@/lib/hero";
 
 export type PageContentResult = { ok: true } | { ok: false; error: string };
 
@@ -19,11 +20,27 @@ const storyBlockSchema = blockSchema.extend({
   image: z.string().trim().max(600).optional().default(""),
 });
 
+const focalSchema = z.object({
+  x: z.coerce.number().min(0).max(100).default(50),
+  y: z.coerce.number().min(0).max(100).default(50),
+  zoom: z.coerce.number().min(1).max(3).default(1),
+});
+
+// 3-breakpoint hero images + per-fallback focal point. Declared explicitly so
+// zod keeps every key (it strips unknowns otherwise).
+const heroImagesSchema = z.object({
+  desktop: z.string().trim().max(600).default(""),
+  tablet: z.string().trim().max(600).default(""),
+  phone: z.string().trim().max(600).default(""),
+  focalTablet: focalSchema.default({ x: 50, y: 50, zoom: 1 }),
+  focalPhone: focalSchema.default({ x: 50, y: 50, zoom: 1 }),
+});
+
 // Each page has a known shape; validate against it before storing.
 const shapes = {
   manifesto: z.object({
     hero: z.object({
-      image: z.string().trim().max(600),
+      images: heroImagesSchema,
       eyebrow: z.string().trim().max(120),
       heading: z.string().trim().max(400),
       subcopy: z.string().trim().max(1000),
@@ -36,9 +53,28 @@ const shapes = {
   care: z.object({
     sections: z.array(blockSchema).max(12),
   }),
+  home: z.object({
+    hero: heroImagesSchema,
+  }),
 } as const;
 
 type Slug = keyof typeof shapes;
+
+const PATH_FOR_SLUG: Record<Slug, string> = {
+  manifesto: "/manifesto",
+  care: "/care-guide",
+  home: "/",
+};
+
+// URLs referenced by a stored hero, tolerating the legacy single `image` string.
+function storedHeroUrls(hero: unknown): string[] {
+  if (!hero || typeof hero !== "object") return [];
+  const h = hero as { image?: string; images?: HeroImages };
+  const urls: string[] = [];
+  if (typeof h.image === "string" && h.image) urls.push(h.image);
+  urls.push(...heroImageUrls(h.images));
+  return urls;
+}
 
 /** Root/admin only. Saves the editable blocks for a page. */
 export async function savePageContent(slug: string, content: unknown): Promise<PageContentResult> {
@@ -51,24 +87,22 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
   const parsed = shape.safeParse(content);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the content." };
 
-  // If the manifesto hero image or any story-part image is being replaced or
-  // removed, clean up the orphaned Cloudinary asset(s). Read the previous
-  // images before the write. Best-effort.
-  let oldHeroImage: string | null = null;
-  let oldStoryImages: string[] = [];
-  if (slug === "manifesto") {
-    try {
-      const rows = (await sql`SELECT content FROM page_content WHERE slug = ${slug}`) as {
-        content: { hero?: { image?: string }; storyParts?: { image?: string }[] };
-      }[];
-      oldHeroImage = rows[0]?.content?.hero?.image ?? null;
-      oldStoryImages = (rows[0]?.content?.storyParts ?? [])
-        .map((p) => p?.image)
-        .filter((u): u is string => !!u);
-    } catch {
-      oldHeroImage = null;
-      oldStoryImages = [];
+  // Collect the previous image URLs (hero across all breakpoints + story parts)
+  // so replaced/removed Cloudinary assets can be cleaned up after the write.
+  let oldImages: string[] = [];
+  try {
+    const rows = (await sql`SELECT content FROM page_content WHERE slug = ${slug}`) as {
+      content: { hero?: unknown; storyParts?: { image?: string }[] };
+    }[];
+    const prev = rows[0]?.content;
+    if (prev) {
+      oldImages = [
+        ...storedHeroUrls(prev.hero),
+        ...(prev.storyParts ?? []).map((p) => p?.image).filter((u): u is string => !!u),
+      ];
     }
+  } catch {
+    oldImages = [];
   }
 
   try {
@@ -78,17 +112,19 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
       ON CONFLICT (slug) DO UPDATE SET content = EXCLUDED.content, updated_at = now()
     `;
     await recordAudit(actor.email, "content.update", slug);
-    if (slug === "manifesto") {
-      const data = parsed.data as { hero?: { image?: string }; storyParts?: { image?: string }[] };
-      const newHeroImage = data?.hero?.image ?? "";
-      if (oldHeroImage && oldHeroImage !== newHeroImage) await deleteFromCloudinary(oldHeroImage);
-      const newStoryImages = new Set(
-        (data?.storyParts ?? []).map((p) => p?.image).filter((u): u is string => !!u),
-      );
-      const removedStoryImages = oldStoryImages.filter((u) => !newStoryImages.has(u));
-      if (removedStoryImages.length) await deleteManyFromCloudinary(removedStoryImages);
+
+    // Best-effort cleanup of any image no longer referenced.
+    if (oldImages.length) {
+      const data = parsed.data as { hero?: { images?: HeroImages }; storyParts?: { image?: string }[] };
+      const newImages = new Set<string>([
+        ...heroImageUrls(data.hero?.images),
+        ...(data.storyParts ?? []).map((p) => p?.image).filter((u): u is string => !!u),
+      ]);
+      const removed = oldImages.filter((u) => !newImages.has(u));
+      if (removed.length) await deleteManyFromCloudinary(removed);
     }
-    revalidatePath(slug === "manifesto" ? "/manifesto" : "/care-guide");
+
+    revalidatePath(PATH_FOR_SLUG[slug as Slug]);
     revalidatePath("/studio/content");
     return { ok: true };
   } catch (err) {

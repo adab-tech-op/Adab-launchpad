@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireStudioAccess, atLeast } from "@/lib/roles";
-import { getManifestoContent, getCareContent } from "@/lib/page-content-server";
+import { getManifestoContent, getCareContent, getHomeContent } from "@/lib/page-content-server";
 import { ContentEditor } from "./content-client";
 
 export const metadata = { title: "Content — ADAB Studio" };
@@ -8,16 +8,16 @@ export const metadata = { title: "Content — ADAB Studio" };
 export default async function ContentPage() {
   const actor = await requireStudioAccess();
   if (!atLeast(actor.role, "admin")) redirect("/studio"); // moderators can't edit
-  const [manifesto, care] = await Promise.all([getManifestoContent(), getCareContent()]);
+  const [manifesto, care, home] = await Promise.all([getManifestoContent(), getCareContent(), getHomeContent()]);
 
   return (
     <div>
       <h1 className="font-editorial text-4xl">Content.</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Edit the Manifesto and Care guide copy. Markdown supported; Bengali and English can be mixed on the same line.
+        Edit the Home hero, Manifesto, and Care guide. Markdown supported; Bengali and English can be mixed on the same line.
       </p>
       <div className="mt-8">
-        <ContentEditor manifesto={manifesto} care={care} />
+        <ContentEditor manifesto={manifesto} care={care} home={home} />
       </div>
     </div>
   );
