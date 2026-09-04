@@ -56,7 +56,8 @@ export function HomeClient({ products }: { products: Product[] }) {
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col px-5 md:px-8 pb-16 md:pb-16">
           <div className="min-h-20 flex-1 md:min-h-24" aria-hidden="true" />
           <h1 className="mt-6 font-display text-6xl md:text-8xl lg:text-9xl leading-[0.9] text-foreground">
-            OLD SOUL. NEW CUT.
+            <span className="block">OLD SOUL.</span>
+            <span className="block">NEW CUT.</span>
           </h1>
           <p className="mt-6 max-w-xl font-editorial text-3xl md:text-4xl leading-snug text-foreground">
             Same DNA. New Language.
