@@ -61,6 +61,92 @@ export function heroImageUrls(h: HeroImages | null | undefined): string[] {
   return [h.desktop, h.tablet, h.phone].filter((u): u is string => !!u);
 }
 
+// ---- Overlay -----------------------------------------------------------------
+// A colour wash over the hero image for legibility / mood. Either solid or a
+// linear gradient that fades in from one edge/corner ("appears from").
+
+export type OverlayFrom =
+  | "solid"
+  | "bottom"
+  | "top"
+  | "left"
+  | "right"
+  | "bottom-left"
+  | "bottom-right"
+  | "top-left"
+  | "top-right";
+
+export type HeroOverlay = {
+  enabled: boolean;
+  color: string; // hex, e.g. "#000000"
+  opacity: number; // 0–100 (the strong end)
+  from: OverlayFrom; // which edge/corner the colour appears from
+};
+
+export function defaultOverlay(): HeroOverlay {
+  return { enabled: false, color: "#000000", opacity: 40, from: "bottom" };
+}
+
+export const OVERLAY_FROM_OPTIONS: { value: OverlayFrom; label: string }[] = [
+  { value: "solid", label: "Solid" },
+  { value: "bottom", label: "Bottom" },
+  { value: "top", label: "Top" },
+  { value: "left", label: "Left" },
+  { value: "right", label: "Right" },
+  { value: "bottom-left", label: "Bottom-left" },
+  { value: "bottom-right", label: "Bottom-right" },
+  { value: "top-left", label: "Top-left" },
+  { value: "top-right", label: "Top-right" },
+];
+
+// "appears from X" → gradient travels toward the opposite side.
+const GRADIENT_DIR: Record<Exclude<OverlayFrom, "solid">, string> = {
+  bottom: "to top",
+  top: "to bottom",
+  left: "to right",
+  right: "to left",
+  "bottom-left": "to top right",
+  "bottom-right": "to top left",
+  "top-left": "to bottom right",
+  "top-right": "to bottom left",
+};
+
+export function hexToRgba(hex: string, alpha: number): string {
+  let h = (hex || "").replace("#", "").trim();
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length !== 6 || /[^0-9a-fA-F]/.test(h)) return `rgba(0,0,0,${alpha})`;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/** CSS for the overlay layer, or null when it shouldn't render. */
+export function overlayStyle(o: HeroOverlay | null | undefined): import("react").CSSProperties | null {
+  if (!o || !o.enabled) return null;
+  const rgba = hexToRgba(o.color, Math.min(100, Math.max(0, o.opacity)) / 100);
+  if (o.from === "solid") return { backgroundColor: rgba };
+  return { backgroundImage: `linear-gradient(${GRADIENT_DIR[o.from]}, ${rgba}, transparent)` };
+}
+
+export function normalizeOverlay(raw: unknown, legacyScrim?: number): HeroOverlay {
+  const base = defaultOverlay();
+  if (typeof raw === "object" && raw !== null) {
+    const r = raw as Partial<HeroOverlay>;
+    return {
+      enabled: typeof r.enabled === "boolean" ? r.enabled : base.enabled,
+      color: typeof r.color === "string" ? r.color : base.color,
+      opacity: clamp(typeof r.opacity === "number" ? r.opacity : base.opacity, 0, 100),
+      from: (OVERLAY_FROM_OPTIONS.some((o) => o.value === r.from) ? r.from : base.from) as OverlayFrom,
+    };
+  }
+  // Legacy: a plain scrim number (0–80) was a solid black wash.
+  if (typeof legacyScrim === "number") {
+    return { enabled: legacyScrim > 0, color: "#000000", opacity: legacyScrim || 40, from: "solid" };
+  }
+  return base;
+}
+
 // ---- Upload guidance ---------------------------------------------------------
 // One place to describe the recommended file for each upload slot. Rendered by
 // <UploadHint> next to the control so admins always know the target size.
