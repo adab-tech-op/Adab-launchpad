@@ -2,6 +2,8 @@
 // pages. NO server-only/DB imports here so the studio editor (client) can seed
 // from these. The DB read lives in ./page-content-server.
 
+import { emptyHeroImages, type HeroImages } from "@/lib/hero";
+
 export type Block = { title: string; body: string };
 
 // A story part additionally carries an optional paired image (Cloudinary URL),
@@ -10,7 +12,7 @@ export type Block = { title: string; body: string };
 export type StoryBlock = Block & { image?: string };
 
 export type ManifestoHero = {
-  image: string; // Cloudinary URL; "" = solid colour block (no image)
+  images: HeroImages; // 3-breakpoint hero (desktop required; tablet/phone optional)
   eyebrow: string;
   heading: string; // newlines become line breaks
   subcopy: string; // optional
@@ -24,6 +26,18 @@ export type ManifestoContent = {
   values: Block[];
 };
 
+// Home page hero — 3-breakpoint editable background image. Seeded from the
+// current static assets so the live hero is unchanged until an admin uploads.
+export type HomeContent = { hero: HeroImages };
+
+export const HOME_DEFAULT: HomeContent = {
+  hero: {
+    ...emptyHeroImages(),
+    desktop: "/assets/hero-desktop.jpg",
+    phone: "/assets/hero-main.jpg",
+  },
+};
+
 export type CareContent = {
   sections: Block[];
 };
@@ -33,7 +47,7 @@ export type CareContent = {
 // the icons/numerals) stays in code; only these blocks are editable.
 export const MANIFESTO_DEFAULT: ManifestoContent = {
   hero: {
-    image: "",
+    images: emptyHeroImages(),
     eyebrow: "Manifesto & History",
     heading: "We don't believe history gets lost.\nIt just waits.",
     subcopy: "",

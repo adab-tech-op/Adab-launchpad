@@ -8,6 +8,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import { createProduct, updateProduct, type EditableProduct } from "@/lib/actions/products-admin";
 import { saveProductStock, markSoldOut } from "@/lib/actions/inventory";
 import type { FabricType } from "@/lib/fabrics";
+import { UploadHint } from "@/components/studio/UploadHint";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -310,6 +311,7 @@ export function ProductForm({
       {/* Images */}
       <div>
         <span className={labelCls}>Images <span className="normal-case tracking-normal">(first is the cover — shown on the card)</span></span>
+        <UploadHint spec="product" className="mt-1.5" />
         <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 gap-3">
           {p.images.map((url, i) => (
             <div key={url + i} className="relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-[color:var(--paper)]">

@@ -4,17 +4,18 @@ import Link from "next/link";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { AuthErrorCatcher } from "@/components/site/AuthErrorCatcher";
+import { HeroBackground } from "@/components/site/HeroBackground";
+import type { HeroImages } from "@/lib/hero";
 import type { Product } from "@/data/products";
 
-const heroImg = "/assets/hero-main.jpg";
 const storyArchival = "/assets/story-archival.jpg";
 const scrap1 = "/assets/scrapbook-1.jpg";
 const scrap2 = "/assets/scrapbook-2.jpg";
 const scrap3 = "/assets/scrapbook-3.jpg";
 const scrap4 = "/assets/scrapbook-4.jpg";
 
-export function HomeClient({ products }: { products: Product[] }) {
-  const pictureRef = useRef<HTMLPictureElement>(null);
+export function HomeClient({ products, heroImages }: { products: Product[]; heroImages: HeroImages }) {
+  const pictureRef = useRef<HTMLDivElement>(null);
   const [parallaxY, setParallaxY] = useState(0);
 
   useEffect(() => {
@@ -37,20 +38,13 @@ export function HomeClient({ products }: { products: Product[] }) {
       </Suspense>
       {/* Hero */}
       <section data-reveal-images-skip className="relative h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden">
-        <picture
+        <div
           ref={pictureRef}
           className="absolute -top-[10%] left-0 h-[120%] w-full will-change-transform"
           style={{ transform: `translateY(${parallaxY}px)` }}
         >
-          <source media="(min-width: 768px)" srcSet="/assets/hero-desktop.jpg" />
-          <img
-            src={heroImg}
-            alt="Adab piran — heritage-fusion menswear from Bangladesh"
-            width={1600}
-            height={1920}
-            className="h-full w-full object-cover object-top-left md:object-[70%_center]"
-          />
-        </picture>
+          <HeroBackground images={heroImages} label="Adab piran — heritage-fusion menswear from Bangladesh" />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-background/85 to-transparent" />
 
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col px-5 md:px-8 pb-16 md:pb-16">
