@@ -8,7 +8,7 @@ import {
   type CareContent,
   type HomeContent,
 } from "@/lib/page-content";
-import { normalizeHeroImages } from "@/lib/hero";
+import { normalizeHeroImages, normalizeOverlay } from "@/lib/hero";
 
 async function readContent<T>(slug: string, fallback: T): Promise<T> {
   try {
@@ -21,16 +21,17 @@ async function readContent<T>(slug: string, fallback: T): Promise<T> {
 }
 
 export async function getManifestoContent(): Promise<ManifestoContent> {
-  const c = await readContent<ManifestoContent & { hero?: { image?: string } }>("manifesto", MANIFESTO_DEFAULT);
-  const rawHero = (c.hero ?? {}) as { image?: string; images?: unknown };
-  // Tolerate rows saved before the hero / before the 3-breakpoint images:
-  // merge over the default and normalize images (legacy single `image`).
+  const c = await readContent<ManifestoContent & { hero?: Record<string, unknown> }>("manifesto", MANIFESTO_DEFAULT);
+  const rawHero = (c.hero ?? {}) as { image?: string; images?: unknown; overlay?: unknown; scrim?: number };
+  // Tolerate rows saved before the 3-breakpoint images / before the overlay:
+  // merge over the default and normalize (legacy single `image`, legacy `scrim`).
   return {
     ...c,
     hero: {
       ...MANIFESTO_DEFAULT.hero,
       ...rawHero,
       images: normalizeHeroImages(rawHero.images, rawHero.image),
+      overlay: normalizeOverlay(rawHero.overlay, rawHero.scrim),
     },
   };
 }
@@ -42,5 +43,10 @@ export function getCareContent(): Promise<CareContent> {
 export async function getHomeContent(): Promise<HomeContent> {
   const c = await readContent<Partial<HomeContent>>("home", HOME_DEFAULT);
   const hero = normalizeHeroImages(c?.hero, undefined);
-  return { hero: hero.desktop ? hero : HOME_DEFAULT.hero };
+  return {
+    ...HOME_DEFAULT,
+    ...c,
+    hero: hero.desktop ? hero : HOME_DEFAULT.hero,
+    overlay: c?.overlay ? normalizeOverlay(c.overlay, undefined) : HOME_DEFAULT.overlay,
+  };
 }

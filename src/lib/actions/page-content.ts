@@ -36,6 +36,15 @@ const heroImagesSchema = z.object({
   focalPhone: focalSchema.default({ x: 50, y: 50, zoom: 1 }),
 });
 
+const overlaySchema = z.object({
+  enabled: z.boolean().default(false),
+  color: z.string().trim().max(9).default("#000000"),
+  opacity: z.coerce.number().min(0).max(100).default(40),
+  from: z
+    .enum(["solid", "bottom", "top", "left", "right", "bottom-left", "bottom-right", "top-left", "top-right"])
+    .default("bottom"),
+});
+
 // Each page has a known shape; validate against it before storing.
 const shapes = {
   manifesto: z.object({
@@ -45,7 +54,7 @@ const shapes = {
       heading: z.string().trim().max(400),
       subcopy: z.string().trim().max(1000),
       textTheme: z.enum(["light", "dark"]),
-      scrim: z.coerce.number().int().min(0).max(80),
+      overlay: overlaySchema,
     }),
     storyParts: z.array(storyBlockSchema).max(12),
     values: z.array(blockSchema).max(12),
@@ -55,6 +64,11 @@ const shapes = {
   }),
   home: z.object({
     hero: heroImagesSchema,
+    overlay: overlaySchema,
+    heading: z.string().trim().max(200).default(""),
+    headingColor: z.string().trim().max(9).default("#1c1c1c"),
+    subcopy: z.string().trim().max(400).default(""),
+    subcopyColor: z.string().trim().max(9).default("#1c1c1c"),
   }),
 } as const;
 

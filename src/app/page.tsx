@@ -7,5 +7,5 @@ export const revalidate = 60;
 
 export default async function Home() {
   const [products, home] = await Promise.all([getAllProducts(), getHomeContent()]);
-  return <HomeClient products={products} heroImages={home.hero} />;
+  return <HomeClient products={products} home={home} />;
 }

@@ -5,7 +5,8 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { AuthErrorCatcher } from "@/components/site/AuthErrorCatcher";
 import { HeroBackground } from "@/components/site/HeroBackground";
-import type { HeroImages } from "@/lib/hero";
+import { overlayStyle } from "@/lib/hero";
+import type { HomeContent } from "@/lib/page-content";
 import type { Product } from "@/data/products";
 
 const storyArchival = "/assets/story-archival.jpg";
@@ -14,9 +15,10 @@ const scrap2 = "/assets/scrapbook-2.jpg";
 const scrap3 = "/assets/scrapbook-3.jpg";
 const scrap4 = "/assets/scrapbook-4.jpg";
 
-export function HomeClient({ products, heroImages }: { products: Product[]; heroImages: HeroImages }) {
+export function HomeClient({ products, home }: { products: Product[]; home: HomeContent }) {
   const pictureRef = useRef<HTMLDivElement>(null);
   const [parallaxY, setParallaxY] = useState(0);
+  const overlay = overlayStyle(home.overlay);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -43,19 +45,22 @@ export function HomeClient({ products, heroImages }: { products: Product[]; hero
           className="absolute -top-[10%] left-0 h-[120%] w-full will-change-transform"
           style={{ transform: `translateY(${parallaxY}px)` }}
         >
-          <HeroBackground images={heroImages} label="Adab piran — heritage-fusion menswear from Bangladesh" />
+          <HeroBackground images={home.hero} label="Adab piran — heritage-fusion menswear from Bangladesh" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background/85 to-transparent" />
+        {overlay && <div className="absolute inset-0" style={overlay} />}
 
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col px-5 md:px-8 pb-16 md:pb-16">
           <div className="min-h-20 flex-1 md:min-h-24" aria-hidden="true" />
-          <h1 className="mt-6 font-display text-6xl md:text-8xl lg:text-9xl leading-[0.9] text-foreground">
-            <span className="block">OLD SOUL.</span>
-            <span className="block">NEW CUT.</span>
+          <h1 className="mt-6 font-display text-6xl md:text-8xl lg:text-9xl leading-[0.9]" style={{ color: home.headingColor }}>
+            {home.heading.split("\n").map((line, i) => (
+              <span key={i} className="block">{line || "\u00A0"}</span>
+            ))}
           </h1>
-          <p className="mt-6 max-w-xl font-editorial text-3xl md:text-4xl leading-snug text-foreground">
-            Same DNA. New Language.
-          </p>
+          {home.subcopy && (
+            <p className="mt-6 max-w-xl font-editorial text-3xl md:text-4xl leading-snug" style={{ color: home.subcopyColor }}>
+              {home.subcopy}
+            </p>
+          )}
           <div className="mt-8 flex flex-wrap gap-3">
             <a
               href="#waitlist"

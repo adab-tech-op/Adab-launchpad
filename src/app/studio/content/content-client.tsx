@@ -8,6 +8,8 @@ import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
 import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent } from "@/lib/page-content";
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
+import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
+import { overlayStyle } from "@/lib/hero";
 import { UploadHint } from "@/components/studio/UploadHint";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
@@ -171,6 +173,7 @@ function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: Man
   const set = <K extends keyof ManifestoHero>(k: K, v: ManifestoHero[K]) => onChange({ ...hero, [k]: v });
   const light = hero.textTheme === "light";
   const bg = hero.images.desktop;
+  const manifestoOverlay = overlayStyle(hero.overlay);
 
   return (
     <div className="rounded-xl border border-border p-5">
@@ -181,7 +184,7 @@ function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: Man
         className={`mt-3 overflow-hidden rounded-lg ${!bg ? (light ? "bg-foreground" : "bg-background border border-border") : ""} relative`}
         style={bg ? { backgroundImage: `url(${bg})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
       >
-        {bg && hero.scrim > 0 && <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${hero.scrim / 100})` }} />}
+        {bg && manifestoOverlay && <div className="absolute inset-0" style={manifestoOverlay} />}
         <div className={`relative px-5 py-10 ${light ? "text-background" : "text-foreground"}`}>
           {hero.eyebrow && <p className="text-[10px] uppercase tracking-[0.22em] opacity-70">{hero.eyebrow}</p>}
           <p className="mt-2 whitespace-pre-line font-editorial text-2xl leading-tight">{hero.heading || "Heading"}</p>
@@ -192,6 +195,11 @@ function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: Man
       {/* 3-breakpoint background images */}
       <div className="mt-4">
         <HeroImagesEditor value={hero.images} onChange={(images) => set("images", images)} />
+      </div>
+
+      {/* Overlay */}
+      <div className="mt-4">
+        <HeroOverlayEditor value={hero.overlay} onChange={(overlay) => set("overlay", overlay)} previewImage={bg || undefined} />
       </div>
 
       <div className="mt-4 space-y-3">
@@ -207,24 +215,18 @@ function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: Man
           <label className={labelCls}>Subcopy (optional)</label>
           <textarea className={`${inputCls} mt-1 resize-y`} rows={2} value={hero.subcopy} onChange={(e) => set("subcopy", e.target.value)} />
         </div>
-        <div className="flex flex-wrap items-center gap-6">
-          <div>
-            <label className={labelCls}>Text colour</label>
-            <div className="mt-1 flex gap-2">
-              {(["light", "dark"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => set("textTheme", t)}
-                  className={`rounded-full px-4 py-1.5 text-sm capitalize ${hero.textTheme === t ? "bg-foreground text-background" : "border border-border"}`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className={labelCls}>Image scrim — {hero.scrim}%</label>
-            <input type="range" min={0} max={80} value={hero.scrim} onChange={(e) => set("scrim", Number(e.target.value))} className="mt-2 block w-40 accent-primary" />
+        <div>
+          <label className={labelCls}>Text colour</label>
+          <div className="mt-1 flex gap-2">
+            {(["light", "dark"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => set("textTheme", t)}
+                className={`rounded-full px-4 py-1.5 text-sm capitalize ${hero.textTheme === t ? "bg-foreground text-background" : "border border-border"}`}
+              >
+                {t}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -284,13 +286,35 @@ export function ContentEditor({
 
       <div className="mt-6 space-y-8">
         {tab === "home" ? (
-          <div className="rounded-xl border border-border p-5">
-            <p className={labelCls}>Home hero background</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              The big image behind &ldquo;Old soul. New cut.&rdquo; on the homepage. The heading and buttons stay fixed.
-            </p>
-            <div className="mt-4">
-              <HeroImagesEditor value={h.hero} onChange={(hero) => setH({ hero })} />
+          <div className="space-y-6">
+            <div className="rounded-xl border border-border p-5">
+              <p className={labelCls}>Home hero background</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                The big image behind the homepage headline. The buttons stay fixed.
+              </p>
+              <div className="mt-4">
+                <HeroImagesEditor value={h.hero} onChange={(hero) => setH({ ...h, hero })} />
+              </div>
+            </div>
+
+            <HeroOverlayEditor value={h.overlay} onChange={(overlay) => setH({ ...h, overlay })} previewImage={h.hero.desktop || undefined} />
+
+            <div className="space-y-4 rounded-xl border border-border p-5">
+              <p className={labelCls}>Hero text</p>
+              <div>
+                <label className={labelCls}>Heading <span className="normal-case tracking-normal">(line breaks allowed)</span></label>
+                <div className="mt-1 flex items-start gap-3">
+                  <textarea className={`${inputCls} resize-y`} rows={2} value={h.heading} onChange={(e) => setH({ ...h, heading: e.target.value })} />
+                  <ColorField value={h.headingColor} onChange={(headingColor) => setH({ ...h, headingColor })} />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>Subcopy (optional)</label>
+                <div className="mt-1 flex items-start gap-3">
+                  <input className={inputCls} value={h.subcopy} onChange={(e) => setH({ ...h, subcopy: e.target.value })} />
+                  <ColorField value={h.subcopyColor} onChange={(subcopyColor) => setH({ ...h, subcopyColor })} />
+                </div>
+              </div>
             </div>
           </div>
         ) : tab === "manifesto" ? (
@@ -315,6 +339,15 @@ export function ContentEditor({
       <p className="mt-3 text-xs text-muted-foreground">
         Page layout and copy chrome stay fixed; these are the editable pieces. Edits appear on the live site within a minute.
       </p>
+    </div>
+  );
+}
+
+function ColorField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex shrink-0 flex-col items-center gap-1">
+      <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-9 w-10 cursor-pointer rounded border border-border bg-transparent" />
+      <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="w-16 rounded border border-border bg-transparent px-1 py-0.5 text-center text-[11px]" />
     </div>
   );
 }

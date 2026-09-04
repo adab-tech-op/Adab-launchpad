@@ -2,7 +2,7 @@
 // pages. NO server-only/DB imports here so the studio editor (client) can seed
 // from these. The DB read lives in ./page-content-server.
 
-import { emptyHeroImages, type HeroImages } from "@/lib/hero";
+import { emptyHeroImages, defaultOverlay, type HeroImages, type HeroOverlay } from "@/lib/hero";
 
 export type Block = { title: string; body: string };
 
@@ -17,7 +17,7 @@ export type ManifestoHero = {
   heading: string; // newlines become line breaks
   subcopy: string; // optional
   textTheme: "light" | "dark"; // legibility over the image/background
-  scrim: number; // 0–80: dark overlay % for legibility over a busy image
+  overlay: HeroOverlay; // colour wash (on/off, direction, colour, opacity)
 };
 
 export type ManifestoContent = {
@@ -26,9 +26,17 @@ export type ManifestoContent = {
   values: Block[];
 };
 
-// Home page hero — 3-breakpoint editable background image. Seeded from the
-// current static assets so the live hero is unchanged until an admin uploads.
-export type HomeContent = { hero: HeroImages };
+// Home page hero — 3-breakpoint editable background image + overlay + text.
+// Seeded from the current static assets/look so the live hero is unchanged
+// until an admin edits it.
+export type HomeContent = {
+  hero: HeroImages;
+  overlay: HeroOverlay;
+  heading: string; // newlines become separate lines (design renders uppercase)
+  headingColor: string; // hex
+  subcopy: string;
+  subcopyColor: string; // hex
+};
 
 export const HOME_DEFAULT: HomeContent = {
   hero: {
@@ -36,6 +44,12 @@ export const HOME_DEFAULT: HomeContent = {
     desktop: "/assets/hero-desktop.jpg",
     phone: "/assets/hero-main.jpg",
   },
+  // Current look: cream wash rising from the bottom, ink text.
+  overlay: { enabled: true, color: "#FAF6EF", opacity: 85, from: "bottom" },
+  heading: "OLD SOUL.\nNEW CUT.",
+  headingColor: "#1c1c1c",
+  subcopy: "Same DNA. New Language.",
+  subcopyColor: "#1c1c1c",
 };
 
 export type CareContent = {
@@ -52,7 +66,7 @@ export const MANIFESTO_DEFAULT: ManifestoContent = {
     heading: "We don't believe history gets lost.\nIt just waits.",
     subcopy: "",
     textTheme: "light",
-    scrim: 0,
+    overlay: defaultOverlay(),
   },
   storyParts: [
     { title: "ORIGIN TENSION", body: "Bangladeshi men have had two options: Western clothing that isn't really theirs, or the panjabi — reserved for occasions. Nothing to wear every day that carries their own history." },

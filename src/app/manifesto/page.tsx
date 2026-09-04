@@ -5,6 +5,7 @@ import { getManifestoContent } from "@/lib/page-content-server";
 import { renderMarkdown } from "@/lib/markdown";
 import { ManifestoEditorial } from "@/components/site/ManifestoEditorial";
 import { HeroBackground } from "@/components/site/HeroBackground";
+import { overlayStyle } from "@/lib/hero";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -34,8 +35,8 @@ export default async function Manifesto() {
         )}
       >
         <HeroBackground images={hero.images} />
-        {hero.images.desktop && hero.scrim > 0 && (
-          <div aria-hidden className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${hero.scrim / 100})` }} />
+        {hero.images.desktop && overlayStyle(hero.overlay) && (
+          <div aria-hidden className="absolute inset-0" style={overlayStyle(hero.overlay)!} />
         )}
         <div className={cn("relative z-10 mx-auto w-full max-w-5xl", light ? "text-background" : "text-foreground")}>
           {hero.eyebrow && (
