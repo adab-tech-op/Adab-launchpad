@@ -52,6 +52,16 @@ export const HOME_DEFAULT: HomeContent = {
   subcopyColor: "#1c1c1c",
 };
 
+// The Drop page hero — same editable shape as the home hero.
+export const DROP_DEFAULT: HomeContent = {
+  hero: { ...emptyHeroImages() },
+  overlay: { enabled: true, color: "#000000", opacity: 35, from: "bottom" },
+  heading: "The Drop.",
+  headingColor: "#f5f0e8",
+  subcopy: "Limited pieces, released on a date. Once they're gone, they're gone.",
+  subcopyColor: "#f5f0e8",
+};
+
 export type CareContent = {
   sections: Block[];
 };

@@ -4,6 +4,7 @@ import {
   MANIFESTO_DEFAULT,
   CARE_DEFAULT,
   HOME_DEFAULT,
+  DROP_DEFAULT,
   type ManifestoContent,
   type CareContent,
   type HomeContent,
@@ -48,5 +49,15 @@ export async function getHomeContent(): Promise<HomeContent> {
     ...c,
     hero: hero.desktop ? hero : HOME_DEFAULT.hero,
     overlay: c?.overlay ? normalizeOverlay(c.overlay, undefined) : HOME_DEFAULT.overlay,
+  };
+}
+
+export async function getDropContent(): Promise<HomeContent> {
+  const c = await readContent<Partial<HomeContent>>("drop", DROP_DEFAULT);
+  return {
+    ...DROP_DEFAULT,
+    ...c,
+    hero: normalizeHeroImages(c?.hero, undefined),
+    overlay: c?.overlay ? normalizeOverlay(c.overlay, undefined) : DROP_DEFAULT.overlay,
   };
 }

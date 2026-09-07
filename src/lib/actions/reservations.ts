@@ -4,7 +4,8 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { generateOrderRef } from "@/lib/order-ref";
 import { currentUserIsStaff } from "@/lib/roles";
-import { getAllowMultiOrder } from "@/lib/settings-server";
+import { getAllowMultiOrder, getDropWindowDays } from "@/lib/settings-server";
+import { dropStateOf, isDropPurchasable } from "@/lib/drop";
 import { validateCoupon, freezeOrderPricing } from "@/lib/coupons-server";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
@@ -62,23 +63,29 @@ export async function createReservation(input: {
     return { ok: false, error: "Just one piece per order right now — please place separate orders." };
   }
 
-  // Availability gate: a size tracked at 0 stock, or a product marked sold out,
-  // is not reservable. Untracked sizes (no stock row yet) count as available, so
-  // products without stock set up keep working. Tolerant if tables are missing.
+  // Availability gate: a size tracked at 0 stock, a product marked sold out, or
+  // a drop-scheduled piece that hasn't dropped yet, is not reservable.
+  // Untracked sizes (no stock row yet) count as available. Tolerant of missing tables.
   try {
+    const windowDays = await getDropWindowDays().catch(() => 7);
+    const now = new Date();
     for (const it of items) {
       const rows = (await sql`
-        SELECT ps.stock AS stock, p.sold_out AS sold_out
+        SELECT ps.stock AS stock, p.sold_out AS sold_out, p.drop_date AS drop_date, p.drop_end AS drop_end
         FROM products p
         LEFT JOIN product_sizes ps ON ps.product_slug = p.slug AND ps.size = ${it.size}
         WHERE p.slug = ${it.product_slug} LIMIT 1
-      `) as { stock: number | null; sold_out: boolean | null }[];
+      `) as { stock: number | null; sold_out: boolean | null; drop_date: string | null; drop_end: string | null }[];
       const r = rows[0];
       if (r?.sold_out) return { ok: false, error: "That piece has just sold out." };
       if (r && r.stock !== null && r.stock <= 0) return { ok: false, error: `Size ${it.size} has just sold out.` };
+      if (r?.drop_date) {
+        const state = dropStateOf({ dropDate: r.drop_date, dropEnd: r.drop_end, soldOut: r.sold_out ?? false }, windowDays, now);
+        if (!isDropPurchasable(state)) return { ok: false, error: "This piece isn't on sale yet — it drops soon." };
+      }
     }
   } catch (err) {
-    console.error("[reservation] stock gate skipped (tables missing?)", err);
+    console.error("[reservation] availability gate skipped (tables missing?)", err);
   }
 
   // If this email already belongs to an account, the order is owned from the

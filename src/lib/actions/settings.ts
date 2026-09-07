@@ -88,3 +88,24 @@ export async function saveAllowMultiOrder(enabled: boolean): Promise<SettingsRes
     return { ok: false, error: "Could not save." };
   }
 }
+
+export async function saveDropWindowDays(input: unknown): Promise<SettingsResult> {
+  const actor = await requireMutator();
+  if (!actor) return { ok: false, error: "Not authorized." };
+  const n = typeof input === "number" ? input : parseInt(String(input), 10);
+  if (!Number.isFinite(n) || n < 1 || n > 60) return { ok: false, error: "Enter 1–60 days." };
+  try {
+    await sql`
+      INSERT INTO site_settings (key, value, updated_at)
+      VALUES ('drop_window_days', ${JSON.stringify(Math.floor(n))}::jsonb, now())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `;
+    await recordAudit(actor.email, "settings.update", null, { drop_window_days: Math.floor(n) });
+    revalidatePath("/drop");
+    revalidatePath("/shop");
+    return { ok: true };
+  } catch (err) {
+    console.error("[settings] saveDropWindowDays failed", err);
+    return { ok: false, error: "Could not save." };
+  }
+}

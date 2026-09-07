@@ -70,6 +70,14 @@ const shapes = {
     subcopy: z.string().trim().max(400).default(""),
     subcopyColor: z.string().trim().max(9).default("#1c1c1c"),
   }),
+  drop: z.object({
+    hero: heroImagesSchema,
+    overlay: overlaySchema,
+    heading: z.string().trim().max(200).default(""),
+    headingColor: z.string().trim().max(9).default("#f5f0e8"),
+    subcopy: z.string().trim().max(400).default(""),
+    subcopyColor: z.string().trim().max(9).default("#f5f0e8"),
+  }),
 } as const;
 
 type Slug = keyof typeof shapes;
@@ -78,6 +86,7 @@ const PATH_FOR_SLUG: Record<Slug, string> = {
   manifesto: "/manifesto",
   care: "/care-guide",
   home: "/",
+  drop: "/drop",
 };
 
 // URLs referenced by a stored hero, tolerating the legacy single `image` string.

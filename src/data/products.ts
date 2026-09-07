@@ -26,6 +26,9 @@ export type Product = {
   careNote?: string;
   deliveryNote?: string;
   fabricTypeId?: number;
+  dropDate?: string; // ISO (UTC); when set, drives visibility/purchasability
+  dropEnd?: string; // ISO (UTC); optional auto-conclude
+  inShop?: boolean; // concluded piece resurfaced to /shop only
 };
 
 export const products: Product[] = [

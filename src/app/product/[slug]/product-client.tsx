@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Check, ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { type Product } from "@/data/products";
 import { saleFor, formatPrice } from "@/lib/pricing";
+import { type DropState, formatDhaka } from "@/lib/drop";
+import { DropNotify } from "@/app/drop/drop-notify";
 import { ProductCard } from "@/components/site/ProductCard";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCart } from "@/context/CartContext";
@@ -34,10 +36,11 @@ const SIZE_TABLE = [
   { size: "XXL", chest: 48, length: 33, sleeve: 26, shoulder: 20 },
 ];
 
-export function ProductClient({ product, allProducts, stock = {}, fabricCare }: { product: Product; allProducts: Product[]; stock?: Record<string, number>; fabricCare?: string | null }) {
+export function ProductClient({ product, allProducts, stock = {}, fabricCare, dropState, dropBuyable = true, staffPreview = false }: { product: Product; allProducts: Product[]; stock?: Record<string, number>; fabricCare?: string | null; dropState?: DropState; dropBuyable?: boolean; staffPreview?: boolean }) {
   const router = useRouter();
   const { addItem, items, removeItem } = useCart();
   const soldOut = product.soldOut === true;
+  const notYet = dropBuyable === false; // upcoming drop piece — not buyable yet
   const sale = saleFor(product.priceBdt ?? 0, product.discountPercent, product.discountUntil);
   const sizeAvailable = (s: string) => !soldOut && !(s in stock && stock[s] <= 0);
   const allOut = soldOut || SIZES.every((s) => s in stock && stock[s] <= 0);
@@ -54,7 +57,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
   const detailsList = product.details ?? [];
 
   const primaryCta = () => {
-    if (allOut || !sizeAvailable(size)) return;
+    if (allOut || !sizeAvailable(size) || notYet) return;
     if (dropModeActive) {
       router.push(
         `/checkout?slug=${product.slug}&size=${encodeURIComponent(size)}&color=${encodeURIComponent(color)}&qty=${qty}`,
@@ -64,7 +67,15 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
     }
   };
 
-  const ctaLabel = allOut ? "Sold out" : dropModeActive ? "Reserve your piece" : "Add to Cart";
+  const ctaLabel = notYet
+    ? product.dropDate
+      ? `Drops ${formatDhaka(product.dropDate)}`
+      : "Coming soon"
+    : allOut
+      ? "Sold out"
+      : dropModeActive
+        ? "Reserve your piece"
+        : "Add to Cart";
 
   const cartId = `${product.slug}-${size}-${color}`;
   const inCart = items.some((i) => i.id === cartId);
@@ -89,6 +100,12 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
 
   return (
     <>
+      {(staffPreview || dropState === "upcoming") && (
+        <div className="bg-foreground px-5 py-2 text-center text-[11px] uppercase tracking-[0.16em] text-background">
+          {staffPreview ? "Staff preview — hidden from customers" : "Upcoming"}
+          {product.dropDate ? ` · drops ${formatDhaka(product.dropDate)}` : ""}
+        </div>
+      )}
       <div className="mx-auto max-w-7xl px-5 md:px-8 pt-6 md:pt-10">
         <nav className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
           <Link href="/shop" className="hover:text-foreground">Shop</Link>
@@ -266,11 +283,22 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
 
               <button
                 onClick={primaryCta}
-                disabled={allOut}
+                disabled={allOut || notYet}
                 className="hidden lg:block w-full rounded-full py-4 text-xs uppercase tracking-[0.2em] bg-foreground text-background hover:bg-foreground/85 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {ctaLabel}
               </button>
+
+              {notYet && (
+                <div className="hidden lg:block rounded-2xl border border-border p-4">
+                  <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    Not on sale yet{product.dropDate ? ` — drops ${formatDhaka(product.dropDate)}` : ""}. Get notified:
+                  </p>
+                  <div className="mt-3">
+                    <DropNotify productSlug={product.slug} compact />
+                  </div>
+                </div>
+              )}
 
               <div className="hidden lg:grid grid-cols-2 gap-3">
                 <WishlistButton slug={product.slug} />
@@ -364,7 +392,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare }: 
         </button>
         <button
           onClick={primaryCta}
-          disabled={allOut}
+          disabled={allOut || notYet}
           className="rounded-full bg-foreground text-background px-5 py-3 text-xs uppercase tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {ctaLabel}
