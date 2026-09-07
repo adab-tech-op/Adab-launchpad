@@ -99,7 +99,7 @@ export function ManifestoEditorial({ sections }: { sections: EditorialSection[] 
               <div className="grid grid-cols-[auto_1fr] gap-5 md:gap-6">
                 <p className="font-display text-xl text-primary tabular-nums md:text-2xl">{ROMAN[i] ?? i + 1}.</p>
                 <div>
-                  <h2 className="font-display text-lg uppercase tracking-[0.18em] md:text-xl">{s.title}</h2>
+                  <h2 className="font-display text-lg uppercase md:text-xl">{s.title}</h2>
                   <div
                     className="prose-editorial mt-4 text-base leading-relaxed text-foreground/85 md:text-lg"
                     dangerouslySetInnerHTML={{ __html: s.bodyHtml }}
@@ -119,7 +119,7 @@ function PlaceholderPanel({ index, title }: { index: number; title: string }) {
     <div className="paper-grain flex h-full w-full flex-col items-center justify-center gap-3 p-8 text-center">
       <span className="font-display text-5xl text-primary/50 tabular-nums">{ROMAN[index] ?? index + 1}</span>
       {title && (
-        <span className="font-display text-xs uppercase tracking-[0.18em] text-muted-foreground">{title}</span>
+        <span className="font-display text-xs uppercase text-muted-foreground">{title}</span>
       )}
     </div>
   );
