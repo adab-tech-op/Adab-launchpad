@@ -2,14 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { saveLatestCount, saveBanner, saveAllowMultiOrder } from "@/lib/actions/settings";
+import { saveDropWindowDays, saveBanner, saveAllowMultiOrder } from "@/lib/actions/settings";
 import type { BannerSettings } from "@/lib/settings";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 const labelCls = "text-xs uppercase tracking-[0.16em] text-muted-foreground";
 
-export function SettingsClient({ latestCount, banner, allowMulti }: { latestCount: number; banner: BannerSettings; allowMulti: boolean }) {
-  const [count, setCount] = useState(String(latestCount));
+export function SettingsClient({ dropWindow, banner, allowMulti }: { dropWindow: number; banner: BannerSettings; allowMulti: boolean }) {
+  const [win, setWin] = useState(String(dropWindow));
   const [b, setB] = useState<BannerSettings>(banner);
   const [multi, setMulti] = useState(allowMulti);
   const [pendingCount, startCount] = useTransition();
@@ -26,10 +26,10 @@ export function SettingsClient({ latestCount, banner, allowMulti }: { latestCoun
       else { toast.error(res.error); setMulti(!next); }
     });
 
-  const saveCount = () =>
+  const saveWindow = () =>
     startCount(async () => {
-      const res = await saveLatestCount(count);
-      if (res.ok) toast.success("Settings saved");
+      const res = await saveDropWindowDays(win);
+      if (res.ok) toast.success("Saved");
       else toast.error(res.error);
     });
 
@@ -42,25 +42,25 @@ export function SettingsClient({ latestCount, banner, allowMulti }: { latestCoun
 
   return (
     <div className="space-y-8">
-      {/* Latest count */}
+      {/* Drop window */}
       <div className="rounded-xl border border-border p-5">
-        <label className={labelCls} htmlFor="latest-count">Latest page — number of products</label>
+        <label className={labelCls} htmlFor="drop-window">Drop window — days before a drop it turns &ldquo;Upcoming&rdquo;</label>
         <p className="mt-1 text-xs text-muted-foreground">
-          The newest pieces shown on the Latest page. If it resolves to a single product, visitors are
-          taken straight to that product; more than one shows an index.
+          A scheduled product stays hidden until this many days before its drop date, then shows as
+          &ldquo;Upcoming&rdquo; on the Drop page (still not buyable) until the drop time.
         </p>
         <div className="mt-3 flex items-center gap-3">
           <input
-            id="latest-count"
+            id="drop-window"
             type="number"
             min={1}
-            max={50}
+            max={60}
             className={`${inputCls} max-w-[8rem]`}
-            value={count}
-            onChange={(e) => setCount(e.target.value)}
+            value={win}
+            onChange={(e) => setWin(e.target.value)}
           />
           <button
-            onClick={saveCount}
+            onClick={saveWindow}
             disabled={pendingCount}
             className="rounded-full bg-foreground px-5 py-2 text-sm text-background disabled:opacity-50"
           >

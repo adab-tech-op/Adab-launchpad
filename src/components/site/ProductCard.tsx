@@ -5,6 +5,10 @@ import { saleFor, formatPrice } from "@/lib/pricing";
 export function ProductCard({ product }: { product: Product }) {
   const primary = product.images[0];
   const hover = product.images[1] ?? primary;
+  // A drop piece whose date has passed is a normal available product — don't
+  // print its manual "Preview" status; show nothing (or "New").
+  const liveDrop = !!product.dropDate && Date.now() >= new Date(product.dropDate).getTime();
+  const badge = liveDrop ? "" : product.status;
   return (
     <Link href={`/product/${product.slug}`} className="group block">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[color:var(--paper)]">
@@ -29,9 +33,11 @@ export function ProductCard({ product }: { product: Product }) {
           aria-hidden
           className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-100"
         />
-        <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground">
-          {product.status}
-        </span>
+        {badge && (
+          <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground">
+            {badge}
+          </span>
+        )}
         <div className="absolute inset-x-0 bottom-0 flex justify-center pb-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
           <span className="rounded-full bg-foreground px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] text-background">
             View Product

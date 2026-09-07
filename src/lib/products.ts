@@ -2,6 +2,8 @@ import "server-only";
 import { sql } from "@/lib/db";
 import { products as staticProducts, type Product } from "@/data/products";
 import { formatPrice } from "@/lib/pricing";
+import { getDropWindowDays } from "@/lib/settings-server";
+import { dropStateOf, isShopVisible, isDropVisible } from "@/lib/drop";
 
 export type { Product };
 export { formatPrice };
@@ -27,6 +29,9 @@ type Row = {
   fabric_type_id: number | null;
   discount_percent: number | null;
   discount_until: string | null;
+  drop_date: string | null;
+  drop_end: string | null;
+  in_shop: boolean | null;
 };
 
 function rowToProduct(r: Row): Product {
@@ -52,6 +57,9 @@ function rowToProduct(r: Row): Product {
     careNote: r.care_note ?? undefined,
     deliveryNote: r.delivery_note ?? undefined,
     fabricTypeId: r.fabric_type_id ?? undefined,
+    dropDate: r.drop_date ?? undefined,
+    dropEnd: r.drop_end ?? undefined,
+    inShop: r.in_shop ?? false,
   };
 }
 
@@ -111,4 +119,51 @@ export async function getProductSlugs(): Promise<string[]> {
     console.error("[products] getProductSlugs failed, using static fallback", err);
   }
   return staticProducts.map((p) => p.slug);
+}
+
+// ---- Drop-aware storefront reads --------------------------------------------
+
+/** Products visible on /shop, home, search, sitemap (public):
+ *  drop pieces only once live; concluded pieces only if resurfaced; pieces with
+ *  no drop scheduled behave exactly as before. */
+export async function getShopVisibleProducts(): Promise<Product[]> {
+  const [all, windowDays] = await Promise.all([getAllProducts(), getDropWindowDays()]);
+  const now = new Date();
+  return all.filter((p) => isShopVisible(dropStateOf(p, windowDays, now), p.inShop));
+}
+
+export type DropProduct = Product & { state: "upcoming" | "available" };
+
+/** Products for the /drop page, split and each tagged with its state.
+ *  upcoming sorted by soonest drop_date; available sorted by most recent. */
+export async function getDropProducts(): Promise<{ upcoming: DropProduct[]; available: DropProduct[] }> {
+  const [all, windowDays] = await Promise.all([getAllProducts(), getDropWindowDays()]);
+  const now = new Date();
+  const upcoming: DropProduct[] = [];
+  const available: DropProduct[] = [];
+  for (const p of all) {
+    const state = dropStateOf(p, windowDays, now);
+    if (!isDropVisible(state)) continue;
+    (state === "upcoming" ? upcoming : available).push({ ...p, state: state as "upcoming" | "available" });
+  }
+  upcoming.sort((a, b) => new Date(a.dropDate!).getTime() - new Date(b.dropDate!).getTime());
+  available.sort((a, b) => new Date(b.dropDate!).getTime() - new Date(a.dropDate!).getTime());
+  return { upcoming, available };
+}
+
+/** The next drop instant to count down to (soonest upcoming drop_date), or null. */
+export async function getNextDropDate(): Promise<string | null> {
+  const { upcoming } = await getDropProducts();
+  return upcoming[0]?.dropDate ?? null;
+}
+
+/** The most recent concluded/past drop_date, for "previous drop … ago". */
+export async function getPreviousDropDate(): Promise<string | null> {
+  const all = await getAllProducts();
+  const now = Date.now();
+  const past = all
+    .map((p) => p.dropDate)
+    .filter((d): d is string => !!d && new Date(d).getTime() <= now)
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  return past[0] ?? null;
 }

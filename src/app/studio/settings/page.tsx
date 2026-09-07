@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireStudioAccess, atLeast } from "@/lib/roles";
-import { getLatestCount, getBanner, getAllowMultiOrder } from "@/lib/settings-server";
+import { getDropWindowDays, getBanner, getAllowMultiOrder } from "@/lib/settings-server";
 import { SettingsClient } from "./settings-client";
 
 export const metadata = { title: "Settings — ADAB Studio" };
@@ -8,7 +8,7 @@ export const metadata = { title: "Settings — ADAB Studio" };
 export default async function SettingsPage() {
   const actor = await requireStudioAccess();
   if (!atLeast(actor.role, "admin")) redirect("/studio"); // moderators can't edit
-  const [latestCount, banner, allowMulti] = await Promise.all([getLatestCount(), getBanner(), getAllowMultiOrder()]);
+  const [dropWindow, banner, allowMulti] = await Promise.all([getDropWindowDays(), getBanner(), getAllowMultiOrder()]);
 
   return (
     <div>
@@ -17,7 +17,7 @@ export default async function SettingsPage() {
         Site-wide controls. More options will land here as they&rsquo;re built.
       </p>
       <div className="mt-8 max-w-lg">
-        <SettingsClient latestCount={latestCount} banner={banner} allowMulti={allowMulti} />
+        <SettingsClient dropWindow={dropWindow} banner={banner} allowMulti={allowMulti} />
       </div>
     </div>
   );

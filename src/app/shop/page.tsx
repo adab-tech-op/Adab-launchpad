@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getAllProducts } from "@/lib/products";
+import { getShopVisibleProducts } from "@/lib/products";
 import { getBanner } from "@/lib/settings-server";
 import { ShopClient } from "./shop-client";
 
@@ -13,6 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ShopPage() {
-  const [products, banner] = await Promise.all([getAllProducts(), getBanner()]);
+  const [products, banner] = await Promise.all([getShopVisibleProducts(), getBanner()]);
   return <ShopClient products={products} banner={banner} />;
 }

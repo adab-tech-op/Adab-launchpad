@@ -44,3 +44,12 @@ export async function getBanner(): Promise<BannerSettings> {
 export async function getAllowMultiOrder(): Promise<boolean> {
   return (await getSetting("allow_multi_order")) === true;
 }
+
+/** Days before a product's drop_date that it flips from hidden to "upcoming".
+ *  Admin-set; clamped 1–60; default 7. */
+export async function getDropWindowDays(): Promise<number> {
+  const raw = await getSetting("drop_window_days");
+  const n = typeof raw === "number" ? raw : parseInt(String(raw), 10);
+  if (Number.isFinite(n) && n >= 1 && n <= 60) return n;
+  return 7;
+}

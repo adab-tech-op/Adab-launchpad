@@ -13,7 +13,7 @@ import { useCart } from "@/context/CartContext";
 
 const NAV = [
   { to: "/shop", label: "Shop" },
-  { to: "/latest", label: "Latest" },
+  { to: "/drop", label: "The Drop" },
   { to: "/manifesto", label: "Manifesto & History" },
   { to: "/care-guide", label: "Care Guide" },
   { to: "/scrapbook", label: "Scrapbook" },

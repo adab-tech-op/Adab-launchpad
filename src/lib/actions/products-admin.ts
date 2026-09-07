@@ -28,8 +28,14 @@ const schema = z.object({
   fabric_type_id: z.coerce.number().int().positive().nullable().optional(),
   discount_percent: z.coerce.number().int().min(0).max(90).optional(),
   discount_until: z.string().trim().optional().or(z.literal("")),
+  drop_date: z.string().trim().optional().or(z.literal("")), // ISO UTC or ""
+  drop_end: z.string().trim().optional().or(z.literal("")), // ISO UTC or ""
+  in_shop: z.boolean().optional(),
   sort_order: z.number().int().min(0).max(100000),
-});
+}).refine(
+  (d) => !d.drop_end || !d.drop_date || new Date(d.drop_end) > new Date(d.drop_date),
+  { message: "Drop end must be after the drop date.", path: ["drop_end"] },
+);
 
 export type ProductInput = z.infer<typeof schema>;
 export type ProductActionResult = { ok: true } | { ok: false; error: string };
@@ -44,8 +50,38 @@ async function mutatorEmail(): Promise<string | null> {
 function revalidateAll(slug: string) {
   revalidatePath("/");
   revalidatePath("/shop");
+  revalidatePath("/drop");
   revalidatePath(`/product/${slug}`);
   revalidatePath("/studio/products");
+}
+
+/** Conclude a live drop immediately (hides it from users; stays in the
+ *  dashboard). Implemented as "end it now" so it composes with drop_end. */
+export async function closeDrop(slug: string): Promise<ProductActionResult> {
+  const admin = await mutatorEmail();
+  if (!admin) return { ok: false, error: "Not authorized." };
+  try {
+    await sql`UPDATE products SET drop_end = now(), updated_at = now() WHERE slug = ${slug}`;
+  } catch (err) {
+    return { ok: false, error: `Could not close the drop: ${String((err as { message?: string })?.message ?? err)}` };
+  }
+  await recordAudit(admin, "product.drop.close", slug);
+  revalidateAll(slug);
+  return { ok: true };
+}
+
+/** Resurface (or hide) a concluded piece in /shop only. */
+export async function setInShop(slug: string, value: boolean): Promise<ProductActionResult> {
+  const admin = await mutatorEmail();
+  if (!admin) return { ok: false, error: "Not authorized." };
+  try {
+    await sql`UPDATE products SET in_shop = ${value}, updated_at = now() WHERE slug = ${slug}`;
+  } catch (err) {
+    return { ok: false, error: `Could not update: ${String((err as { message?: string })?.message ?? err)}` };
+  }
+  await recordAudit(admin, "product.drop.in_shop", slug, { value });
+  revalidateAll(slug);
+  return { ok: true };
 }
 
 export async function createProduct(input: ProductInput): Promise<ProductActionResult> {
@@ -56,11 +92,11 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
   const d = parsed.data;
   try {
     await sql`
-      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, sort_order)
+      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, drop_date, drop_end, in_shop, sort_order)
       VALUES (${d.slug}, ${d.name}, ${d.status}, ${d.price_bdt}, ${d.founding_note || null}, ${d.color},
               ${JSON.stringify(d.swatches)}::jsonb, ${d.short}, ${JSON.stringify(d.images)}::jsonb,
               ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.story || null},
-              ${d.fit_note || null}, ${d.care_note || null}, ${d.delivery_note || null}, ${d.fabric_type_id ?? null}, ${d.discount_percent ?? 0}, ${d.discount_until || null}, ${d.sort_order})
+              ${d.fit_note || null}, ${d.care_note || null}, ${d.delivery_note || null}, ${d.fabric_type_id ?? null}, ${d.discount_percent ?? 0}, ${d.discount_until || null}, ${d.drop_date || null}, ${d.drop_end || null}, ${d.in_shop ?? false}, ${d.sort_order})
     `;
   } catch (err) {
     const msg = String((err as { message?: string })?.message ?? err);
@@ -101,6 +137,7 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
         fit_note = ${d.fit_note || null}, care_note = ${d.care_note || null}, delivery_note = ${d.delivery_note || null},
         fabric_type_id = ${d.fabric_type_id ?? null},
         discount_percent = ${d.discount_percent ?? 0}, discount_until = ${d.discount_until || null},
+        drop_date = ${d.drop_date || null}, drop_end = ${d.drop_end || null}, in_shop = ${d.in_shop ?? false},
         sort_order = ${d.sort_order}, updated_at = now()
       WHERE slug = ${d.slug}
     `;
@@ -160,6 +197,10 @@ export type EditableProduct = {
   fabric_type_id: number | null;
   discount_percent: number;
   discount_until: string;
+  drop_date: string | null;
+  drop_end: string | null;
+  in_shop: boolean;
+  sold_out?: boolean;
   sort_order: number;
 };
 
@@ -167,7 +208,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
   if (!(await mutatorEmail())) return null;
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, sort_order
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, drop_date, drop_end, in_shop, sold_out, sort_order
       FROM products WHERE slug = ${slug}
     `) as EditableProduct[];
     const r = rows[0];
@@ -187,6 +228,9 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
       fabric_type_id: r.fabric_type_id ?? null,
       discount_percent: r.discount_percent ?? 0,
       discount_until: r.discount_until ? String(r.discount_until).slice(0, 10) : "",
+      drop_date: r.drop_date ?? null,
+      drop_end: r.drop_end ?? null,
+      in_shop: r.in_shop ?? false,
     };
   } catch (err) {
     console.error("[products-admin] getProductForEdit failed", err);

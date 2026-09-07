@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, ArrowUp, ArrowDown, Loader2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
-import { createProduct, updateProduct, type EditableProduct } from "@/lib/actions/products-admin";
+import { createProduct, updateProduct, closeDrop, type EditableProduct } from "@/lib/actions/products-admin";
 import { saveProductStock, markSoldOut } from "@/lib/actions/inventory";
 import type { FabricType } from "@/lib/fabrics";
 import { UploadHint } from "@/components/studio/UploadHint";
+import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -40,6 +41,9 @@ const empty: EditableProduct = {
   fabric_type_id: null,
   discount_percent: 0,
   discount_until: "",
+  drop_date: "",
+  drop_end: "",
+  in_shop: false,
   sort_order: 0,
 };
 
@@ -112,6 +116,9 @@ export function ProductForm({
     const payload = {
       ...p,
       founding_note: p.founding_note || "",
+      drop_date: p.drop_date || "",
+      drop_end: p.drop_end || "",
+      in_shop: !!p.in_shop,
       swatches: p.swatches.filter((sw) => sw.name.trim() !== ""),
       details: p.details.filter((d) => d.trim() !== ""),
     };
@@ -190,6 +197,62 @@ export function ProductForm({
           <span className={labelCls}>Sort order</span>
           <input type="number" min={0} placeholder="0" value={p.sort_order || ""} onChange={(e) => set("sort_order", Number(e.target.value) || 0)} className={inputCls + " mt-2"} />
           <span className="mt-1 block text-[10px] text-muted-foreground">Lower shows first on shop.</span>
+        </label>
+      </div>
+
+      {/* Drop schedule — when set, this drives visibility/purchasability (times in Bangladesh / Asia-Dhaka) */}
+      <div className="rounded-xl border border-border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className={labelCls}>Drop schedule <span className="normal-case tracking-normal text-muted-foreground">— optional; times in Bangladesh (Asia/Dhaka)</span></span>
+          {p.drop_date && mode === "edit" && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm("Close this drop now? It will be hidden from customers (still visible in the dashboard).")) return;
+                const res = await closeDrop(p.slug);
+                if (res.ok) { set("drop_end", new Date().toISOString()); toast.success("Drop closed"); }
+                else toast.error(res.error);
+              }}
+              className="rounded-full border border-border px-3 py-1 text-xs uppercase tracking-[0.12em] text-muted-foreground hover:border-destructive hover:text-destructive"
+            >
+              Close drop now
+            </button>
+          )}
+        </div>
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="text-[11px] text-muted-foreground">Drops on (becomes purchaseable)</span>
+            <input
+              type="datetime-local"
+              value={isoToDhakaLocal(p.drop_date)}
+              onChange={(e) => set("drop_date", e.target.value ? dhakaLocalToISO(e.target.value) : "")}
+              className={inputCls + " mt-1"}
+            />
+            {p.drop_date && <span className="mt-1 block text-[10px] text-muted-foreground">Dhaka: {formatDhaka(p.drop_date)}</span>}
+          </label>
+          <label className="block">
+            <span className="text-[11px] text-muted-foreground">Drop ends (optional — auto-hides)</span>
+            <input
+              type="datetime-local"
+              value={isoToDhakaLocal(p.drop_end)}
+              onChange={(e) => set("drop_end", e.target.value ? dhakaLocalToISO(e.target.value) : "")}
+              className={inputCls + " mt-1"}
+            />
+            {p.drop_end && <span className="mt-1 block text-[10px] text-muted-foreground">Dhaka: {formatDhaka(p.drop_end)}</span>}
+          </label>
+        </div>
+        {p.drop_date ? (
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+            Hidden until ~a week before (set in Settings), then shows as <b>Upcoming</b> on the Drop page, then becomes buyable at the drop time. The <b>Status</b> above is ignored while a drop date is set.
+          </p>
+        ) : (
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+            No drop date → the piece follows the <b>Status</b> above, as normal.
+          </p>
+        )}
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={!!p.in_shop} onChange={(e) => set("in_shop", e.target.checked)} className="accent-foreground" />
+          Show in Shop after the drop concludes <span className="text-muted-foreground">(never returns to the Drop page)</span>
         </label>
       </div>
 

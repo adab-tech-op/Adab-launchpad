@@ -238,26 +238,30 @@ export function ContentEditor({
   manifesto,
   care,
   home,
+  drop,
 }: {
   manifesto: ManifestoContent;
   care: CareContent;
   home: HomeContent;
+  drop: HomeContent;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<"home" | "manifesto" | "care">("home");
+  const [tab, setTab] = useState<"home" | "drop" | "manifesto" | "care">("home");
   const [m, setM] = useState<ManifestoContent>(manifesto);
   const [c, setC] = useState<CareContent>(care);
   const [h, setH] = useState<HomeContent>(home);
+  const [dr, setDr] = useState<HomeContent>(drop);
   const [pending, startTransition] = useTransition();
 
-  const tabLabel = (t: "home" | "manifesto" | "care") =>
-    t === "home" ? "Home hero" : t === "manifesto" ? "Manifesto" : "Care guide";
+  const tabLabel = (t: "home" | "drop" | "manifesto" | "care") =>
+    t === "home" ? "Home hero" : t === "drop" ? "Drop hero" : t === "manifesto" ? "Manifesto" : "Care guide";
 
   const save = () =>
     startTransition(async () => {
       const res =
         tab === "manifesto" ? await savePageContent("manifesto", m)
         : tab === "care" ? await savePageContent("care", c)
+        : tab === "drop" ? await savePageContent("drop", dr)
         : await savePageContent("home", h);
       if (!res.ok) {
         toast.error(res.error);
@@ -269,8 +273,8 @@ export function ContentEditor({
 
   return (
     <div>
-      <div className="flex gap-2">
-        {(["home", "manifesto", "care"] as const).map((t) => (
+      <div className="flex flex-wrap gap-2">
+        {(["home", "drop", "manifesto", "care"] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -286,37 +290,9 @@ export function ContentEditor({
 
       <div className="mt-6 space-y-8">
         {tab === "home" ? (
-          <div className="space-y-6">
-            <div className="rounded-xl border border-border p-5">
-              <p className={labelCls}>Home hero background</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                The big image behind the homepage headline. The buttons stay fixed.
-              </p>
-              <div className="mt-4">
-                <HeroImagesEditor value={h.hero} onChange={(hero) => setH({ ...h, hero })} />
-              </div>
-            </div>
-
-            <HeroOverlayEditor value={h.overlay} onChange={(overlay) => setH({ ...h, overlay })} previewImage={h.hero.desktop || undefined} />
-
-            <div className="space-y-4 rounded-xl border border-border p-5">
-              <p className={labelCls}>Hero text</p>
-              <div>
-                <label className={labelCls}>Heading <span className="normal-case tracking-normal">(line breaks allowed)</span></label>
-                <div className="mt-1 flex items-start gap-3">
-                  <textarea className={`${inputCls} resize-y`} rows={2} value={h.heading} onChange={(e) => setH({ ...h, heading: e.target.value })} />
-                  <ColorField value={h.headingColor} onChange={(headingColor) => setH({ ...h, headingColor })} />
-                </div>
-              </div>
-              <div>
-                <label className={labelCls}>Subcopy (optional)</label>
-                <div className="mt-1 flex items-start gap-3">
-                  <input className={inputCls} value={h.subcopy} onChange={(e) => setH({ ...h, subcopy: e.target.value })} />
-                  <ColorField value={h.subcopyColor} onChange={(subcopyColor) => setH({ ...h, subcopyColor })} />
-                </div>
-              </div>
-            </div>
-          </div>
+          <HeroPageEditor value={h} onChange={setH} note="The big image behind the homepage headline. The buttons stay fixed." />
+        ) : tab === "drop" ? (
+          <HeroPageEditor value={dr} onChange={setDr} note="The hero at the top of the Drop page (above the countdown). Per-product drop dates are set on each product." />
         ) : tab === "manifesto" ? (
           <>
             <HeroEditor hero={m.hero} onChange={(hero) => setM({ ...m, hero })} />
@@ -348,6 +324,39 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
     <div className="flex shrink-0 flex-col items-center gap-1">
       <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-9 w-10 cursor-pointer rounded border border-border bg-transparent" />
       <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="w-16 rounded border border-border bg-transparent px-1 py-0.5 text-center text-[11px]" />
+    </div>
+  );
+}
+
+// Shared editor for a page hero (home + drop): image, overlay, heading/subcopy + colours.
+function HeroPageEditor({ value, onChange, note }: { value: HomeContent; onChange: (v: HomeContent) => void; note: string }) {
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-border p-5">
+        <p className={labelCls}>Hero background</p>
+        <p className="mt-1 text-xs text-muted-foreground">{note}</p>
+        <div className="mt-4">
+          <HeroImagesEditor value={value.hero} onChange={(hero) => onChange({ ...value, hero })} />
+        </div>
+      </div>
+      <HeroOverlayEditor value={value.overlay} onChange={(overlay) => onChange({ ...value, overlay })} previewImage={value.hero.desktop || undefined} />
+      <div className="space-y-4 rounded-xl border border-border p-5">
+        <p className={labelCls}>Hero text</p>
+        <div>
+          <label className={labelCls}>Heading <span className="normal-case tracking-normal">(line breaks allowed)</span></label>
+          <div className="mt-1 flex items-start gap-3">
+            <textarea className={`${inputCls} resize-y`} rows={2} value={value.heading} onChange={(e) => onChange({ ...value, heading: e.target.value })} />
+            <ColorField value={value.headingColor} onChange={(headingColor) => onChange({ ...value, headingColor })} />
+          </div>
+        </div>
+        <div>
+          <label className={labelCls}>Subcopy (optional)</label>
+          <div className="mt-1 flex items-start gap-3">
+            <input className={inputCls} value={value.subcopy} onChange={(e) => onChange({ ...value, subcopy: e.target.value })} />
+            <ColorField value={value.subcopyColor} onChange={(subcopyColor) => onChange({ ...value, subcopyColor })} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
