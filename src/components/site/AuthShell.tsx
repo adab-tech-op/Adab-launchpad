@@ -32,7 +32,7 @@ export function AuthShell({
 
 export function authLabel(label: string) {
   return (
-    <span className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+    <span className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
       {label}
     </span>
   );

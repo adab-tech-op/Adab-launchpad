@@ -34,12 +34,12 @@ export function ProductCard({ product }: { product: Product }) {
           className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-100"
         />
         {badge && (
-          <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-foreground">
+          <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-[10px] uppercase tracking-[0.06em] text-foreground">
             {badge}
           </span>
         )}
         <div className="absolute inset-x-0 bottom-0 flex justify-center pb-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <span className="rounded-full bg-foreground px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] text-background">
+          <span className="rounded-full bg-foreground px-5 py-2.5 text-[10px] uppercase tracking-[0.08em] text-background">
             View Product
           </span>
         </div>
@@ -62,7 +62,7 @@ export function ProductCard({ product }: { product: Product }) {
             );
           })()}
           {product.foundingNote && (
-            <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-primary">
+            <p className="mt-0.5 text-[10px] uppercase tracking-[0.06em] text-primary">
               {product.foundingNote}
             </p>
           )}

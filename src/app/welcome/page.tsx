@@ -45,7 +45,7 @@ export default async function WelcomePage({
     >
       <Link
         href={signedIn ? "/account" : "/signin"}
-        className="inline-block rounded-full bg-foreground px-8 py-3.5 text-xs uppercase tracking-[0.2em] text-background hover:bg-foreground/85 transition-colors"
+        className="inline-block rounded-full bg-foreground px-8 py-3.5 text-xs uppercase tracking-[0.08em] text-background hover:bg-foreground/85 transition-colors"
       >
         {signedIn ? "Go to account" : "Sign in"}
       </Link>

@@ -8,7 +8,7 @@ import type { Profile } from "@/lib/queries";
 const SIZES = ["", "S", "M", "L", "XL", "XXL"];
 const input =
   "w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary transition-colors";
-const label = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const label = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 export function ProfileForm({ initial, name, email }: { initial: Profile; name: string; email: string }) {
   const [form, setForm] = useState(initial);
@@ -74,7 +74,7 @@ export function ProfileForm({ initial, name, email }: { initial: Profile; name: 
       <button
         type="submit"
         disabled={saving}
-        className="rounded-full bg-foreground px-8 py-3.5 text-xs uppercase tracking-[0.2em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
+        className="rounded-full bg-foreground px-8 py-3.5 text-xs uppercase tracking-[0.08em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
       >
         {saving ? "Saving…" : "Save profile"}
       </button>

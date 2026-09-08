@@ -51,7 +51,7 @@ export default async function DropPage() {
             {nextDate ? (
               <DropCountdown target={nextDate} url={`${SITE_URL}/drop`} title="ADAB Drop" />
             ) : (
-              <p className="text-sm uppercase tracking-[0.24em]" style={{ color: content.subcopyColor }}>
+              <p className="text-sm uppercase tracking-[0.08em]" style={{ color: content.subcopyColor }}>
                 No drop scheduled yet
               </p>
             )}
@@ -64,7 +64,7 @@ export default async function DropPage() {
           )}
 
           <div className="mt-8 flex flex-col items-center gap-2">
-            <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: content.subcopyColor, opacity: 0.8 }}>
+            <p className="text-[11px] uppercase tracking-[0.08em]" style={{ color: content.subcopyColor, opacity: 0.8 }}>
               Get notified
             </p>
             <div className="flex justify-center">
@@ -76,7 +76,7 @@ export default async function DropPage() {
 
       {available.length > 0 && (
         <section className="mx-auto max-w-7xl px-5 md:px-8 py-16">
-          <h2 className="font-display text-xs uppercase tracking-[0.24em] text-muted-foreground">Available now</h2>
+          <h2 className="font-display text-xs uppercase tracking-[0.08em] text-muted-foreground">Available now</h2>
           <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3">
             {available.map((p) => (
               <ProductCard key={p.slug} product={p} />
@@ -87,7 +87,7 @@ export default async function DropPage() {
 
       {upcoming.length > 0 && (
         <section className="mx-auto max-w-7xl px-5 md:px-8 py-16">
-          <h2 className="font-display text-xs uppercase tracking-[0.24em] text-muted-foreground">Dropping soon</h2>
+          <h2 className="font-display text-xs uppercase tracking-[0.08em] text-muted-foreground">Dropping soon</h2>
           <div className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
             {upcoming.map((p) => (
               <UpcomingCard key={p.slug} p={p} />
@@ -108,13 +108,13 @@ function UpcomingCard({ p }: { p: DropProduct }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
         )}
-        <span className="absolute left-3 top-3 rounded-full bg-foreground/85 px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-background">
+        <span className="absolute left-3 top-3 rounded-full bg-foreground/85 px-3 py-1 text-[10px] uppercase tracking-[0.05em] text-background">
           Upcoming
         </span>
       </div>
       <h3 className="mt-3 font-editorial text-xl">{p.name}</h3>
       {p.dropDate && (
-        <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Drops {formatDhaka(p.dropDate)}</p>
+        <p className="mt-1 text-[11px] uppercase tracking-[0.05em] text-muted-foreground">Drops {formatDhaka(p.dropDate)}</p>
       )}
       <div className="mt-3">
         <DropNotify productSlug={p.slug} compact />

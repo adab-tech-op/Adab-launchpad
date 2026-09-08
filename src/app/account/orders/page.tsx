@@ -18,7 +18,7 @@ export default async function OrdersPage() {
           <p className="font-editorial text-2xl italic text-muted-foreground">Nothing here yet. It just waits.</p>
           <Link
             href="/shop"
-            className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background"
+            className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background"
           >
             Browse the Drop
           </Link>
@@ -33,7 +33,7 @@ export default async function OrdersPage() {
             >
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4 group-hover:border-white/20">
                 <div>
-                  <span className="font-display tracking-[0.12em] text-primary group-hover:text-white">{o.orderRef}</span>
+                  <span className="font-display tracking-[0.05em] text-primary group-hover:text-white">{o.orderRef}</span>
                   <p className="mt-1 text-xs text-muted-foreground group-hover:text-white/70">
                     {new Date(o.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   </p>

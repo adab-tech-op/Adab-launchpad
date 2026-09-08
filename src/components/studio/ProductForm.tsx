@@ -15,7 +15,7 @@ const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
 const inputCls =
   "w-full rounded-md border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors";
-const labelCls = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 const STATUSES = ["Preview", "Available", "Coming Soon"] as const;
 
 const slugify = (s: string) =>
@@ -213,7 +213,7 @@ export function ProductForm({
                 if (res.ok) { set("drop_end", new Date().toISOString()); toast.success("Drop closed"); }
                 else toast.error(res.error);
               }}
-              className="rounded-full border border-border px-3 py-1 text-xs uppercase tracking-[0.12em] text-muted-foreground hover:border-destructive hover:text-destructive"
+              className="rounded-full border border-border px-3 py-1 text-xs uppercase tracking-[0.05em] text-muted-foreground hover:border-destructive hover:text-destructive"
             >
               Close drop now
             </button>
@@ -289,7 +289,7 @@ export function ProductForm({
               </button>
             </div>
           ))}
-          <button type="button" onClick={() => setP((s) => ({ ...s, details: [...s.details, ""] }))} className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={() => setP((s) => ({ ...s, details: [...s.details, ""] }))} className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground">
             <Plus className="h-3.5 w-3.5" /> Add detail
           </button>
         </div>
@@ -365,7 +365,7 @@ export function ProductForm({
               </button>
             </div>
           ))}
-          <button type="button" onClick={() => setP((s) => ({ ...s, swatches: [...s.swatches, { name: "", hex: "#003153" }] }))} className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={() => setP((s) => ({ ...s, swatches: [...s.swatches, { name: "", hex: "#003153" }] }))} className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground">
             <Plus className="h-3.5 w-3.5" /> Add swatch
           </button>
         </div>
@@ -407,7 +407,7 @@ export function ProductForm({
           ))}
           <label className="flex aspect-[4/5] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors">
             {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <UploadCloud className="h-6 w-6" strokeWidth={1.5} />}
-            <span className="text-[10px] uppercase tracking-[0.14em]">{uploading ? "Uploading" : p.images.length ? "Add / replace" : "Upload"}</span>
+            <span className="text-[10px] uppercase tracking-[0.05em]">{uploading ? "Uploading" : p.images.length ? "Add / replace" : "Upload"}</span>
             <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadFiles(e.target.files)} disabled={uploading} />
           </label>
         </div>
@@ -438,7 +438,7 @@ export function ProductForm({
               setP((s) => ({ ...s, images: [...s.images, url] }));
               setUrlInput("");
             }}
-            className="shrink-0 rounded-md border border-border px-4 text-xs uppercase tracking-[0.14em] hover:border-foreground transition-colors"
+            className="shrink-0 rounded-md border border-border px-4 text-xs uppercase tracking-[0.05em] hover:border-foreground transition-colors"
           >
             Add
           </button>
@@ -455,7 +455,7 @@ export function ProductForm({
         <div className="mt-3 grid grid-cols-5 gap-2">
           {SIZES.map((s) => (
             <label key={s} className="block">
-              <span className="block text-center text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{s}</span>
+              <span className="block text-center text-[11px] uppercase tracking-[0.06em] text-muted-foreground">{s}</span>
               <input
                 type="number"
                 min={0}
@@ -479,7 +479,7 @@ export function ProductForm({
         {mode === "edit" && (
           <div className="mt-5 border-t border-border pt-4">
             {soldOut ? (
-              <p className="text-xs uppercase tracking-[0.16em] text-red-600">This product is marked sold out.</p>
+              <p className="text-xs uppercase tracking-[0.06em] text-red-600">This product is marked sold out.</p>
             ) : (
               <button
                 type="button"
@@ -489,7 +489,7 @@ export function ProductForm({
                   if (res.ok) { setSoldOut(true); toast.success("Marked sold out"); router.refresh(); }
                   else toast.error(res.error);
                 }}
-                className="rounded-full border border-red-600/40 px-4 py-2 text-xs uppercase tracking-[0.16em] text-red-600 hover:bg-red-600/5"
+                className="rounded-full border border-red-600/40 px-4 py-2 text-xs uppercase tracking-[0.06em] text-red-600 hover:bg-red-600/5"
               >
                 Mark sold out (permanent)
               </button>
@@ -503,11 +503,11 @@ export function ProductForm({
           type="button"
           onClick={save}
           disabled={saving || uploading}
-          className="rounded-full bg-foreground px-8 py-3.5 text-xs uppercase tracking-[0.2em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
+          className="rounded-full bg-foreground px-8 py-3.5 text-xs uppercase tracking-[0.08em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
         >
           {saving ? "Saving…" : mode === "create" ? "Create product" : "Save changes"}
         </button>
-        <button type="button" onClick={() => router.push("/studio/products")} className="text-xs uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground">
+        <button type="button" onClick={() => router.push("/studio/products")} className="text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground">
           Cancel
         </button>
       </div>

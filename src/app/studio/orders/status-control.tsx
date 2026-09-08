@@ -38,7 +38,7 @@ function Segmented<T extends string>({
 }) {
   return (
     <div>
-      <p className="mb-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <p className="mb-1.5 text-[10px] uppercase tracking-[0.06em] text-muted-foreground">{label}</p>
       <div className={`inline-flex flex-wrap gap-1.5 ${disabled ? "opacity-50" : ""}`}>
         {steps.map((s) => {
           const active = s === value;
@@ -48,7 +48,7 @@ function Segmented<T extends string>({
               type="button"
               disabled={disabled || pending || active}
               onClick={() => onPick(s)}
-              className={`rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.12em] transition-colors disabled:cursor-default ${
+              className={`rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.05em] transition-colors disabled:cursor-default ${
                 active
                   ? pills[s]
                   : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground disabled:hover:border-border disabled:hover:text-muted-foreground"
@@ -99,7 +99,7 @@ export function StatusControl({ orderRef, axes }: { orderRef: string; axes: Orde
   return (
     <div className="flex flex-col gap-3">
       {state.cancelled && (
-        <span className="inline-flex w-fit items-center rounded-full bg-destructive/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-destructive">
+        <span className="inline-flex w-fit items-center rounded-full bg-destructive/10 px-3 py-1 text-[10px] uppercase tracking-[0.06em] text-destructive">
           Cancelled
         </span>
       )}
@@ -127,7 +127,7 @@ export function StatusControl({ orderRef, axes }: { orderRef: string; axes: Orde
         type="button"
         onClick={toggleCancel}
         disabled={pending}
-        className="w-fit text-[10px] uppercase tracking-[0.16em] text-muted-foreground underline underline-offset-4 hover:text-destructive disabled:opacity-50"
+        className="w-fit text-[10px] uppercase tracking-[0.06em] text-muted-foreground underline underline-offset-4 hover:text-destructive disabled:opacity-50"
       >
         {state.cancelled ? "Restore order" : "Cancel order"}
       </button>

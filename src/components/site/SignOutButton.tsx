@@ -12,7 +12,7 @@ export function SignOutButton() {
         router.push("/");
         router.refresh();
       }}
-      className="text-xs uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground transition-colors"
+      className="text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground transition-colors"
     >
       Sign out
     </button>

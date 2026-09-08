@@ -16,7 +16,7 @@ export function CartClient() {
           <p className="font-editorial italic text-2xl">Your cart is quiet.</p>
           <Link
             href="/shop"
-            className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background"
+            className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background"
           >
             Browse the Drop
           </Link>
@@ -35,7 +35,7 @@ export function CartClient() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-display text-lg">{item.name}</h3>
-                    <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="mt-1 text-xs uppercase tracking-[0.05em] text-muted-foreground">
                       {item.color} · Size {item.size}
                     </p>
                     <div className="mt-4 flex items-center gap-4">
@@ -50,7 +50,7 @@ export function CartClient() {
                       </div>
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                        className="text-xs uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
                       >
                         <X className="h-3.5 w-3.5" strokeWidth={1.5} /> Remove
                       </button>
@@ -65,7 +65,7 @@ export function CartClient() {
 
             <Link
               href="/shop"
-              className="mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground"
+              className="mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.5} /> Continue Shopping
             </Link>
@@ -88,7 +88,7 @@ export function CartClient() {
             </p>
             <Link
               href="/checkout"
-              className="mt-6 block w-full rounded-full bg-primary py-4 text-center text-xs uppercase tracking-[0.2em] text-primary-foreground hover:opacity-90 transition"
+              className="mt-6 block w-full rounded-full bg-primary py-4 text-center text-xs uppercase tracking-[0.08em] text-primary-foreground hover:opacity-90 transition"
             >
               Checkout
             </Link>

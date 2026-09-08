@@ -127,7 +127,7 @@ export function ContactClient() {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-full bg-primary px-8 py-3.5 text-xs uppercase tracking-[0.2em] text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+            className="rounded-full bg-primary px-8 py-3.5 text-xs uppercase tracking-[0.08em] text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
           >
             {submitting ? "Sending..." : "Submit"}
           </button>
@@ -135,7 +135,7 @@ export function ContactClient() {
 
         <aside className="space-y-10">
           <div>
-            <p className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               Support
             </p>
             <a
@@ -146,7 +146,7 @@ export function ContactClient() {
             </a>
           </div>
           <div>
-            <p className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               Studio
             </p>
             <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
@@ -155,7 +155,7 @@ export function ContactClient() {
             </p>
           </div>
           <div>
-            <p className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               Follow
             </p>
             <a
@@ -211,7 +211,7 @@ const inputCls =
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+      <span className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
         {label}
       </span>
       <div className="mt-2">{children}</div>
