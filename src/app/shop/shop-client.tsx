@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import type { Product } from "@/data/products";
+import type { Teaser } from "@/lib/teasers";
 import { BANNER_DEFAULT, type BannerSettings } from "@/lib/settings";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -17,24 +18,17 @@ const COLORS = [
   { name: "Parchment", hex: "#f5f0e8" },
 ];
 
-const COMING_SOON = [
-  "Pattern in development",
-  "Pattern in development",
-  "Pattern in development",
-  "Pattern in development",
-];
-
 export function ShopClient({
   products,
   eyebrow = "Drop 01",
   heading = "Shop.",
-  showComingSoon = true,
+  teasers = [],
   banner,
 }: {
   products: Product[];
   eyebrow?: string;
   heading?: string;
-  showComingSoon?: boolean;
+  teasers?: Teaser[];
   banner?: BannerSettings;
 }) {
   const [sort, setSort] = useState("Featured");
@@ -98,10 +92,9 @@ export function ShopClient({
           {products.map((p) => (
             <ProductCard key={p.slug} product={p} />
           ))}
-          {showComingSoon &&
-            COMING_SOON.map((label, i) => (
-              <ComingSoonCard key={i} label={label} />
-            ))}
+          {teasers.map((t) => (
+            <ComingSoonCard key={t.id} teaser={t} />
+          ))}
         </div>
       </section>
 
@@ -152,12 +145,12 @@ export function ShopClient({
   );
 }
 
-function ComingSoonCard({ label }: { label: string }) {
+function ComingSoonCard({ teaser }: { teaser: Teaser }) {
   return (
     <div className="group block cursor-default">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[color:var(--paper)]">
         <img
-          src={placeholderImg}
+          src={teaser.imageUrl || placeholderImg}
           alt=""
           loading="lazy"
           width={1024}
@@ -171,12 +164,8 @@ function ComingSoonCard({ label }: { label: string }) {
         </div>
       </div>
       <div className="mt-4">
-        <h3 className="font-sans text-lg leading-tight text-muted-foreground">
-          {label}
-        </h3>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          Non-clickable · arriving in a future drop
-        </p>
+        <h3 className="font-sans text-lg leading-tight text-muted-foreground">{teaser.label}</h3>
+        {teaser.subtext && <p className="mt-1 text-xs text-muted-foreground/70">{teaser.subtext}</p>}
       </div>
     </div>
   );
