@@ -9,7 +9,6 @@ export function CartClient() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 md:px-8 py-16 md:py-24">
-      <p className="text-[11px] uppercase tracking-[0.24em] text-primary font-display">Bag</p>
       <h1 className="mt-3 font-display text-5xl md:text-6xl">Your cart</h1>
 
       {items.length === 0 ? (

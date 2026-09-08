@@ -19,7 +19,6 @@ export default async function WishlistPage() {
 
   return (
     <div>
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Wishlist</p>
       <h1 className="mt-3 font-editorial text-4xl">Saved pieces.</h1>
       <WishlistGrid initial={tiles} />
     </div>

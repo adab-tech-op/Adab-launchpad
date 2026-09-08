@@ -18,7 +18,6 @@ export default async function AcceptInvitePage({
 
   const shell = (children: React.ReactNode) => (
     <div className="mx-auto max-w-lg px-5 md:px-8 py-16 md:py-24">
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">ADAB Studio</p>
       <h1 className="mt-3 font-editorial text-4xl">Invitation.</h1>
       {children}
     </div>

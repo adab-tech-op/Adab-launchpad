@@ -82,9 +82,6 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       <section data-reveal-images-skip className="mx-auto max-w-7xl px-5 md:px-8 py-24 md:py-32">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
           <div>
-            <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">
-              The ADAB idea
-            </p>
             <p className="mt-6 font-editorial text-4xl md:text-5xl leading-[1.15] text-foreground">
               “We don't believe history gets lost. It just waits.”
             </p>
@@ -128,9 +125,6 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       <section id="waitlist" className="mx-auto max-w-7xl px-5 md:px-8 py-24 md:py-32">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <p className="text-[11px] font-display uppercase tracking-[0.24em] text-primary">
-              Founding Drop
-            </p>
             <h2 className="mt-3 font-sans text-4xl md:text-5xl">
               Two pieces. One DNA.
             </h2>
@@ -176,9 +170,6 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       <section className="mx-auto max-w-7xl px-5 md:px-8 py-24 md:py-32">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <p className="text-[11px] font-display uppercase tracking-[0.24em] text-primary">
-              Scrapbook
-            </p>
             <h2 className="mt-3 font-sans text-4xl md:text-5xl">
               From the Adab Scrapbook.
             </h2>

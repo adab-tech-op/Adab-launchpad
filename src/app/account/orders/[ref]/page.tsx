@@ -33,7 +33,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ re
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Order</p>
           <h1 className="mt-2 font-editorial text-4xl tracking-[0.04em]">{order.orderRef}</h1>
           <p className="mt-1 text-xs text-muted-foreground">
             Placed {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}

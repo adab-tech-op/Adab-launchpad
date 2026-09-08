@@ -78,9 +78,6 @@ export function ContactClient() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 md:px-8 py-24 md:py-32">
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">
-        Contact
-      </p>
       <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl uppercase tracking-[0.08em]">
         Contact Adab
       </h1>

@@ -177,7 +177,6 @@ export function CheckoutClient({
 
   return (
     <div className="mx-auto max-w-3xl px-5 md:px-8 py-16 md:py-24">
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Checkout · Founding Drop</p>
       <h1 className="mt-3 font-editorial text-4xl md:text-5xl">Choose sizes &amp; quantities.</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Set how many you want in each size. You can order the same piece in multiple sizes.
