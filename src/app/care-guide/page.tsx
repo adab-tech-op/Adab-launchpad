@@ -31,7 +31,12 @@ export default async function CareGuide() {
           const Icon = SECTION_ICONS[i] ?? Package;
           return (
             <div key={i} className="rounded-2xl border border-border p-8 paper-grain">
-              <Icon className="h-6 w-6 text-primary" strokeWidth={1.25} />
+              {s.icon ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={s.icon} alt="" className="h-6 w-6 object-contain" />
+              ) : (
+                <Icon className="h-6 w-6 text-primary" strokeWidth={1.25} />
+              )}
               <h2 className="mt-6 font-sans text-2xl">{s.title}</h2>
               <div
                 className="prose-editorial mt-3 text-sm leading-relaxed text-muted-foreground"

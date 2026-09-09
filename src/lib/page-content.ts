@@ -4,7 +4,7 @@
 
 import { emptyHeroImages, defaultOverlay, type HeroImages, type HeroOverlay } from "@/lib/hero";
 
-export type Block = { title: string; body: string };
+export type Block = { title: string; body: string; icon?: string }; // icon = optional uploaded SVG (falls back to the built-in card icon)
 
 // A story part additionally carries an optional paired image (Cloudinary URL),
 // shown in the scroll-driven editorial layout on the manifesto page. Empty/unset
