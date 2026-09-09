@@ -22,12 +22,14 @@ export function ShopClient({
   products,
   eyebrow = "Drop 01",
   heading = "Shop.",
+  subcopy = "Founding pieces in limited quantities. No guaranteed restock.",
   teasers = [],
   banner,
 }: {
   products: Product[];
   eyebrow?: string;
   heading?: string;
+  subcopy?: string;
   teasers?: Teaser[];
   banner?: BannerSettings;
 }) {
@@ -55,9 +57,7 @@ export function ShopClient({
 
       <section className="mx-auto max-w-7xl px-5 md:px-8 pt-16 md:pt-24 pb-12">
         <h1 className="mt-3 font-editorial text-5xl md:text-6xl">{heading}</h1>
-        <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
-          Founding pieces in limited quantities. No guaranteed restock.
-        </p>
+        <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">{subcopy}</p>
       </section>
 
       <section className="mx-auto max-w-7xl px-5 md:px-8 pb-24">

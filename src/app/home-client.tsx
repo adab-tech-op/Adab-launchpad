@@ -7,6 +7,7 @@ import { AuthErrorCatcher } from "@/components/site/AuthErrorCatcher";
 import { HeroBackground } from "@/components/site/HeroBackground";
 import { overlayStyle } from "@/lib/hero";
 import type { HomeContent } from "@/lib/page-content";
+import { HOME_BODY_DEFAULT } from "@/lib/page-content";
 import type { Product } from "@/data/products";
 
 const storyArchival = "/assets/story-archival.jpg";
@@ -19,6 +20,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
   const pictureRef = useRef<HTMLDivElement>(null);
   const [parallaxY, setParallaxY] = useState(0);
   const overlay = overlayStyle(home.overlay);
+  const body = home.body ?? HOME_BODY_DEFAULT;
 
   useEffect(() => {
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -83,7 +85,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
           <div>
             <p className="mt-6 font-editorial text-4xl md:text-5xl leading-[1.15] text-foreground">
-              “We don't believe history gets lost. It just waits.”
+              {`“${body.storyQuote}”`}
             </p>
             <Link
               href="/manifesto"
@@ -107,11 +109,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       {/* Trust strip */}
       <section data-reveal-images-skip className="border-y border-border paper-grain">
         <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
-          {[
-            "Founding Drop — limited pieces, no restock",
-            "Verified 1950s–60s history, not costume",
-            "Made in Bangladesh",
-          ].map((t) => (
+          {body.trust.map((t) => (
             <div key={t} className="px-6 md:px-10 py-12 md:py-16">
               <p className="font-editorial text-2xl md:text-3xl leading-snug">
                 {t}
@@ -125,12 +123,8 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       <section id="waitlist" className="mx-auto max-w-7xl px-5 md:px-8 py-24 md:py-32">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <h2 className="mt-3 font-sans text-4xl md:text-5xl">
-              Two pieces. One DNA.
-            </h2>
-            <p className="mt-3 text-sm text-muted-foreground max-w-md">
-              Limited quantities. No restock.
-            </p>
+            <h2 className="mt-3 font-sans text-4xl md:text-5xl">{body.featuredHeading}</h2>
+            <p className="mt-3 text-sm text-muted-foreground max-w-md">{body.featuredSubcopy}</p>
           </div>
           <Link
             href="/shop"
@@ -149,17 +143,13 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       {/* Mini collection menu */}
       <section className="mx-auto max-w-7xl px-5 md:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {[
-            { l: "Piran", to: "/shop" },
-            { l: "Hoodie", to: "/shop" },
-            { l: "Coming Next", to: "/shop" },
-          ].map((c) => (
+          {body.menu.map((l) => (
             <Link
-              key={c.l}
-              href={c.to}
+              key={l}
+              href="/shop"
               className="group flex items-center justify-between rounded-2xl border border-border px-5 py-6 hover:border-foreground transition-colors"
             >
-              <span className="font-editorial text-2xl">{c.l}</span>
+              <span className="font-editorial text-2xl">{l}</span>
               <span className="text-foreground/50 group-hover:text-foreground transition-colors">→</span>
             </Link>
           ))}
@@ -170,12 +160,8 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       <section className="mx-auto max-w-7xl px-5 md:px-8 py-24 md:py-32">
         <div className="flex items-end justify-between gap-6 flex-wrap">
           <div>
-            <h2 className="mt-3 font-sans text-4xl md:text-5xl">
-              From the Adab Scrapbook.
-            </h2>
-            <p className="mt-3 text-sm text-muted-foreground max-w-md">
-              People, places, textures, and moments around Adab.
-            </p>
+            <h2 className="mt-3 font-sans text-4xl md:text-5xl">{body.scrapbookHeading}</h2>
+            <p className="mt-3 text-sm text-muted-foreground max-w-md">{body.scrapbookSubcopy}</p>
           </div>
           <Link
             href="/scrapbook"
