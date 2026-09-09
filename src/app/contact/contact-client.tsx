@@ -5,6 +5,7 @@ import { ChevronDown, Instagram } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { createContactMessage } from "@/lib/actions/contact";
+import type { ContactContent } from "@/lib/page-content";
 
 const FAQ = [
   {
@@ -44,7 +45,7 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, "Message is required").max(4000),
 });
 
-export function ContactClient() {
+export function ContactClient({ content }: { content: ContactContent }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -81,12 +82,8 @@ export function ContactClient() {
       <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">
         Contact
       </p>
-      <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl uppercase tracking-[0.08em]">
-        Contact Adab
-      </h1>
-      <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
-        Questions about a piece, an order, sizing, or the brand — we read every note.
-      </p>
+      <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl uppercase tracking-[0.08em]">{content.heading}</h1>
+      <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">{content.subcopy}</p>
 
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -142,10 +139,10 @@ export function ContactClient() {
               Support
             </p>
             <a
-              href="mailto:hello@adab.co"
+              href={`mailto:${content.email}`}
               className="mt-2 block font-sans text-2xl text-foreground hover:text-primary transition-colors"
             >
-              hello@adab.co
+              {content.email}
             </a>
           </div>
           <div>
@@ -153,8 +150,8 @@ export function ContactClient() {
               Studio
             </p>
             <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
-              Dhaka, Bangladesh <br />
-              By appointment only.
+              {content.studioLocation} <br />
+              {content.studioNote}
             </p>
           </div>
           <div>
@@ -162,13 +159,13 @@ export function ContactClient() {
               Follow
             </p>
             <a
-              href="https://instagram.com/adab.co"
+              href={`https://instagram.com/${content.instagram.replace(/^@/, "")}`}
               target="_blank"
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
             >
               <Instagram className="h-4 w-4" strokeWidth={1.5} />
-              @adab.co
+              {content.instagram}
             </a>
           </div>
         </aside>
