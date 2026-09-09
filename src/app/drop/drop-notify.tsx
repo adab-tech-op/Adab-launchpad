@@ -47,7 +47,7 @@ export function DropNotify({
       <button
         onClick={submit}
         disabled={busy}
-        className="shrink-0 rounded-full bg-foreground px-5 py-2.5 text-xs uppercase tracking-[0.12em] text-background disabled:opacity-50"
+        className="shrink-0 rounded-full bg-foreground px-5 py-2.5 text-xs uppercase tracking-[0.05em] text-background disabled:opacity-50"
       >
         {busy ? "…" : "Notify me"}
       </button>

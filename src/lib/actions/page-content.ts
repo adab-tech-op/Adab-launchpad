@@ -70,6 +70,15 @@ const shapes = {
     headingColor: z.string().trim().max(9).default("#1c1c1c"),
     subcopy: z.string().trim().max(400).default(""),
     subcopyColor: z.string().trim().max(9).default("#1c1c1c"),
+    body: z.object({
+      featuredHeading: z.string().trim().max(160).default(""),
+      featuredSubcopy: z.string().trim().max(300).default(""),
+      storyQuote: z.string().trim().max(400).default(""),
+      trust: z.array(z.string().trim().max(120)).max(3).default([]),
+      menu: z.array(z.string().trim().max(60)).max(3).default([]),
+      scrapbookHeading: z.string().trim().max(160).default(""),
+      scrapbookSubcopy: z.string().trim().max(300).default(""),
+    }).optional(),
   }),
   drop: z.object({
     hero: heroImagesSchema,
@@ -78,6 +87,18 @@ const shapes = {
     headingColor: z.string().trim().max(9).default("#f5f0e8"),
     subcopy: z.string().trim().max(400).default(""),
     subcopyColor: z.string().trim().max(9).default("#f5f0e8"),
+  }),
+  shop: z.object({
+    heading: z.string().trim().max(120).default("Shop."),
+    subcopy: z.string().trim().max(300).default(""),
+  }),
+  contact: z.object({
+    heading: z.string().trim().max(120).default("Contact ADAB"),
+    subcopy: z.string().trim().max(400).default(""),
+    email: z.string().trim().max(160).default(""),
+    studioLocation: z.string().trim().max(160).default(""),
+    studioNote: z.string().trim().max(160).default(""),
+    instagram: z.string().trim().max(80).default(""),
   }),
 } as const;
 
@@ -88,6 +109,8 @@ const PATH_FOR_SLUG: Record<Slug, string> = {
   care: "/care-guide",
   home: "/",
   drop: "/drop",
+  shop: "/shop",
+  contact: "/contact",
 };
 
 // URLs referenced by a stored hero, tolerating the legacy single `image` string.

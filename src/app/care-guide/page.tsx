@@ -21,7 +21,6 @@ export default async function CareGuide() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 md:px-8 py-24 md:py-32">
-      <p className="font-display text-[11px] uppercase tracking-[0.22em] text-primary">Care</p>
       <h1 className="mt-4 font-sans text-5xl md:text-6xl leading-[0.95]">Care Guide.</h1>
       <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
         Adab pieces are designed for repeat wear. Care for them gently and they&rsquo;ll stay with you longer.
@@ -50,7 +49,6 @@ export default async function CareGuide() {
 
       {fabrics.length > 0 && (
         <div className="mt-24">
-          <p className="font-display text-[11px] uppercase tracking-[0.22em] text-primary">By fabric</p>
           <h2 className="mt-4 font-sans text-3xl md:text-4xl">Care by fabric.</h2>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
             Each ADAB fabric has its own care. Search yours below.

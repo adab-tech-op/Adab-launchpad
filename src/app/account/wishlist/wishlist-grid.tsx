@@ -19,7 +19,7 @@ export function WishlistGrid({ initial }: { initial: Tile[] }) {
     return (
       <div className="mt-12 rounded-2xl border border-border p-12 text-center paper-grain">
         <p className="font-editorial text-2xl italic text-muted-foreground">Your wishlist is empty.</p>
-        <Link href="/shop" className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
+        <Link href="/shop" className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background">
           Browse the Drop
         </Link>
       </div>

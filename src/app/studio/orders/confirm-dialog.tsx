@@ -63,7 +63,7 @@ export function ConfirmPaymentButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-full bg-primary px-4 py-2 text-xs uppercase tracking-[0.16em] text-primary-foreground transition-opacity hover:opacity-90"
+        className="rounded-full bg-primary px-4 py-2 text-xs uppercase tracking-[0.06em] text-primary-foreground transition-opacity hover:opacity-90"
       >
         Send payment confirmation
       </button>
@@ -85,18 +85,18 @@ export function ConfirmPaymentButton({
           </div>
 
           <div className="mt-5 rounded-xl border border-border bg-muted/30 p-4">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Verify against bKash</p>
+            <p className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground">Verify against bKash</p>
             <div className="mt-2 grid grid-cols-3 gap-3 text-sm">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">TrxID</p>
+                <p className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">TrxID</p>
                 <p className="font-medium">{trxId ?? "—"}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Amount</p>
+                <p className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Amount</p>
                 <p className="tabular-nums">৳ {amount.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Paid from</p>
+                <p className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Paid from</p>
                 <p className="tabular-nums">{bkashNumber ?? "—"}</p>
               </div>
             </div>
@@ -117,7 +117,7 @@ export function ConfirmPaymentButton({
               type="button"
               onClick={close}
               disabled={pending}
-              className="rounded-full px-4 py-2 text-xs uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground disabled:opacity-50"
+              className="rounded-full px-4 py-2 text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground disabled:opacity-50"
             >
               Cancel
             </button>
@@ -125,7 +125,7 @@ export function ConfirmPaymentButton({
               type="button"
               onClick={send}
               disabled={!checked || pending}
-              className="rounded-full bg-primary px-5 py-2 text-xs uppercase tracking-[0.16em] text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-full bg-primary px-5 py-2 text-xs uppercase tracking-[0.06em] text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40"
             >
               {pending ? "Sending…" : "Send confirmation"}
             </button>

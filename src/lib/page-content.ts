@@ -29,6 +29,16 @@ export type ManifestoContent = {
 // Home page hero — 3-breakpoint editable background image + overlay + text.
 // Seeded from the current static assets/look so the live hero is unchanged
 // until an admin edits it.
+export type HomeBody = {
+  featuredHeading: string;
+  featuredSubcopy: string;
+  storyQuote: string;
+  trust: string[]; // the 3 trust-strip lines
+  menu: string[]; // the 3 mini-menu labels
+  scrapbookHeading: string;
+  scrapbookSubcopy: string;
+};
+
 export type HomeContent = {
   hero: HeroImages;
   overlay: HeroOverlay;
@@ -36,6 +46,21 @@ export type HomeContent = {
   headingColor: string; // hex
   subcopy: string;
   subcopyColor: string; // hex
+  body?: HomeBody; // editable page copy (home slug only; drop omits it)
+};
+
+export const HOME_BODY_DEFAULT: HomeBody = {
+  featuredHeading: "Two pieces. One DNA.",
+  featuredSubcopy: "Limited quantities. No restock.",
+  storyQuote: "We don't believe history gets lost. It just waits.",
+  trust: [
+    "Founding Drop — limited pieces, no restock",
+    "Verified 1950s–60s history, not costume",
+    "Made in Bangladesh",
+  ],
+  menu: ["Piran", "Hoodie", "Coming Next"],
+  scrapbookHeading: "From the Adab Scrapbook.",
+  scrapbookSubcopy: "People, places, textures, and moments around Adab.",
 };
 
 export const HOME_DEFAULT: HomeContent = {
@@ -50,9 +75,10 @@ export const HOME_DEFAULT: HomeContent = {
   headingColor: "#1c1c1c",
   subcopy: "Same DNA. New Language.",
   subcopyColor: "#1c1c1c",
+  body: HOME_BODY_DEFAULT,
 };
 
-// The Drop page hero — same editable shape as the home hero.
+// The Drop page hero — same editable shape as the home hero (no body).
 export const DROP_DEFAULT: HomeContent = {
   hero: { ...emptyHeroImages() },
   overlay: { enabled: true, color: "#000000", opacity: 35, from: "bottom" },
@@ -60,6 +86,29 @@ export const DROP_DEFAULT: HomeContent = {
   headingColor: "#f5f0e8",
   subcopy: "Limited pieces, released on a date. Once they're gone, they're gone.",
   subcopyColor: "#f5f0e8",
+};
+
+export type ShopContent = { heading: string; subcopy: string };
+export const SHOP_DEFAULT: ShopContent = {
+  heading: "Shop.",
+  subcopy: "Founding pieces in limited quantities. No guaranteed restock.",
+};
+
+export type ContactContent = {
+  heading: string;
+  subcopy: string;
+  email: string;
+  studioLocation: string;
+  studioNote: string;
+  instagram: string;
+};
+export const CONTACT_DEFAULT: ContactContent = {
+  heading: "Contact ADAB",
+  subcopy: "Questions about a piece, an order, sizing, or the brand — we read every note.",
+  email: "hello@adab.co",
+  studioLocation: "Dhaka, Bangladesh",
+  studioNote: "By appointment only.",
+  instagram: "@adab.co",
 };
 
 export type CareContent = {

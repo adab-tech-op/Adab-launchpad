@@ -20,7 +20,7 @@ export function StatusBadge({ status }: { status: string }) {
   const cls = STYLES[status] ?? STYLES.pending;
   const label = LABELS[status] ?? status.replace(/_/g, " ");
   return (
-    <span className={`inline-block rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.16em] ${cls}`}>
+    <span className={`inline-block rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.06em] ${cls}`}>
       {label}
     </span>
   );

@@ -4,10 +4,15 @@ import {
   MANIFESTO_DEFAULT,
   CARE_DEFAULT,
   HOME_DEFAULT,
+  HOME_BODY_DEFAULT,
   DROP_DEFAULT,
+  SHOP_DEFAULT,
+  CONTACT_DEFAULT,
   type ManifestoContent,
   type CareContent,
   type HomeContent,
+  type ShopContent,
+  type ContactContent,
 } from "@/lib/page-content";
 import { normalizeHeroImages, normalizeOverlay } from "@/lib/hero";
 
@@ -44,12 +49,27 @@ export function getCareContent(): Promise<CareContent> {
 export async function getHomeContent(): Promise<HomeContent> {
   const c = await readContent<Partial<HomeContent>>("home", HOME_DEFAULT);
   const hero = normalizeHeroImages(c?.hero, undefined);
+  const body = { ...HOME_BODY_DEFAULT, ...(c?.body ?? {}) };
+  // keep the fixed-length arrays sane
+  body.trust = [0, 1, 2].map((i) => body.trust?.[i] ?? HOME_BODY_DEFAULT.trust[i]);
+  body.menu = [0, 1, 2].map((i) => body.menu?.[i] ?? HOME_BODY_DEFAULT.menu[i]);
   return {
     ...HOME_DEFAULT,
     ...c,
     hero: hero.desktop ? hero : HOME_DEFAULT.hero,
     overlay: c?.overlay ? normalizeOverlay(c.overlay, undefined) : HOME_DEFAULT.overlay,
+    body,
   };
+}
+
+export async function getShopContent(): Promise<ShopContent> {
+  const c = await readContent<Partial<ShopContent>>("shop", SHOP_DEFAULT);
+  return { ...SHOP_DEFAULT, ...c };
+}
+
+export async function getContactContent(): Promise<ContactContent> {
+  const c = await readContent<Partial<ContactContent>>("contact", CONTACT_DEFAULT);
+  return { ...CONTACT_DEFAULT, ...c };
 }
 
 export async function getDropContent(): Promise<HomeContent> {

@@ -101,13 +101,13 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
   return (
     <>
       {(staffPreview || dropState === "upcoming") && (
-        <div className="bg-foreground px-5 py-2 text-center text-[11px] uppercase tracking-[0.16em] text-background">
+        <div className="bg-foreground px-5 py-2 text-center text-[11px] uppercase tracking-[0.06em] text-background">
           {staffPreview ? "Staff preview — hidden from customers" : "Upcoming"}
           {product.dropDate ? ` · drops ${formatDhaka(product.dropDate)}` : ""}
         </div>
       )}
       <div className="mx-auto max-w-7xl px-5 md:px-8 pt-6 md:pt-10">
-        <nav className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        <nav className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
           <Link href="/shop" className="hover:text-foreground">Shop</Link>
           <span className="mx-2">/</span>
           <span className="text-foreground">{product.name}</span>
@@ -119,9 +119,6 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
           {/* Left sticky story panel — desktop */}
           <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-24">
-              <p className="font-display text-[11px] tracking-[0.24em] text-primary">
-                FOUNDING DROP
-              </p>
               <h1 className="mt-3 font-editorial text-4xl leading-[1.05]">
                 {product.name}
               </h1>
@@ -175,7 +172,6 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
 
             {/* Mobile info block */}
             <div className="lg:hidden mt-6">
-              <p className="font-display text-[11px] tracking-[0.24em] text-primary">FOUNDING DROP</p>
               <h1 className="mt-2 font-editorial text-3xl leading-tight">{product.name}</h1>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
                 {product.short}
@@ -204,14 +200,14 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
                   <p className="text-xl font-sans">{product.price}</p>
                 )}
                 {product.foundingNote && (
-                  <p className="mt-1 text-xs text-primary uppercase tracking-[0.16em]">
+                  <p className="mt-1 text-xs text-primary uppercase tracking-[0.06em]">
                     {product.foundingNote}
                   </p>
                 )}
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
                   Color · {color}
                 </p>
                 <div className="mt-2 flex gap-2">
@@ -229,12 +225,12 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
 
               <div>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
                     Size
                   </p>
                   <button
                     onClick={() => setGuideOpen(true)}
-                    className="text-xs uppercase tracking-[0.16em] text-foreground underline underline-offset-4"
+                    className="text-xs uppercase tracking-[0.06em] text-foreground underline underline-offset-4"
                   >
                     Size guide
                   </button>
@@ -267,7 +263,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
                   Quantity
                 </p>
                 <div className="mt-2 inline-flex items-center gap-4 rounded-full border border-border px-4 py-2">
@@ -284,14 +280,14 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
               <button
                 onClick={primaryCta}
                 disabled={allOut || notYet}
-                className="hidden lg:block w-full rounded-full py-4 text-xs uppercase tracking-[0.2em] bg-foreground text-background hover:bg-foreground/85 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="hidden lg:block w-full rounded-full py-4 text-xs uppercase tracking-[0.08em] bg-foreground text-background hover:bg-foreground/85 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {ctaLabel}
               </button>
 
               {notYet && (
                 <div className="hidden lg:block rounded-2xl border border-border p-4">
-                  <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="text-xs uppercase tracking-[0.05em] text-muted-foreground">
                     Not on sale yet{product.dropDate ? ` — drops ${formatDhaka(product.dropDate)}` : ""}. Get notified:
                   </p>
                   <div className="mt-3">
@@ -304,7 +300,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
                 <WishlistButton slug={product.slug} />
                 <button
                   onClick={toggleCart}
-                  className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-full border py-3.5 text-[11px] uppercase tracking-[0.14em] transition-colors active:scale-[0.98] ${
+                  className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-full border py-3.5 text-[11px] uppercase tracking-[0.05em] transition-colors active:scale-[0.98] ${
                     inCart ? "border-foreground bg-foreground text-background" : "border-border text-foreground hover:border-foreground"
                   }`}
                 >
@@ -354,11 +350,11 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
         {/* Prev / Next */}
         <div className="mt-20 grid grid-cols-2 gap-4 border-t border-border pt-8">
           <Link href={`/product/${prev.slug}`} className="text-left">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">← Previous</p>
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">← Previous</p>
             <p className="mt-2 font-sans text-xl">{prev.name}</p>
           </Link>
           <Link href={`/product/${next.slug}`} className="text-right">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Next →</p>
+            <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Next →</p>
             <p className="mt-2 font-sans text-xl">{next.name}</p>
           </Link>
         </div>
@@ -393,7 +389,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
         <button
           onClick={primaryCta}
           disabled={allOut || notYet}
-          className="rounded-full bg-foreground text-background px-5 py-3 text-xs uppercase tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full bg-foreground text-background px-5 py-3 text-xs uppercase tracking-[0.08em] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {ctaLabel}
         </button>
@@ -428,7 +424,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
               Measurements in inches. Garment flat.
             </p>
             <table className="mt-6 w-full text-sm">
-              <thead className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+              <thead className="text-xs uppercase tracking-[0.05em] text-muted-foreground">
                 <tr className="border-b border-border">
                   <th className="py-2 text-left font-normal">Size</th>
                   <th className="py-2 text-right font-normal">Chest</th>

@@ -56,7 +56,7 @@ export function TeamClient({
     <div className="space-y-12">
       {/* Invite */}
       <div className="rounded-2xl border border-border p-6">
-        <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.06em] text-muted-foreground">
           <UserPlus className="h-3.5 w-3.5" strokeWidth={1.75} /> Invite someone
         </p>
         <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -80,7 +80,7 @@ export function TeamClient({
             type="button"
             onClick={invite}
             disabled={pending || !email.trim()}
-            className="rounded-full bg-foreground px-5 py-2 text-xs uppercase tracking-[0.16em] text-background disabled:opacity-40"
+            className="rounded-full bg-foreground px-5 py-2 text-xs uppercase tracking-[0.06em] text-background disabled:opacity-40"
           >
             Send invite
           </button>
@@ -99,7 +99,7 @@ export function TeamClient({
               <div key={inv.id} className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm">
                 <div className="min-w-0">
                   <span className="break-all">{inv.email}</span>
-                  <span className="ml-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">{ROLE_LABEL[inv.role]}</span>
+                  <span className="ml-2 text-xs uppercase tracking-[0.05em] text-muted-foreground">{ROLE_LABEL[inv.role]}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span>expires {relative(inv.expiresAt).replace(" ago", "")}</span>
@@ -132,8 +132,8 @@ export function TeamClient({
                     title={m.online ? "online" : `last seen ${relative(m.lastSeen)}`}
                   />
                   <span className="break-all">{m.email}</span>
-                  {isSelf && <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">you</span>}
-                  {m.fromEnv && <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] uppercase tracking-[0.12em] text-muted-foreground" title="Role from env allowlist; not yet a saved member">env</span>}
+                  {isSelf && <span className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">you</span>}
+                  {m.fromEnv && <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] uppercase tracking-[0.05em] text-muted-foreground" title="Role from env allowlist; not yet a saved member">env</span>}
                 </div>
                 <div className="flex items-center gap-3 text-xs">
                   <span className="text-muted-foreground">{m.online ? "online" : relative(m.lastSeen)}</span>
@@ -141,7 +141,7 @@ export function TeamClient({
                     value={m.role}
                     disabled={pending || isSelf}
                     onChange={(e) => run(() => changeRole(m.email, e.target.value), `${m.email} → ${e.target.value}`)}
-                    className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] uppercase tracking-[0.12em] outline-none focus:border-primary disabled:opacity-60"
+                    className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] uppercase tracking-[0.05em] outline-none focus:border-primary disabled:opacity-60"
                     title={isSelf ? "You can't change your own role" : undefined}
                   >
                     {ROLE_OPTIONS.map((r) => (

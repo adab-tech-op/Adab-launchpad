@@ -35,7 +35,7 @@ export function DropCountdown({ target, title = "ADAB Drop", url }: { target: st
   const cell = (n: number, label: string) => (
     <div className="flex flex-col items-center">
       <span className="font-display text-4xl tabular-nums md:text-6xl">{String(n).padStart(2, "0")}</span>
-      <span className="mt-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
+      <span className="mt-1 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{label}</span>
     </div>
   );
   const sep = <span className="font-display text-3xl text-muted-foreground md:text-5xl">:</span>;

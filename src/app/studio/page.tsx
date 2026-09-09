@@ -15,7 +15,7 @@ export default async function StudioOverview() {
       <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c) => (
           <Link key={c.label} href={c.href} className="rounded-2xl border border-border p-6 paper-grain hover:border-foreground transition-colors">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{c.label}</p>
+            <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">{c.label}</p>
             <p className="mt-3 font-editorial text-4xl tabular-nums">{c.value}</p>
           </Link>
         ))}
