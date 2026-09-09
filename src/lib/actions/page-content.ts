@@ -12,6 +12,7 @@ export type PageContentResult = { ok: true } | { ok: false; error: string };
 const blockSchema = z.object({
   title: z.string().trim().max(200),
   body: z.string().trim().max(4000),
+  icon: z.string().trim().max(600).optional().default(""),
 });
 
 // Story parts also carry an optional paired image (Cloudinary URL). Without

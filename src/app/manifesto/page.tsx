@@ -91,7 +91,12 @@ export default async function Manifesto() {
             const Icon = VALUE_ICONS[i] ?? Minus;
             return (
               <div key={i} className="rounded-2xl border border-border bg-card p-6 md:p-8">
-                <Icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
+                {value.icon ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={value.icon} alt="" className="h-5 w-5 object-contain" />
+                ) : (
+                  <Icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
+                )}
                 <h3 className="mt-6 font-display text-sm uppercase tracking-[0.16em]">{value.title}</h3>
                 <div
                   className="prose-editorial mt-3 text-sm leading-relaxed text-muted-foreground"

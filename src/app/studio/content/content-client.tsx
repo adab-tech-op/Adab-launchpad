@@ -36,6 +36,19 @@ function BlockList({
     onChange(next);
   };
   const add = () => onChange([...blocks, { title: "", body: "" }]);
+  const [iconUploading, setIconUploading] = useState<number | null>(null);
+  const uploadIcon = async (i: number, file: File) => {
+    setIconUploading(i);
+    try {
+      const url = await uploadToCloudinary(file);
+      update(i, { icon: url });
+      toast.success("Icon uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setIconUploading(null);
+    }
+  };
 
   return (
     <div>
@@ -65,6 +78,21 @@ function BlockList({
                 <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
                 <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
               </div>
+            </div>
+            {/* Card icon — uploaded SVG/PNG, else the built-in icon */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {b.icon ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={b.icon} alt="" className="h-8 w-8 rounded object-contain ring-1 ring-border" />
+              ) : (
+                <div className="grid h-8 w-8 place-items-center rounded bg-muted text-[8px] uppercase text-muted-foreground">Icon</div>
+              )}
+              <label className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-xs hover:border-primary">
+                {iconUploading === i ? "Uploading…" : b.icon ? "Replace icon" : "Upload icon (SVG/PNG)"}
+                <input type="file" accept="image/svg+xml,image/png,image/*" className="hidden" disabled={iconUploading === i} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadIcon(i, f); }} />
+              </label>
+              {b.icon && <button type="button" onClick={() => update(i, { icon: "" })} className="text-xs text-muted-foreground hover:text-foreground">Remove</button>}
+              <span className="text-[10px] text-muted-foreground">Empty = built-in icon. Recommend a square SVG, ~48×48.</span>
             </div>
           </div>
         ))}
