@@ -17,7 +17,6 @@ export default async function AccountOverview() {
 
   return (
     <div>
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Overview</p>
       <h1 className="mt-3 font-editorial text-4xl">Hello, {user.name}.</h1>
 
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">

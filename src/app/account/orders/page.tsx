@@ -11,7 +11,6 @@ export default async function OrdersPage() {
 
   return (
     <div>
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Orders</p>
       <h1 className="mt-3 font-editorial text-4xl">Your orders.</h1>
 
       {orders.length === 0 ? (

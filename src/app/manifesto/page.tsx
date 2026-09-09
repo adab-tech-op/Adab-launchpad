@@ -39,11 +39,6 @@ export default async function Manifesto() {
           <div aria-hidden className="absolute inset-0" style={overlayStyle(hero.overlay)!} />
         )}
         <div className={cn("relative z-10 mx-auto w-full max-w-5xl", light ? "text-background" : "text-foreground")}>
-          {hero.eyebrow && (
-            <p className={cn("font-display text-[11px] uppercase tracking-[0.22em]", light ? "text-background/60" : "text-foreground/60")}>
-              {hero.eyebrow}
-            </p>
-          )}
           {/* Each author line (split on \n) is its own non-wrapping block:
               honours intentional line breaks AND stops a single line — e.g. the
               Bengali "আদব ম্যানিফেস্টো" — from soft-wrapping mid-phrase. */}

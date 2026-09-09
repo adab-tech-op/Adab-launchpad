@@ -46,7 +46,6 @@ export default async function ScrapbookPage() {
   return (
     <>
       <section className="mx-auto max-w-7xl px-5 md:px-8 pt-20 md:pt-28 pb-12">
-        <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Scrapbook</p>
         <h1 className="mt-3 font-editorial text-5xl md:text-6xl">Scrapbook.</h1>
         <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
           People, places, textures, and moments around Adab.

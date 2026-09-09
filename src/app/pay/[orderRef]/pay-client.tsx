@@ -94,7 +94,6 @@ export function PayClient({
   if (alreadyProcessed) {
     return (
       <Shell>
-        <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Payment</p>
         <h1 className="mt-3 font-editorial text-4xl">Already processed.</h1>
         <p className="mt-4 text-sm text-muted-foreground">
           This order ({orderRef}) has already been handled. If you think this is a mistake, please contact us.
@@ -111,7 +110,6 @@ export function PayClient({
     if (accountDone) {
       return (
         <Shell>
-          <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Almost there</p>
           <h1 className="mt-3 font-editorial text-4xl">Check your email.</h1>
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
             We&rsquo;ve sent a verification link to <span className="text-foreground">{email}</span>. Confirm it to
@@ -131,7 +129,6 @@ export function PayClient({
     if (canCreateAccount) {
       return (
         <Shell>
-          <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Payment received</p>
           <h1 className="mt-3 font-editorial text-4xl">One last step.</h1>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
             Your payment details for <span className="font-display tracking-[0.1em] text-primary">{orderRef}</span> are recorded — we&rsquo;ll
@@ -185,7 +182,6 @@ export function PayClient({
     // Already has an account → point them at the live status page.
     return (
       <Shell>
-        <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Payment received</p>
         <h1 className="mt-3 font-editorial text-4xl">Response recorded.</h1>
         <p className="mt-5 inline-block rounded-full border border-border bg-[color:var(--paper)] px-5 py-2 text-sm">
           Reference: <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span>
@@ -208,7 +204,6 @@ export function PayClient({
 
   return (
     <Shell>
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Payment · Founding Drop</p>
       <h1 className="mt-3 font-editorial text-4xl">Complete your payment.</h1>
 
       {/* Amount + instructions */}

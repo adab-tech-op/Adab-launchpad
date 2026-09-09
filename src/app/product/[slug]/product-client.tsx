@@ -119,9 +119,6 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
           {/* Left sticky story panel — desktop */}
           <aside className="hidden lg:block lg:col-span-3">
             <div className="sticky top-24">
-              <p className="font-display text-[11px] tracking-[0.24em] text-primary">
-                FOUNDING DROP
-              </p>
               <h1 className="mt-3 font-editorial text-4xl leading-[1.05]">
                 {product.name}
               </h1>
@@ -175,7 +172,6 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
 
             {/* Mobile info block */}
             <div className="lg:hidden mt-6">
-              <p className="font-display text-[11px] tracking-[0.24em] text-primary">FOUNDING DROP</p>
               <h1 className="mt-2 font-editorial text-3xl leading-tight">{product.name}</h1>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
                 {product.short}
