@@ -46,7 +46,7 @@ export function CartModal({ open, onClose }: { open: boolean; onClose: () => voi
                 </div>
                 <div className="min-w-0">
                   <p className="truncate font-display text-sm">{item.name}</p>
-                  <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="mt-0.5 text-[11px] uppercase tracking-[0.05em] text-muted-foreground">
                     {item.color} · Size {item.size}
                   </p>
                   <div className="mt-2 inline-flex items-center gap-3 rounded-full border border-border px-2.5 py-1">

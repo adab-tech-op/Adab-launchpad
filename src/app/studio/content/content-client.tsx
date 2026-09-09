@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
-import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent } from "@/lib/page-content";
+import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent, ShopContent, ContactContent } from "@/lib/page-content";
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle } from "@/lib/hero";
@@ -14,7 +14,7 @@ import { UploadHint } from "@/components/studio/UploadHint";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-const labelCls = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 function BlockList({
   label,
@@ -62,14 +62,14 @@ function BlockList({
                 placeholder="Body — markdown supported. Bengali + English can be mixed freely."
               />
               <div className="rounded-lg border border-dashed border-border p-3">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
+                <p className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Preview</p>
                 <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
               </div>
             </div>
           </div>
         ))}
       </div>
-      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground">
         <Plus className="h-3.5 w-3.5" /> Add block
       </button>
     </div>
@@ -138,7 +138,7 @@ function StoryBlockList({
                 placeholder="Body — markdown supported. Bengali + English can be mixed freely."
               />
               <div className="rounded-lg border border-dashed border-border p-3">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
+                <p className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Preview</p>
                 <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
               </div>
             </div>
@@ -162,7 +162,7 @@ function StoryBlockList({
           </div>
         ))}
       </div>
-      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground">
         <Plus className="h-3.5 w-3.5" /> Add block
       </button>
     </div>
@@ -186,7 +186,7 @@ function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: Man
       >
         {bg && manifestoOverlay && <div className="absolute inset-0" style={manifestoOverlay} />}
         <div className={`relative px-5 py-10 ${light ? "text-background" : "text-foreground"}`}>
-          {hero.eyebrow && <p className="text-[10px] uppercase tracking-[0.22em] opacity-70">{hero.eyebrow}</p>}
+          {hero.eyebrow && <p className="text-[10px] uppercase tracking-[0.08em] opacity-70">{hero.eyebrow}</p>}
           <p className="mt-2 whitespace-pre-line font-editorial text-2xl leading-tight">{hero.heading || "Heading"}</p>
           {hero.subcopy && <p className="mt-2 text-sm opacity-80">{hero.subcopy}</p>}
         </div>
@@ -239,22 +239,28 @@ export function ContentEditor({
   care,
   home,
   drop,
+  shop,
+  contact,
 }: {
   manifesto: ManifestoContent;
   care: CareContent;
   home: HomeContent;
   drop: HomeContent;
+  shop: ShopContent;
+  contact: ContactContent;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<"home" | "drop" | "manifesto" | "care">("home");
+  const [tab, setTab] = useState<"home" | "drop" | "shop" | "manifesto" | "care" | "contact">("home");
   const [m, setM] = useState<ManifestoContent>(manifesto);
   const [c, setC] = useState<CareContent>(care);
   const [h, setH] = useState<HomeContent>(home);
   const [dr, setDr] = useState<HomeContent>(drop);
+  const [sh, setSh] = useState<ShopContent>(shop);
+  const [ct, setCt] = useState<ContactContent>(contact);
   const [pending, startTransition] = useTransition();
 
-  const tabLabel = (t: "home" | "drop" | "manifesto" | "care") =>
-    t === "home" ? "Home hero" : t === "drop" ? "Drop hero" : t === "manifesto" ? "Manifesto" : "Care guide";
+  const tabLabel = (t: typeof tab) =>
+    ({ home: "Home", drop: "Drop", shop: "Shop", manifesto: "Manifesto", care: "Care guide", contact: "Contact" })[t];
 
   const save = () =>
     startTransition(async () => {
@@ -262,6 +268,8 @@ export function ContentEditor({
         tab === "manifesto" ? await savePageContent("manifesto", m)
         : tab === "care" ? await savePageContent("care", c)
         : tab === "drop" ? await savePageContent("drop", dr)
+        : tab === "shop" ? await savePageContent("shop", sh)
+        : tab === "contact" ? await savePageContent("contact", ct)
         : await savePageContent("home", h);
       if (!res.ok) {
         toast.error(res.error);
@@ -271,15 +279,22 @@ export function ContentEditor({
       router.refresh();
     });
 
+  const homeBody = h.body ?? {
+    featuredHeading: "", featuredSubcopy: "", storyQuote: "",
+    trust: ["", "", ""], menu: ["", "", ""], scrapbookHeading: "", scrapbookSubcopy: "",
+  };
+  const setBody = (patch: Partial<NonNullable<HomeContent["body"]>>) =>
+    setH({ ...h, body: { ...homeBody, ...patch } });
+
   return (
     <div>
       <div className="flex flex-wrap gap-2">
-        {(["home", "drop", "manifesto", "care"] as const).map((t) => (
+        {(["home", "drop", "shop", "manifesto", "care", "contact"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.14em] transition-colors ${
+            className={`rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.05em] transition-colors ${
               tab === t ? "border border-foreground bg-foreground text-background" : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
             }`}
           >
@@ -290,7 +305,43 @@ export function ContentEditor({
 
       <div className="mt-6 space-y-8">
         {tab === "home" ? (
-          <HeroPageEditor value={h} onChange={setH} note="The big image behind the homepage headline. The buttons stay fixed." />
+          <>
+            <HeroPageEditor value={h} onChange={setH} note="The big image behind the homepage headline. The buttons stay fixed." />
+            <div className="space-y-4 rounded-xl border border-border p-5">
+              <p className={labelCls}>Home page copy</p>
+              <TextRow label="Featured heading" value={homeBody.featuredHeading} onChange={(v) => setBody({ featuredHeading: v })} />
+              <TextRow label="Featured subcopy" value={homeBody.featuredSubcopy} onChange={(v) => setBody({ featuredSubcopy: v })} />
+              <TextRow label="Story quote" value={homeBody.storyQuote} onChange={(v) => setBody({ storyQuote: v })} />
+              <div className="grid gap-2 sm:grid-cols-3">
+                {[0, 1, 2].map((i) => (
+                  <TextRow key={i} label={`Trust line ${i + 1}`} value={homeBody.trust[i] ?? ""} onChange={(v) => { const t = [...homeBody.trust]; t[i] = v; setBody({ trust: t }); }} />
+                ))}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {[0, 1, 2].map((i) => (
+                  <TextRow key={i} label={`Menu label ${i + 1}`} value={homeBody.menu[i] ?? ""} onChange={(v) => { const t = [...homeBody.menu]; t[i] = v; setBody({ menu: t }); }} />
+                ))}
+              </div>
+              <TextRow label="Scrapbook heading" value={homeBody.scrapbookHeading} onChange={(v) => setBody({ scrapbookHeading: v })} />
+              <TextRow label="Scrapbook subcopy" value={homeBody.scrapbookSubcopy} onChange={(v) => setBody({ scrapbookSubcopy: v })} />
+            </div>
+          </>
+        ) : tab === "shop" ? (
+          <div className="space-y-4 rounded-xl border border-border p-5">
+            <p className={labelCls}>Shop page copy</p>
+            <TextRow label="Heading" value={sh.heading} onChange={(v) => setSh({ ...sh, heading: v })} />
+            <TextRow label="Subcopy" value={sh.subcopy} onChange={(v) => setSh({ ...sh, subcopy: v })} />
+          </div>
+        ) : tab === "contact" ? (
+          <div className="space-y-4 rounded-xl border border-border p-5">
+            <p className={labelCls}>Contact page copy</p>
+            <TextRow label="Heading" value={ct.heading} onChange={(v) => setCt({ ...ct, heading: v })} />
+            <TextRow label="Subcopy" value={ct.subcopy} onChange={(v) => setCt({ ...ct, subcopy: v })} />
+            <TextRow label="Support email" value={ct.email} onChange={(v) => setCt({ ...ct, email: v })} />
+            <TextRow label="Studio location" value={ct.studioLocation} onChange={(v) => setCt({ ...ct, studioLocation: v })} />
+            <TextRow label="Studio note" value={ct.studioNote} onChange={(v) => setCt({ ...ct, studioNote: v })} />
+            <TextRow label="Instagram handle" value={ct.instagram} onChange={(v) => setCt({ ...ct, instagram: v })} />
+          </div>
         ) : tab === "drop" ? (
           <HeroPageEditor value={dr} onChange={setDr} note="The hero at the top of the Drop page (above the countdown). Per-product drop dates are set on each product." />
         ) : tab === "manifesto" ? (
@@ -308,7 +359,7 @@ export function ContentEditor({
         type="button"
         onClick={save}
         disabled={pending}
-        className="mt-8 rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.2em] text-white disabled:opacity-40"
+        className="mt-8 rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.08em] text-white disabled:opacity-40"
       >
         {pending ? "Saving…" : `Save ${tabLabel(tab).toLowerCase()}`}
       </button>
@@ -358,5 +409,14 @@ function HeroPageEditor({ value, onChange, note }: { value: HomeContent; onChang
         </div>
       </div>
     </div>
+  );
+}
+
+function TextRow({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <label className="block">
+      <span className="text-[11px] text-muted-foreground">{label}</span>
+      <input className={`${inputCls} mt-1`} value={value} onChange={(e) => onChange(e.target.value)} />
+    </label>
   );
 }

@@ -60,7 +60,7 @@ export function WishlistButton({ slug }: { slug: string }) {
     <button
       onClick={onClick}
       aria-pressed={saved}
-      className="flex w-full items-center justify-center gap-2 rounded-full border border-border py-3.5 text-xs uppercase tracking-[0.2em] text-foreground transition-colors hover:border-foreground active:scale-[0.98]"
+      className="flex w-full items-center justify-center gap-2 rounded-full border border-border py-3.5 text-xs uppercase tracking-[0.08em] text-foreground transition-colors hover:border-foreground active:scale-[0.98]"
     >
       <span className="relative inline-flex h-4 w-4 items-center justify-center">
         {showBreak ? (

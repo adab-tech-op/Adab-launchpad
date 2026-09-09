@@ -60,7 +60,7 @@ export function FollowUpButton({ orderRef, followUps }: { orderRef: string; foll
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
       >
         <Mail className="h-3.5 w-3.5" strokeWidth={1.75} />
         Follow up
@@ -78,7 +78,7 @@ export function FollowUpButton({ orderRef, followUps }: { orderRef: string; foll
                 key={t}
                 type="button"
                 onClick={() => setTemplate(t)}
-                className={`rounded-full px-3.5 py-1.5 text-xs uppercase tracking-[0.12em] transition-colors ${
+                className={`rounded-full px-3.5 py-1.5 text-xs uppercase tracking-[0.05em] transition-colors ${
                   template === t ? "border border-foreground bg-foreground text-background" : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                 }`}
               >
@@ -112,7 +112,7 @@ export function FollowUpButton({ orderRef, followUps }: { orderRef: string; foll
 
           {followUps.length > 0 && (
             <div className="mt-5 border-t border-border pt-4">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Already sent</p>
+              <p className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground">Already sent</p>
               <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
                 {followUps.map((f, i) => (
                   <li key={i} className="flex justify-between gap-3">
@@ -125,10 +125,10 @@ export function FollowUpButton({ orderRef, followUps }: { orderRef: string; foll
           )}
 
           <div className="mt-6 flex items-center justify-end gap-3">
-            <button type="button" onClick={close} disabled={pending} className="rounded-full px-4 py-2 text-xs uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground disabled:opacity-50">
+            <button type="button" onClick={close} disabled={pending} className="rounded-full px-4 py-2 text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground disabled:opacity-50">
               Cancel
             </button>
-            <button type="button" onClick={send} disabled={!canSend || pending} className="rounded-full bg-foreground px-5 py-2 text-xs uppercase tracking-[0.16em] text-background disabled:cursor-not-allowed disabled:opacity-40">
+            <button type="button" onClick={send} disabled={!canSend || pending} className="rounded-full bg-foreground px-5 py-2 text-xs uppercase tracking-[0.06em] text-background disabled:cursor-not-allowed disabled:opacity-40">
               {pending ? "Sending…" : "Send"}
             </button>
           </div>

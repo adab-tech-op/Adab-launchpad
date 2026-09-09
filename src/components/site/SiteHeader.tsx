@@ -12,8 +12,8 @@ import { MobileNavModal } from "./MobileNavModal";
 import { useCart } from "@/context/CartContext";
 
 const NAV = [
-  { to: "/shop", label: "Shop" },
   { to: "/drop", label: "The Drop" },
+  { to: "/shop", label: "Shop" },
   { to: "/manifesto", label: "Manifesto & History" },
   { to: "/care-guide", label: "Care Guide" },
   { to: "/scrapbook", label: "Scrapbook" },

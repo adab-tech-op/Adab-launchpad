@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { testBroadcast, sendBroadcastToList } from "@/lib/actions/broadcast";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-const labelCls = "text-xs uppercase tracking-[0.16em] text-muted-foreground";
+const labelCls = "text-xs uppercase tracking-[0.06em] text-muted-foreground";
 
 export function BroadcastClient({ recipientCount, selfEmail }: { recipientCount: number; selfEmail: string }) {
   const [subject, setSubject] = useState("");

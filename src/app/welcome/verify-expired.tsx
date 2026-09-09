@@ -51,7 +51,7 @@ export function VerifyExpired() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-foreground py-3.5 text-xs uppercase tracking-[0.2em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
+          className="w-full rounded-full bg-foreground py-3.5 text-xs uppercase tracking-[0.08em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
         >
           {loading ? "Sending…" : "Send a new link"}
         </button>

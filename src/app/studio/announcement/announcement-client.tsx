@@ -13,7 +13,7 @@ const FREQ_LABELS: Record<Frequency, string> = {
 };
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-const labelCls = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 export function AnnouncementEditor({ initial }: { initial: AnnouncementSettings }) {
   const router = useRouter();
@@ -76,7 +76,7 @@ export function AnnouncementEditor({ initial }: { initial: AnnouncementSettings 
                   key={p.path}
                   type="button"
                   onClick={() => togglePage(p.path)}
-                  className={`rounded-full px-3.5 py-1.5 text-xs uppercase tracking-[0.12em] transition-colors ${
+                  className={`rounded-full px-3.5 py-1.5 text-xs uppercase tracking-[0.05em] transition-colors ${
                     on ? "border border-foreground bg-foreground text-background" : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
                   }`}
                 >
@@ -103,7 +103,7 @@ export function AnnouncementEditor({ initial }: { initial: AnnouncementSettings 
           type="button"
           onClick={save}
           disabled={pending || !s.title.trim()}
-          className="rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.2em] text-white disabled:opacity-40"
+          className="rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.08em] text-white disabled:opacity-40"
         >
           {pending ? "Saving…" : "Save"}
         </button>
@@ -113,10 +113,10 @@ export function AnnouncementEditor({ initial }: { initial: AnnouncementSettings 
       <div className="lg:sticky lg:top-24 h-fit">
         <p className={labelCls}>Preview</p>
         <div className={`mt-2 rounded-2xl border p-6 paper-grain ${s.enabled ? "border-border" : "border-dashed border-border opacity-50"}`}>
-          {s.eyebrow && <p className="text-[11px] uppercase tracking-[0.24em] text-primary font-display">{s.eyebrow}</p>}
+          {s.eyebrow && <p className="text-[11px] uppercase tracking-[0.08em] text-primary font-display">{s.eyebrow}</p>}
           <h3 className="mt-3 font-sans text-2xl leading-tight">{s.title || "Title"}</h3>
           {s.body && <p className="mt-3 text-sm text-muted-foreground">{s.body}</p>}
-          <div className="mt-5 rounded-md bg-foreground py-2.5 text-center text-xs uppercase tracking-[0.18em] text-background">Notify Me</div>
+          <div className="mt-5 rounded-md bg-foreground py-2.5 text-center text-xs uppercase tracking-[0.06em] text-background">Notify Me</div>
         </div>
         <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
           {s.enabled ? `Shows on ${s.pages.length || 0} page${s.pages.length === 1 ? "" : "s"}, ${FREQ_LABELS[s.frequency].toLowerCase()}.` : "Currently hidden from the site."}

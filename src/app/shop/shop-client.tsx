@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import type { Product } from "@/data/products";
+import type { Teaser } from "@/lib/teasers";
 import { BANNER_DEFAULT, type BannerSettings } from "@/lib/settings";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -17,24 +18,19 @@ const COLORS = [
   { name: "Parchment", hex: "#f5f0e8" },
 ];
 
-const COMING_SOON = [
-  "Pattern in development",
-  "Pattern in development",
-  "Pattern in development",
-  "Pattern in development",
-];
-
 export function ShopClient({
   products,
   eyebrow = "Drop 01",
   heading = "Shop.",
-  showComingSoon = true,
+  subcopy = "Founding pieces in limited quantities. No guaranteed restock.",
+  teasers = [],
   banner,
 }: {
   products: Product[];
   eyebrow?: string;
   heading?: string;
-  showComingSoon?: boolean;
+  subcopy?: string;
+  teasers?: Teaser[];
   banner?: BannerSettings;
 }) {
   const [sort, setSort] = useState("Featured");
@@ -50,7 +46,7 @@ export function ShopClient({
         >
           <div className="mx-auto max-w-7xl px-5 md:px-8 py-3 text-center">
             <p
-              className="text-[11px] uppercase tracking-[0.2em]"
+              className="text-[11px] uppercase tracking-[0.08em]"
               style={{ color: (banner ?? BANNER_DEFAULT).textColor }}
             >
               {(banner ?? BANNER_DEFAULT).text}
@@ -60,23 +56,20 @@ export function ShopClient({
       )}
 
       <section className="mx-auto max-w-7xl px-5 md:px-8 pt-16 md:pt-24 pb-12">
-        <p className="font-display text-[11px] text-primary">{eyebrow}</p>
         <h1 className="mt-3 font-editorial text-5xl md:text-6xl">{heading}</h1>
-        <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
-          Founding pieces in limited quantities. No guaranteed restock.
-        </p>
+        <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">{subcopy}</p>
       </section>
 
       <section className="mx-auto max-w-7xl px-5 md:px-8 pb-24">
         <div className="mb-8 flex items-center justify-between border-y border-border py-4">
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden flex items-center gap-2 text-xs uppercase tracking-[0.18em]"
+            className="lg:hidden flex items-center gap-2 text-xs uppercase tracking-[0.06em]"
           >
             <SlidersHorizontal className="h-4 w-4" strokeWidth={1.5} />
             Filter
           </button>
-          <div className="hidden lg:flex gap-8 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="hidden lg:flex gap-8 text-xs uppercase tracking-[0.06em] text-muted-foreground">
             <span>Type: All</span>
             <span>Size: All</span>
             <span>Color: All</span>
@@ -85,7 +78,7 @@ export function ShopClient({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="bg-transparent text-xs uppercase tracking-[0.18em] outline-none"
+            className="bg-transparent text-xs uppercase tracking-[0.06em] outline-none"
           >
             <option>Featured</option>
             <option>Newest</option>
@@ -98,10 +91,9 @@ export function ShopClient({
           {products.map((p) => (
             <ProductCard key={p.slug} product={p} />
           ))}
-          {showComingSoon &&
-            COMING_SOON.map((label, i) => (
-              <ComingSoonCard key={i} label={label} />
-            ))}
+          {teasers.map((t) => (
+            <ComingSoonCard key={t.id} teaser={t} />
+          ))}
         </div>
       </section>
 
@@ -121,7 +113,7 @@ export function ShopClient({
             <FilterGroup title="Type" items={TYPES} />
             <FilterGroup title="Size" items={SIZES} />
             <div className="mt-6">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
                 Color
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -141,7 +133,7 @@ export function ShopClient({
             </div>
             <button
               onClick={() => setMobileOpen(false)}
-              className="mt-8 w-full rounded-full bg-foreground py-3 text-xs uppercase tracking-[0.18em] text-background"
+              className="mt-8 w-full rounded-full bg-foreground py-3 text-xs uppercase tracking-[0.06em] text-background"
             >
               Apply
             </button>
@@ -152,12 +144,12 @@ export function ShopClient({
   );
 }
 
-function ComingSoonCard({ label }: { label: string }) {
+function ComingSoonCard({ teaser }: { teaser: Teaser }) {
   return (
     <div className="group block cursor-default">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[color:var(--paper)]">
         <img
-          src={placeholderImg}
+          src={teaser.imageUrl || placeholderImg}
           alt=""
           loading="lazy"
           width={1024}
@@ -165,18 +157,14 @@ function ComingSoonCard({ label }: { label: string }) {
           className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-          <span className="rounded-full bg-background/90 px-4 py-1.5 text-[10px] uppercase tracking-[0.18em] text-foreground">
+          <span className="rounded-full bg-background/90 px-4 py-1.5 text-[10px] uppercase tracking-[0.06em] text-foreground">
             Coming Soon
           </span>
         </div>
       </div>
       <div className="mt-4">
-        <h3 className="font-sans text-lg leading-tight text-muted-foreground">
-          {label}
-        </h3>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          Non-clickable · arriving in a future drop
-        </p>
+        <h3 className="font-sans text-lg leading-tight text-muted-foreground">{teaser.label}</h3>
+        {teaser.subtext && <p className="mt-1 text-xs text-muted-foreground/70">{teaser.subtext}</p>}
       </div>
     </div>
   );
@@ -185,7 +173,7 @@ function ComingSoonCard({ label }: { label: string }) {
 function FilterGroup({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="mt-6">
-      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
         {title}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">

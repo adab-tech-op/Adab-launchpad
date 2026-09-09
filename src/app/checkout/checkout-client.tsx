@@ -15,7 +15,7 @@ const SIZES = ["S", "M", "L", "XL", "XXL"];
 const priceNum = (s?: string) => Number((s ?? "").replace(/[^0-9]/g, "")) || 0;
 const field =
   "w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary transition-colors";
-const flabel = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const flabel = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 type Line = {
   slug: string;
@@ -168,7 +168,7 @@ export function CheckoutClient({
     return (
       <div className="mx-auto max-w-3xl px-5 md:px-8 py-24 text-center">
         <p className="font-editorial text-3xl italic text-muted-foreground">Nothing to check out.</p>
-        <Link href="/shop" className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
+        <Link href="/shop" className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background">
           Browse the Drop
         </Link>
       </div>
@@ -177,7 +177,6 @@ export function CheckoutClient({
 
   return (
     <div className="mx-auto max-w-3xl px-5 md:px-8 py-16 md:py-24">
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">Checkout · Founding Drop</p>
       <h1 className="mt-3 font-editorial text-4xl md:text-5xl">Choose sizes &amp; quantities.</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Set how many you want in each size. You can order the same piece in multiple sizes.
@@ -192,7 +191,7 @@ export function CheckoutClient({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-sans text-lg leading-tight">{l.name}</p>
-                {l.color && <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">{l.color}</p>}
+                {l.color && <p className="text-xs uppercase tracking-[0.05em] text-muted-foreground">{l.color}</p>}
                 <p className="mt-1 text-sm tabular-nums text-muted-foreground">{l.priceLabel} each</p>
               </div>
               <p className="shrink-0 text-sm tabular-nums">৳ {(lineUnits(l) * l.unitPrice).toLocaleString()}</p>
@@ -203,7 +202,7 @@ export function CheckoutClient({
                 const q = l.sizes[sz] ?? 0;
                 return (
                   <div key={sz} className={`rounded-lg border p-2 text-center ${q > 0 ? "border-foreground" : "border-border"}`}>
-                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">{sz}</p>
+                    <p className="text-[11px] uppercase tracking-[0.05em] text-muted-foreground">{sz}</p>
                     <div className="mt-1.5 flex items-center justify-center gap-2">
                       <button type="button" onClick={() => setSizeQty(l.slug, sz, q - 1)} aria-label={`Fewer ${sz}`} className="text-muted-foreground hover:text-foreground disabled:opacity-30" disabled={q === 0}>
                         <Minus className="h-3.5 w-3.5" strokeWidth={2} />
@@ -222,7 +221,7 @@ export function CheckoutClient({
       </div>
 
       <div className="mt-6 flex items-center justify-between rounded-2xl border border-border p-5 paper-grain">
-        <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Total · {totalUnits} piece{totalUnits === 1 ? "" : "s"}</span>
+        <span className="text-xs uppercase tracking-[0.06em] text-muted-foreground">Total · {totalUnits} piece{totalUnits === 1 ? "" : "s"}</span>
         {couponPct > 0 ? (
           <span className="flex items-baseline gap-2">
             <span className="font-editorial text-3xl tabular-nums">৳ {discountedTotal.toLocaleString()}</span>
@@ -284,7 +283,7 @@ export function CheckoutClient({
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-full bg-foreground py-4 text-xs uppercase tracking-[0.2em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
+          className="w-full rounded-full bg-foreground py-4 text-xs uppercase tracking-[0.08em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
         >
           {submitting ? "Please wait…" : `Proceed to payment · ৳ ${total.toLocaleString()}`}
         </button>

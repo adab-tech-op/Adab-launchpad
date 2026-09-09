@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, Instagram } from "lucide-react";
+import type { ContactContent } from "@/lib/page-content";
 import { toast } from "sonner";
 import { z } from "zod";
 import { createContactMessage } from "@/lib/actions/contact";
@@ -44,7 +45,7 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, "Message is required").max(4000),
 });
 
-export function ContactClient() {
+export function ContactClient({ content }: { content: ContactContent }) {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -78,15 +79,8 @@ export function ContactClient() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 md:px-8 py-24 md:py-32">
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">
-        Contact
-      </p>
-      <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl uppercase tracking-[0.08em]">
-        Contact Adab
-      </h1>
-      <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">
-        Questions about a piece, an order, sizing, or the brand — we read every note.
-      </p>
+      <h1 className="mt-4 font-display text-4xl md:text-5xl lg:text-6xl uppercase tracking-[0.08em]">{content.heading}</h1>
+      <p className="mt-4 max-w-xl text-base text-muted-foreground leading-relaxed">{content.subcopy}</p>
 
       <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -130,7 +124,7 @@ export function ContactClient() {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-full bg-primary px-8 py-3.5 text-xs uppercase tracking-[0.2em] text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
+            className="rounded-full bg-primary px-8 py-3.5 text-xs uppercase tracking-[0.08em] text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-colors"
           >
             {submitting ? "Sending..." : "Submit"}
           </button>
@@ -138,37 +132,37 @@ export function ContactClient() {
 
         <aside className="space-y-10">
           <div>
-            <p className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               Support
             </p>
             <a
-              href="mailto:hello@adab.co"
+              href={`mailto:${content.email}`}
               className="mt-2 block font-sans text-2xl text-foreground hover:text-primary transition-colors"
             >
-              hello@adab.co
+              {content.email}
             </a>
           </div>
           <div>
-            <p className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               Studio
             </p>
             <p className="mt-2 text-sm text-foreground/80 leading-relaxed">
-              Dhaka, Bangladesh <br />
-              By appointment only.
+              {content.studioLocation} <br />
+              {content.studioNote}
             </p>
           </div>
           <div>
-            <p className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
               Follow
             </p>
             <a
-              href="https://instagram.com/adab.co"
+              href={`https://instagram.com/${content.instagram.replace(/^@/, "")}`}
               target="_blank"
               rel="noreferrer"
               className="mt-2 inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
             >
               <Instagram className="h-4 w-4" strokeWidth={1.5} />
-              @adab.co
+              {content.instagram}
             </a>
           </div>
         </aside>
@@ -214,7 +208,7 @@ const inputCls =
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+      <span className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
         {label}
       </span>
       <div className="mt-2">{children}</div>
