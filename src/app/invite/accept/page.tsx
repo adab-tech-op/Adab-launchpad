@@ -36,10 +36,10 @@ export default async function AcceptInvitePage({
           invitation was sent to, then come back to accept.
         </p>
         <div className="mt-6 flex gap-3">
-          <Link href={`/signin?next=${next}`} className="rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
+          <Link href={`/signin?next=${next}`} className="rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background">
             Sign in
           </Link>
-          <Link href={`/signup?next=${next}`} className="rounded-full border border-border px-6 py-3 text-xs uppercase tracking-[0.2em]">
+          <Link href={`/signup?next=${next}`} className="rounded-full border border-border px-6 py-3 text-xs uppercase tracking-[0.08em]">
             Create account
           </Link>
         </div>

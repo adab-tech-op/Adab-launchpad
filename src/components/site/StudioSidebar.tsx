@@ -37,7 +37,7 @@ export function StudioSidebar({ role }: { role: Role }) {
   const links = LINKS.filter((l) => !l.minRole || RANK[role] >= RANK[l.minRole]);
   return (
     <aside className="lg:sticky lg:top-24 h-fit">
-      <p className="font-display text-[11px] uppercase tracking-[0.22em] text-primary">ADAB Studio</p>
+      <p className="font-display text-[11px] uppercase tracking-[0.08em] text-primary">ADAB Studio</p>
       <p className="mt-1 text-xs text-muted-foreground">{ROLE_LABEL[role]}</p>
       <nav className="mt-8 flex flex-row flex-wrap gap-x-6 gap-y-2 lg:flex-col lg:gap-1">
         {links.map((l) => {
@@ -57,7 +57,7 @@ export function StudioSidebar({ role }: { role: Role }) {
         })}
       </nav>
       <div className="mt-6 lg:mt-8 space-y-3">
-        <Link href="/" className="block text-xs uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground">
+        <Link href="/" className="block text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground">
           ← View site
         </Link>
         <SignOutButton />

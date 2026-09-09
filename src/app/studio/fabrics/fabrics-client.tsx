@@ -8,7 +8,7 @@ import { createFabricType, updateFabricType, deleteFabricType } from "@/lib/acti
 import type { FabricType } from "@/lib/fabrics";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-const labelCls = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 function FabricRow({ fabric }: { fabric: FabricType }) {
   const router = useRouter();

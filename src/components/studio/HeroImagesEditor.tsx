@@ -105,7 +105,7 @@ function ImageSlot({
   return (
     <div className="rounded-xl border border-border p-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-[0.14em]">
+        <span className="text-xs font-medium uppercase tracking-[0.05em]">
           {label}
           {optional && <span className="ml-1.5 normal-case tracking-normal text-muted-foreground">(optional)</span>}
         </span>
@@ -222,7 +222,7 @@ function Slider({
 }) {
   return (
     <label className="block">
-      <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+      <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.05em] text-muted-foreground">
         {label}
         <span className="tabular-nums">{value}{suffix}</span>
       </span>

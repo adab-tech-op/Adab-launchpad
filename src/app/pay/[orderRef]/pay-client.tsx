@@ -9,7 +9,7 @@ import type { OrderItem } from "@/lib/queries";
 
 const input =
   "w-full rounded-md border border-border bg-transparent px-4 py-3 text-sm outline-none focus:border-primary transition-colors";
-const label = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const label = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 // Defined at module scope (NOT inside PayClient) so it keeps a stable identity
 // across re-renders — otherwise every keystroke would remount the form and drop focus.
@@ -98,7 +98,7 @@ export function PayClient({
         <p className="mt-4 text-sm text-muted-foreground">
           This order ({orderRef}) has already been handled. If you think this is a mistake, please contact us.
         </p>
-        <Link href="/contact" className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
+        <Link href="/contact" className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background">
           Contact us
         </Link>
       </Shell>
@@ -113,12 +113,12 @@ export function PayClient({
           <h1 className="mt-3 font-editorial text-4xl">Check your email.</h1>
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
             We&rsquo;ve sent a verification link to <span className="text-foreground">{email}</span>. Confirm it to
-            access your account and track order <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span> any time.
+            access your account and track order <span className="font-display tracking-[0.05em] text-primary">{orderRef}</span> any time.
           </p>
           <p className="mt-6 rounded-2xl border border-border bg-[color:var(--paper)] px-5 py-4 text-sm text-muted-foreground leading-relaxed">
             Your payment details are recorded — we&rsquo;ll verify them against bKash and message you on WhatsApp within 24 hours.
           </p>
-          <Link href="/shop" className="mt-8 inline-block text-xs uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
+          <Link href="/shop" className="mt-8 inline-block text-xs uppercase tracking-[0.08em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
             Continue browsing
           </Link>
         </Shell>
@@ -131,7 +131,7 @@ export function PayClient({
         <Shell>
           <h1 className="mt-3 font-editorial text-4xl">One last step.</h1>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            Your payment details for <span className="font-display tracking-[0.1em] text-primary">{orderRef}</span> are recorded — we&rsquo;ll
+            Your payment details for <span className="font-display tracking-[0.05em] text-primary">{orderRef}</span> are recorded — we&rsquo;ll
             verify against bKash and message you on WhatsApp within 24 hours. Set a password to track it live.
           </p>
 
@@ -164,7 +164,7 @@ export function PayClient({
               <button
                 type="submit"
                 disabled={creating}
-                className="w-full rounded-full bg-primary py-3.5 text-xs uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                className="w-full rounded-full bg-primary py-3.5 text-xs uppercase tracking-[0.08em] text-white transition-opacity hover:opacity-90 disabled:opacity-60"
               >
                 {creating ? "Creating account…" : "Create account & track order"}
               </button>
@@ -172,7 +172,7 @@ export function PayClient({
             </form>
           </div>
 
-          <Link href="/shop" className="mt-6 inline-block text-xs uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
+          <Link href="/shop" className="mt-6 inline-block text-xs uppercase tracking-[0.08em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
             Maybe later — continue browsing
           </Link>
         </Shell>
@@ -184,17 +184,17 @@ export function PayClient({
       <Shell>
         <h1 className="mt-3 font-editorial text-4xl">Response recorded.</h1>
         <p className="mt-5 inline-block rounded-full border border-border bg-[color:var(--paper)] px-5 py-2 text-sm">
-          Reference: <span className="font-display tracking-[0.12em] text-primary">{orderRef}</span>
+          Reference: <span className="font-display tracking-[0.05em] text-primary">{orderRef}</span>
         </p>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
           We&rsquo;ve received your payment details and will verify them against bKash. We&rsquo;ll call or message
           you on WhatsApp within 24 hours to confirm. Thank you.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-4">
-          <Link href={`/account/orders/${orderRef}`} className="inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
+          <Link href={`/account/orders/${orderRef}`} className="inline-block rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background">
             View order status
           </Link>
-          <Link href="/shop" className="text-xs uppercase tracking-[0.2em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
+          <Link href="/shop" className="text-xs uppercase tracking-[0.08em] text-muted-foreground underline underline-offset-4 hover:text-foreground">
             Continue browsing
           </Link>
         </div>
@@ -221,7 +221,7 @@ export function PayClient({
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Amount to send</span>
+          <span className="text-xs uppercase tracking-[0.06em] text-muted-foreground">Amount to send</span>
           <span className="font-editorial text-3xl tabular-nums">৳ {total.toLocaleString()}</span>
         </div>
         <div className="mt-4 border-t border-border pt-4">
@@ -239,7 +239,7 @@ export function PayClient({
 
       {/* Order summary */}
       <div className="mt-4 rounded-2xl border border-border p-5 text-sm">
-        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Order {orderRef}</p>
+        <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">Order {orderRef}</p>
         <ul className="mt-2 space-y-1">
           {items.map((it, i) => (
             <li key={i} className="flex justify-between gap-3">
@@ -290,7 +290,7 @@ export function PayClient({
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-full bg-foreground py-3.5 text-xs uppercase tracking-[0.2em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
+          className="w-full rounded-full bg-foreground py-3.5 text-xs uppercase tracking-[0.08em] text-background hover:bg-foreground/85 transition-colors disabled:opacity-60"
         >
           {submitting ? "Submitting…" : "Submit payment details"}
         </button>

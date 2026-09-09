@@ -24,7 +24,7 @@ export function ExportButton({ contacts }: { contacts: NotifyContact[] }) {
       type="button"
       onClick={download}
       disabled={contacts.length === 0}
-      className="rounded-full border border-border px-4 py-2 text-xs uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground disabled:opacity-40"
+      className="rounded-full border border-border px-4 py-2 text-xs uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground disabled:opacity-40"
     >
       Export CSV
     </button>

@@ -37,7 +37,7 @@ export default async function StudioInbox() {
         ) : (
           <div className="mt-6 overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+              <thead className="text-xs uppercase tracking-[0.05em] text-muted-foreground">
                 <tr className="border-b border-border text-left">
                   <th className="py-2 font-normal">Email</th>
                   <th className="py-2 font-normal">Phone</th>

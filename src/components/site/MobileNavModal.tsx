@@ -36,7 +36,7 @@ export function MobileNavModal({
             key={n.label}
             href={n.to}
             onClick={onClose}
-            className="flex items-center justify-between border-b border-border py-4 text-sm uppercase tracking-[0.16em] text-foreground transition-colors hover:text-primary"
+            className="flex items-center justify-between border-b border-border py-4 text-sm uppercase tracking-[0.06em] text-foreground transition-colors hover:text-primary"
           >
             <span>{n.label}</span>
             <ChevronRight className="h-4 w-4" strokeWidth={1.75} />

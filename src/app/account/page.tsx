@@ -21,17 +21,17 @@ export default async function AccountOverview() {
 
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-border p-6 paper-grain">
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Latest order</p>
+          <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">Latest order</p>
           {latest ? (
             <>
               <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="font-display tracking-[0.12em] text-primary">{latest.orderRef}</span>
+                <span className="font-display tracking-[0.05em] text-primary">{latest.orderRef}</span>
                 <StatusBadge status={latest.status} />
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 {latest.items.length} item{latest.items.length > 1 ? "s" : ""} · ৳ {latest.total.toLocaleString()}
               </p>
-              <Link href="/account/orders" className="mt-4 inline-block text-xs uppercase tracking-[0.16em] underline underline-offset-4">
+              <Link href="/account/orders" className="mt-4 inline-block text-xs uppercase tracking-[0.06em] underline underline-offset-4">
                 View orders →
               </Link>
             </>
@@ -41,10 +41,10 @@ export default async function AccountOverview() {
         </div>
 
         <div className="rounded-2xl border border-border p-6 paper-grain">
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Wishlist</p>
+          <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">Wishlist</p>
           <p className="mt-3 font-editorial text-3xl">{wishlist.length}</p>
           <p className="text-sm text-muted-foreground">saved piece{wishlist.length === 1 ? "" : "s"}</p>
-          <Link href="/account/wishlist" className="mt-4 inline-block text-xs uppercase tracking-[0.16em] underline underline-offset-4">
+          <Link href="/account/wishlist" className="mt-4 inline-block text-xs uppercase tracking-[0.06em] underline underline-offset-4">
             View wishlist →
           </Link>
         </div>
@@ -53,12 +53,12 @@ export default async function AccountOverview() {
       <div className="mt-4 rounded-2xl border border-border p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Profile</p>
+            <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">Profile</p>
             <p className="mt-2 text-sm text-foreground">
               {hasAddress ? "Delivery details saved." : "Add your size and delivery address for faster checkout."}
             </p>
           </div>
-          <Link href="/account/profile" className="shrink-0 text-xs uppercase tracking-[0.16em] underline underline-offset-4">
+          <Link href="/account/profile" className="shrink-0 text-xs uppercase tracking-[0.06em] underline underline-offset-4">
             {hasAddress ? "Edit" : "Complete"} →
           </Link>
         </div>

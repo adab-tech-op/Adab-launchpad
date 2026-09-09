@@ -50,7 +50,7 @@ export function ShopClient({
         >
           <div className="mx-auto max-w-7xl px-5 md:px-8 py-3 text-center">
             <p
-              className="text-[11px] uppercase tracking-[0.2em]"
+              className="text-[11px] uppercase tracking-[0.08em]"
               style={{ color: (banner ?? BANNER_DEFAULT).textColor }}
             >
               {(banner ?? BANNER_DEFAULT).text}
@@ -70,12 +70,12 @@ export function ShopClient({
         <div className="mb-8 flex items-center justify-between border-y border-border py-4">
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden flex items-center gap-2 text-xs uppercase tracking-[0.18em]"
+            className="lg:hidden flex items-center gap-2 text-xs uppercase tracking-[0.06em]"
           >
             <SlidersHorizontal className="h-4 w-4" strokeWidth={1.5} />
             Filter
           </button>
-          <div className="hidden lg:flex gap-8 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          <div className="hidden lg:flex gap-8 text-xs uppercase tracking-[0.06em] text-muted-foreground">
             <span>Type: All</span>
             <span>Size: All</span>
             <span>Color: All</span>
@@ -84,7 +84,7 @@ export function ShopClient({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="bg-transparent text-xs uppercase tracking-[0.18em] outline-none"
+            className="bg-transparent text-xs uppercase tracking-[0.06em] outline-none"
           >
             <option>Featured</option>
             <option>Newest</option>
@@ -120,7 +120,7 @@ export function ShopClient({
             <FilterGroup title="Type" items={TYPES} />
             <FilterGroup title="Size" items={SIZES} />
             <div className="mt-6">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
                 Color
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -140,7 +140,7 @@ export function ShopClient({
             </div>
             <button
               onClick={() => setMobileOpen(false)}
-              className="mt-8 w-full rounded-full bg-foreground py-3 text-xs uppercase tracking-[0.18em] text-background"
+              className="mt-8 w-full rounded-full bg-foreground py-3 text-xs uppercase tracking-[0.06em] text-background"
             >
               Apply
             </button>
@@ -164,7 +164,7 @@ function ComingSoonCard({ label }: { label: string }) {
           className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-          <span className="rounded-full bg-background/90 px-4 py-1.5 text-[10px] uppercase tracking-[0.18em] text-foreground">
+          <span className="rounded-full bg-background/90 px-4 py-1.5 text-[10px] uppercase tracking-[0.06em] text-foreground">
             Coming Soon
           </span>
         </div>
@@ -184,7 +184,7 @@ function ComingSoonCard({ label }: { label: string }) {
 function FilterGroup({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="mt-6">
-      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="text-xs uppercase tracking-[0.06em] text-muted-foreground">
         {title}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">

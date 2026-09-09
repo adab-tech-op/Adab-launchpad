@@ -87,7 +87,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
             </p>
             <Link
               href="/manifesto"
-              className="mt-10 inline-block text-sm uppercase tracking-[0.2em] text-foreground border-b border-foreground pb-1 hover:text-primary hover:border-primary transition-colors"
+              className="mt-10 inline-block text-sm uppercase tracking-[0.08em] text-foreground border-b border-foreground pb-1 hover:text-primary hover:border-primary transition-colors"
             >
               Read the Manifesto →
             </Link>
@@ -134,7 +134,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
           </div>
           <Link
             href="/shop"
-            className="text-sm uppercase tracking-[0.18em] text-foreground hover:text-primary"
+            className="text-sm uppercase tracking-[0.06em] text-foreground hover:text-primary"
           >
             View all →
           </Link>
@@ -179,7 +179,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
           </div>
           <Link
             href="/scrapbook"
-            className="text-sm uppercase tracking-[0.18em] hover:text-primary"
+            className="text-sm uppercase tracking-[0.06em] hover:text-primary"
           >
             View Scrapbook →
           </Link>
