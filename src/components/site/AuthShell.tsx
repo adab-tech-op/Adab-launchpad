@@ -19,7 +19,6 @@ export function AuthShell({
 }) {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-5 py-20">
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">{eyebrow}</p>
       <h1 className="mt-3 font-editorial text-4xl leading-tight">{title}</h1>
       {subtitle && <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{subtitle}</p>}
       <div className="mt-8">{children}</div>
@@ -33,7 +32,7 @@ export function AuthShell({
 
 export function authLabel(label: string) {
   return (
-    <span className="font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+    <span className="font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
       {label}
     </span>
   );

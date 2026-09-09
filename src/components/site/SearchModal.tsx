@@ -44,7 +44,7 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
         {hasQuery && (
           <button
             type="button"
-            className="shrink-0 rounded-full bg-primary px-4 py-2.5 text-xs uppercase tracking-[0.14em] text-primary-foreground transition-opacity hover:opacity-90 animate-in fade-in duration-200"
+            className="shrink-0 rounded-full bg-primary px-4 py-2.5 text-xs uppercase tracking-[0.05em] text-primary-foreground transition-opacity hover:opacity-90 animate-in fade-in duration-200"
           >
             Search
           </button>
@@ -61,7 +61,7 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
       <div className="min-h-[240px] max-h-[55vh] overflow-y-auto bg-[color:var(--paper)] px-4 py-4">
         {!hasQuery ? (
           <div className="space-y-2">
-            <p className="px-1 pb-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            <p className="px-1 pb-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
               Suggestions
             </p>
             {products.map((p) => (

@@ -22,7 +22,7 @@ export default async function NotifyPage() {
         <ExportButton contacts={contacts} />
       </div>
 
-      <p className="mt-6 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="mt-6 text-xs uppercase tracking-[0.06em] text-muted-foreground">
         {contacts.length} contact{contacts.length === 1 ? "" : "s"}
       </p>
 
@@ -34,7 +34,7 @@ export default async function NotifyPage() {
         <div className="mt-6 overflow-hidden rounded-2xl border border-border">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/30 text-left text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              <tr className="border-b border-border bg-muted/30 text-left text-[10px] uppercase tracking-[0.06em] text-muted-foreground">
                 <th className="px-4 py-3 font-normal">Email</th>
                 <th className="px-4 py-3 font-normal">Name</th>
                 <th className="px-4 py-3 font-normal">Source</th>

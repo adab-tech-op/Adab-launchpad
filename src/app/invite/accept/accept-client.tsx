@@ -31,7 +31,7 @@ export function AcceptClient({ token }: { token: string }) {
       type="button"
       onClick={accept}
       disabled={pending}
-      className="mt-6 rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background disabled:opacity-50"
+      className="mt-6 rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background disabled:opacity-50"
     >
       {pending ? "Activating…" : "Accept invitation"}
     </button>

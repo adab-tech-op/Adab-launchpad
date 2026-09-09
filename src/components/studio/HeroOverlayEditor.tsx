@@ -35,7 +35,7 @@ export function HeroOverlayEditor({
   return (
     <div className="rounded-xl border border-border p-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-[0.14em]">Overlay</span>
+        <span className="text-xs font-medium uppercase tracking-[0.05em]">Overlay</span>
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input type="checkbox" checked={value.enabled} onChange={(e) => set({ enabled: e.target.checked })} className="accent-foreground" />
           Show
@@ -48,7 +48,7 @@ export function HeroOverlayEditor({
       {value.enabled && (
         <div className="mt-3 flex flex-wrap items-start gap-6">
           <div>
-            <p className="mb-1.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Appears from</p>
+            <p className="mb-1.5 text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Appears from</p>
             <div className="grid grid-cols-3 gap-1">
               {GRID.map((f) => (
                 <button
@@ -70,14 +70,14 @@ export function HeroOverlayEditor({
 
           <div className="space-y-3">
             <label className="block">
-              <span className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Colour</span>
+              <span className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Colour</span>
               <div className="mt-1 flex items-center gap-2">
                 <input type="color" value={value.color} onChange={(e) => set({ color: e.target.value })} className="h-8 w-10 cursor-pointer rounded border border-border bg-transparent" />
                 <input type="text" value={value.color} onChange={(e) => set({ color: e.target.value })} className="w-24 rounded border border-border bg-transparent px-2 py-1 text-sm" />
               </div>
             </label>
             <label className="block">
-              <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+              <span className="flex items-center justify-between text-[10px] uppercase tracking-[0.05em] text-muted-foreground">
                 Opacity <span className="tabular-nums">{value.opacity}%</span>
               </span>
               <input type="range" min={0} max={100} value={value.opacity} onChange={(e) => set({ opacity: Number(e.target.value) })} className="mt-1 w-40 accent-foreground" />
@@ -86,7 +86,7 @@ export function HeroOverlayEditor({
 
           {previewImage && (
             <div>
-              <p className="mb-1.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Preview</p>
+              <p className="mb-1.5 text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Preview</p>
               <div className="relative h-24 w-40 overflow-hidden rounded-md ring-1 ring-border">
                 <div className="absolute inset-0" style={{ backgroundImage: `url("${previewImage}")`, backgroundSize: "cover", backgroundPosition: "center" }} />
                 {style && <div className="absolute inset-0" style={style} />}

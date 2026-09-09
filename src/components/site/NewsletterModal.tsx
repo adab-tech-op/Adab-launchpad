@@ -105,7 +105,7 @@ export function NewsletterModal() {
       </button>
       <div className="p-8 sm:p-10">
         {settings.eyebrow && (
-          <p className="text-[11px] uppercase tracking-[0.24em] text-primary font-display">{settings.eyebrow}</p>
+          <p className="text-[11px] uppercase tracking-[0.08em] text-primary font-display">{settings.eyebrow}</p>
         )}
         <h3 id="newsletter-modal-title" className="mt-3 font-sans text-3xl leading-tight">
           {settings.title}
@@ -128,14 +128,14 @@ export function NewsletterModal() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-md bg-foreground py-3 text-sm uppercase tracking-[0.18em] text-background hover:bg-foreground/90 transition-colors disabled:opacity-60"
+            className="w-full rounded-md bg-foreground py-3 text-sm uppercase tracking-[0.06em] text-background hover:bg-foreground/90 transition-colors disabled:opacity-60"
           >
             {submitting ? "Adding…" : "Notify Me"}
           </button>
         </form>
         <button
           onClick={close}
-          className="mt-4 w-full text-xs uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+          className="mt-4 w-full text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground"
         >
           Continue browsing →
         </button>

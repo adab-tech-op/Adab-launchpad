@@ -59,7 +59,7 @@ export function ScrapbookCtaTile({ className = "" }: { className?: string }) {
       </p>
       <a
         href={MAILTO}
-        className="mt-6 inline-block rounded-full bg-foreground px-6 py-2.5 text-sm uppercase tracking-[0.12em] text-background transition-opacity hover:opacity-90"
+        className="mt-6 inline-block rounded-full bg-foreground px-6 py-2.5 text-sm uppercase tracking-[0.05em] text-background transition-opacity hover:opacity-90"
       >
         Email your moment
       </a>

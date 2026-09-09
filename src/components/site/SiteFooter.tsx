@@ -32,7 +32,7 @@ export function SiteFooter() {
               />
               <button
                 type="submit"
-                className="text-xs uppercase tracking-[0.18em] text-foreground hover:text-primary"
+                className="text-xs uppercase tracking-[0.06em] text-foreground hover:text-primary"
               >
                 Notify me →
               </button>
@@ -97,7 +97,7 @@ function FooterCol({
 }) {
   return (
     <div>
-      <h4 className="text-xs uppercase tracking-[0.2em] text-foreground/70 font-sans">
+      <h4 className="text-xs uppercase tracking-[0.08em] text-foreground/70 font-sans">
         {title}
       </h4>
       <ul className="mt-5 space-y-3 text-sm text-muted-foreground">

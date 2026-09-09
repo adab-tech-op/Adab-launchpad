@@ -14,7 +14,7 @@ import { UploadHint } from "@/components/studio/UploadHint";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-const labelCls = "font-display text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 function BlockList({
   label,
@@ -62,14 +62,14 @@ function BlockList({
                 placeholder="Body — markdown supported. Bengali + English can be mixed freely."
               />
               <div className="rounded-lg border border-dashed border-border p-3">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
+                <p className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Preview</p>
                 <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
               </div>
             </div>
           </div>
         ))}
       </div>
-      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground">
         <Plus className="h-3.5 w-3.5" /> Add block
       </button>
     </div>
@@ -138,7 +138,7 @@ function StoryBlockList({
                 placeholder="Body — markdown supported. Bengali + English can be mixed freely."
               />
               <div className="rounded-lg border border-dashed border-border p-3">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
+                <p className="text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Preview</p>
                 <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
               </div>
             </div>
@@ -162,7 +162,7 @@ function StoryBlockList({
           </div>
         ))}
       </div>
-      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground">
+      <button type="button" onClick={add} className="mt-3 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.05em] text-muted-foreground hover:text-foreground">
         <Plus className="h-3.5 w-3.5" /> Add block
       </button>
     </div>
@@ -186,7 +186,7 @@ function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: Man
       >
         {bg && manifestoOverlay && <div className="absolute inset-0" style={manifestoOverlay} />}
         <div className={`relative px-5 py-10 ${light ? "text-background" : "text-foreground"}`}>
-          {hero.eyebrow && <p className="text-[10px] uppercase tracking-[0.22em] opacity-70">{hero.eyebrow}</p>}
+          {hero.eyebrow && <p className="text-[10px] uppercase tracking-[0.08em] opacity-70">{hero.eyebrow}</p>}
           <p className="mt-2 whitespace-pre-line font-editorial text-2xl leading-tight">{hero.heading || "Heading"}</p>
           {hero.subcopy && <p className="mt-2 text-sm opacity-80">{hero.subcopy}</p>}
         </div>
@@ -294,7 +294,7 @@ export function ContentEditor({
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.14em] transition-colors ${
+            className={`rounded-full px-4 py-1.5 text-xs uppercase tracking-[0.05em] transition-colors ${
               tab === t ? "border border-foreground bg-foreground text-background" : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground"
             }`}
           >
@@ -359,7 +359,7 @@ export function ContentEditor({
         type="button"
         onClick={save}
         disabled={pending}
-        className="mt-8 rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.2em] text-white disabled:opacity-40"
+        className="mt-8 rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.08em] text-white disabled:opacity-40"
       >
         {pending ? "Saving…" : `Save ${tabLabel(tab).toLowerCase()}`}
       </button>

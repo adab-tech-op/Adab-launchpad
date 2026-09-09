@@ -42,7 +42,7 @@ function DangerCard({ title, description, buttonLabel, action }: { title: string
           type="button"
           onClick={run}
           disabled={!armed || pending}
-          className="rounded-full bg-destructive px-5 py-2 text-xs uppercase tracking-[0.16em] text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full bg-destructive px-5 py-2 text-xs uppercase tracking-[0.06em] text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           {pending ? "Working…" : buttonLabel}
         </button>

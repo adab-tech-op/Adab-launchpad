@@ -39,11 +39,6 @@ export default async function Manifesto() {
           <div aria-hidden className="absolute inset-0" style={overlayStyle(hero.overlay)!} />
         )}
         <div className={cn("relative z-10 mx-auto w-full max-w-5xl", light ? "text-background" : "text-foreground")}>
-          {hero.eyebrow && (
-            <p className={cn("font-display text-[11px] uppercase tracking-[0.22em]", light ? "text-background/60" : "text-foreground/60")}>
-              {hero.eyebrow}
-            </p>
-          )}
           {/* Each author line (split on \n) is its own non-wrapping block:
               honours intentional line breaks AND stops a single line — e.g. the
               Bengali "আদব ম্যানিফেস্টো" — from soft-wrapping mid-phrase. */}
@@ -78,7 +73,7 @@ export default async function Manifesto() {
           <blockquote className="font-editorial text-3xl md:text-5xl leading-[1.15] text-foreground">
             &ldquo;The piran&rsquo;s shape is like today&rsquo;s panjabi — but shorter.&rdquo;
           </blockquote>
-          <p className="mt-8 font-display text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="mt-8 font-display text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
             Rajshekhar Basu, &ldquo;Our Clothing&rdquo; (Amader Parichhad), 1958
           </p>
         </div>
@@ -92,7 +87,7 @@ export default async function Manifesto() {
             return (
               <div key={i} className="rounded-2xl border border-border bg-card p-6 md:p-8">
                 <Icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
-                <h3 className="mt-6 font-display text-sm uppercase tracking-[0.16em]">{value.title}</h3>
+                <h3 className="mt-6 font-display text-sm uppercase tracking-[0.06em]">{value.title}</h3>
                 <div
                   className="prose-editorial mt-3 text-sm leading-relaxed text-muted-foreground"
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(value.body) }}
@@ -112,7 +107,7 @@ export default async function Manifesto() {
         </p>
         <Link
           href="/shop"
-          className="mt-10 inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-display text-[11px] uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-primary/90"
+          className="mt-10 inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 font-display text-[11px] uppercase tracking-[0.08em] text-primary-foreground transition-colors hover:bg-primary/90"
         >
           Shop the Drop
         </Link>

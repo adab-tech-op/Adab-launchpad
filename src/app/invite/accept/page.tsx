@@ -18,7 +18,6 @@ export default async function AcceptInvitePage({
 
   const shell = (children: React.ReactNode) => (
     <div className="mx-auto max-w-lg px-5 md:px-8 py-16 md:py-24">
-      <p className="font-display text-[11px] uppercase tracking-[0.24em] text-primary">ADAB Studio</p>
       <h1 className="mt-3 font-editorial text-4xl">Invitation.</h1>
       {children}
     </div>
@@ -37,10 +36,10 @@ export default async function AcceptInvitePage({
           invitation was sent to, then come back to accept.
         </p>
         <div className="mt-6 flex gap-3">
-          <Link href={`/signin?next=${next}`} className="rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.2em] text-background">
+          <Link href={`/signin?next=${next}`} className="rounded-full bg-foreground px-6 py-3 text-xs uppercase tracking-[0.08em] text-background">
             Sign in
           </Link>
-          <Link href={`/signup?next=${next}`} className="rounded-full border border-border px-6 py-3 text-xs uppercase tracking-[0.2em]">
+          <Link href={`/signup?next=${next}`} className="rounded-full border border-border px-6 py-3 text-xs uppercase tracking-[0.08em]">
             Create account
           </Link>
         </div>

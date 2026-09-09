@@ -63,7 +63,7 @@ export default async function StudioOrders({
             <Link
               key={p.key}
               href={`/studio/orders?status=${p.key}`}
-              className={`rounded-full border px-3.5 py-1.5 text-xs uppercase tracking-[0.12em] transition-colors ${
+              className={`rounded-full border px-3.5 py-1.5 text-xs uppercase tracking-[0.05em] transition-colors ${
                 isActive
                   ? "border-foreground bg-foreground text-background"
                   : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
@@ -81,7 +81,7 @@ export default async function StudioOrders({
             {active === "payment_submitted" ? "No payments awaiting verification." : "Nothing here."}
           </p>
           {active !== "all" && (
-            <Link href="/studio/orders?status=all" className="mt-5 inline-block text-xs uppercase tracking-[0.16em] underline underline-offset-4">
+            <Link href="/studio/orders?status=all" className="mt-5 inline-block text-xs uppercase tracking-[0.06em] underline underline-offset-4">
               View all orders →
             </Link>
           )}
@@ -92,7 +92,7 @@ export default async function StudioOrders({
             <div key={o.orderRef} className="rounded-2xl border border-border p-6">
               <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
                 <div className="min-w-0">
-                  <span className="font-display tracking-[0.12em] text-primary">{o.orderRef}</span>
+                  <span className="font-display tracking-[0.05em] text-primary">{o.orderRef}</span>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {new Date(o.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </p>
@@ -102,12 +102,12 @@ export default async function StudioOrders({
                 ) : (
                   <div className="flex flex-col items-end gap-1.5">
                     {o.axes.cancelled && (
-                      <span className="rounded-full bg-destructive/10 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-destructive">Cancelled</span>
+                      <span className="rounded-full bg-destructive/10 px-3 py-1 text-[10px] uppercase tracking-[0.06em] text-destructive">Cancelled</span>
                     )}
-                    <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.16em] ${PAYMENT_PILL[o.axes.payment]}`}>
+                    <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.06em] ${PAYMENT_PILL[o.axes.payment]}`}>
                       {PAYMENT_LABELS[o.axes.payment]}
                     </span>
-                    <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.16em] ${DELIVERY_PILL[o.axes.delivery]}`}>
+                    <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.06em] ${DELIVERY_PILL[o.axes.delivery]}`}>
                       {DELIVERY_LABELS[o.axes.delivery]}
                     </span>
                   </div>
@@ -116,7 +116,7 @@ export default async function StudioOrders({
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-muted-foreground"><User className="h-3.5 w-3.5" strokeWidth={1.75} /> Customer</p>
+                  <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.06em] text-muted-foreground"><User className="h-3.5 w-3.5" strokeWidth={1.75} /> Customer</p>
                   <p className="mt-1">{o.name}</p>
                   <p className="text-muted-foreground break-all">{pii ? o.email : mask(o.email)}</p>
                   <p className="text-muted-foreground">{pii ? o.phone : mask(o.phone)}</p>
@@ -124,7 +124,7 @@ export default async function StudioOrders({
                   {o.notes && <p className="mt-1 text-xs text-muted-foreground italic">Note: {o.notes}</p>}
                 </div>
                 <div>
-                  <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-muted-foreground"><Package className="h-3.5 w-3.5" strokeWidth={1.75} /> Items</p>
+                  <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.06em] text-muted-foreground"><Package className="h-3.5 w-3.5" strokeWidth={1.75} /> Items</p>
                   <ul className="mt-1 space-y-1">
                     {o.items.map((it, i) => (
                       <li key={i} className="flex justify-between gap-3">
@@ -142,22 +142,22 @@ export default async function StudioOrders({
 
               {o.payment ? (
                 <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
-                  <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.16em] text-primary"><ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.75} /> Payment to verify</p>
+                  <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.06em] text-primary"><ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.75} /> Payment to verify</p>
                   <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
                     <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><Wallet className="h-3 w-3" /> Expected</p>
+                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Wallet className="h-3 w-3" /> Expected</p>
                       <p className="tabular-nums">৳ {(o.payment.amount ?? o.total).toLocaleString()}</p>
                     </div>
                     <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><Smartphone className="h-3 w-3" /> Paid from</p>
+                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Smartphone className="h-3 w-3" /> Paid from</p>
                       <p className="tabular-nums">{pii ? o.payment.bkashNumber : mask(o.payment.bkashNumber)}</p>
                     </div>
                     <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><Hash className="h-3 w-3" /> TrxID</p>
+                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Hash className="h-3 w-3" /> TrxID</p>
                       <p className="font-medium">{pii ? o.payment.trxId : mask(o.payment.trxId)}</p>
                     </div>
                     <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"><Clock className="h-3 w-3" /> Submitted</p>
+                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Clock className="h-3 w-3" /> Submitted</p>
                       <p className="text-muted-foreground">
                         {new Date(o.payment.submittedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                       </p>

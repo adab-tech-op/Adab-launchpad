@@ -18,7 +18,7 @@ type Coupon = {
 };
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-const labelCls = "text-[11px] uppercase tracking-[0.16em] text-muted-foreground";
+const labelCls = "text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
 
 function Row({ c, products }: { c: Coupon; products: { slug: string; name: string }[] }) {
   const router = useRouter();

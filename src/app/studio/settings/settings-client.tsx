@@ -6,7 +6,7 @@ import { saveDropWindowDays, saveBanner, saveAllowMultiOrder } from "@/lib/actio
 import type { BannerSettings } from "@/lib/settings";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
-const labelCls = "text-xs uppercase tracking-[0.16em] text-muted-foreground";
+const labelCls = "text-xs uppercase tracking-[0.06em] text-muted-foreground";
 
 export function SettingsClient({ dropWindow, banner, allowMulti }: { dropWindow: number; banner: BannerSettings; allowMulti: boolean }) {
   const [win, setWin] = useState(String(dropWindow));
@@ -116,7 +116,7 @@ export function SettingsClient({ dropWindow, banner, allowMulti }: { dropWindow:
         <div className="mt-5">
           <span className={labelCls}>Preview</span>
           <div className="mt-1.5 rounded-lg border border-border" style={{ backgroundColor: b.bgColor }}>
-            <p className="px-4 py-3 text-center text-[11px] uppercase tracking-[0.2em]" style={{ color: b.textColor }}>
+            <p className="px-4 py-3 text-center text-[11px] uppercase tracking-[0.08em]" style={{ color: b.textColor }}>
               {b.text || "Banner text"}
             </p>
           </div>
