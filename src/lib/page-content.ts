@@ -88,6 +88,28 @@ export const DROP_DEFAULT: HomeContent = {
   subcopyColor: "#f5f0e8",
 };
 
+// A standalone editable hero (image + overlay + text) — used for each product's
+// section on the Drop page. Same shape as the home/drop hero, minus the body.
+export type PageHero = {
+  hero: HeroImages;
+  overlay: HeroOverlay;
+  heading: string;
+  headingColor: string;
+  subcopy: string;
+  subcopyColor: string;
+};
+
+export function emptyPageHero(): PageHero {
+  return {
+    hero: emptyHeroImages(),
+    overlay: defaultOverlay(),
+    heading: "",
+    headingColor: "#f5f0e8",
+    subcopy: "",
+    subcopyColor: "#f5f0e8",
+  };
+}
+
 export type ShopContent = { heading: string; subcopy: string };
 export const SHOP_DEFAULT: ShopContent = {
   heading: "Shop.",

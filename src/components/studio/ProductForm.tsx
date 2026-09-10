@@ -9,6 +9,9 @@ import { createProduct, updateProduct, closeDrop, type EditableProduct } from "@
 import { saveProductStock, markSoldOut } from "@/lib/actions/inventory";
 import type { FabricType } from "@/lib/fabrics";
 import { UploadHint } from "@/components/studio/UploadHint";
+import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
+import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
+import { emptyPageHero } from "@/lib/page-content";
 import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
@@ -44,6 +47,7 @@ const empty: EditableProduct = {
   drop_date: "",
   drop_end: "",
   in_shop: false,
+  drop_hero: null,
   sort_order: 0,
 };
 
@@ -68,6 +72,8 @@ export function ProductForm({
   const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const set = <K extends keyof EditableProduct>(k: K, v: EditableProduct[K]) => setP((s) => ({ ...s, [k]: v }));
+  const dropHero = p.drop_hero ?? emptyPageHero();
+  const setDropHero = (patch: Partial<typeof dropHero>) => set("drop_hero", { ...dropHero, ...patch });
 
   const onNameChange = (name: string) => {
     setP((s) => ({ ...s, name, slug: mode === "create" && (!s.slug || s.slug === slugify(s.name)) ? slugify(name) : s.slug }));
@@ -254,6 +260,32 @@ export function ProductForm({
           <input type="checkbox" checked={!!p.in_shop} onChange={(e) => set("in_shop", e.target.checked)} className="accent-foreground" />
           Show in Shop after the drop concludes <span className="text-muted-foreground">(never returns to the Drop page)</span>
         </label>
+
+        {p.drop_date && (
+          <div className="mt-4 space-y-4 rounded-lg border border-dashed border-border p-4">
+            <p className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
+              Drop-page hero — this piece&rsquo;s own section on /drop (background, overlay, text). Empty is fine; it falls back to the product image + name.
+            </p>
+            <HeroImagesEditor value={dropHero.hero} onChange={(hero) => setDropHero({ hero })} />
+            <HeroOverlayEditor value={dropHero.overlay} onChange={(overlay) => setDropHero({ overlay })} previewImage={dropHero.hero.desktop || undefined} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-[11px] text-muted-foreground">Heading</span>
+                <div className="mt-1 flex items-center gap-2">
+                  <input className={inputCls} value={dropHero.heading} onChange={(e) => setDropHero({ heading: e.target.value })} />
+                  <input type="color" value={dropHero.headingColor} onChange={(e) => setDropHero({ headingColor: e.target.value })} className="h-9 w-10 shrink-0 rounded border border-border bg-transparent" />
+                </div>
+              </label>
+              <label className="block">
+                <span className="text-[11px] text-muted-foreground">Subcopy</span>
+                <div className="mt-1 flex items-center gap-2">
+                  <input className={inputCls} value={dropHero.subcopy} onChange={(e) => setDropHero({ subcopy: e.target.value })} />
+                  <input type="color" value={dropHero.subcopyColor} onChange={(e) => setDropHero({ subcopyColor: e.target.value })} className="h-9 w-10 shrink-0 rounded border border-border bg-transparent" />
+                </div>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       <label className="block">

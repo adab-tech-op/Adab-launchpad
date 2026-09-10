@@ -29,6 +29,7 @@ export type Product = {
   dropDate?: string; // ISO (UTC); when set, drives visibility/purchasability
   dropEnd?: string; // ISO (UTC); optional auto-conclude
   inShop?: boolean; // concluded piece resurfaced to /shop only
+  dropHero?: import("@/lib/page-content").PageHero; // per-product Drop-page hero
 };
 
 export const products: Product[] = [
