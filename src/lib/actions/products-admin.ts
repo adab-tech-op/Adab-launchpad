@@ -6,6 +6,7 @@ import { z } from "zod";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
 import { deleteManyFromCloudinary } from "@/lib/cloudinary-server";
+import { heroImageUrls } from "@/lib/hero";
 
 const schema = z.object({
   slug: z.string().trim().regex(/^[a-z0-9-]+$/, "Slug: lowercase letters, numbers, hyphens only").min(1).max(120),
@@ -121,11 +122,14 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
   const d = parsed.data;
   // Grab the current images so we can clean up any that the edit removed.
   let previousImages: string[] = [];
+  let previousDropHeroImages: string[] = [];
   try {
-    const rows = (await sql`SELECT images FROM products WHERE slug = ${d.slug}`) as { images: string[] }[];
+    const rows = (await sql`SELECT images, drop_hero FROM products WHERE slug = ${d.slug}`) as { images: string[]; drop_hero: { hero?: unknown } | null }[];
     previousImages = Array.isArray(rows[0]?.images) ? rows[0].images : [];
+    previousDropHeroImages = heroImageUrls(rows[0]?.drop_hero?.hero as never);
   } catch {
     previousImages = [];
+    previousDropHeroImages = [];
   }
   try {
     await sql`
@@ -151,7 +155,11 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
   }
   await recordAudit(admin, "product.update", d.slug, { name: d.name });
   // Best-effort: delete images that are no longer referenced by this product.
-  const removed = previousImages.filter((u) => !d.images.includes(u));
+  const newDropHeroImages = new Set(heroImageUrls((d.drop_hero as { hero?: unknown } | null)?.hero as never));
+  const removed = [
+    ...previousImages.filter((u) => !d.images.includes(u)),
+    ...previousDropHeroImages.filter((u) => !newDropHeroImages.has(u)),
+  ];
   if (removed.length) await deleteManyFromCloudinary(removed);
   revalidateAll(d.slug);
   return { ok: true };
@@ -163,8 +171,11 @@ export async function deleteProduct(slug: string): Promise<ProductActionResult> 
   // Read the images first so we can clean them up after the row is gone.
   let images: string[] = [];
   try {
-    const rows = (await sql`SELECT images FROM products WHERE slug = ${slug}`) as { images: string[] }[];
-    images = Array.isArray(rows[0]?.images) ? rows[0].images : [];
+    const rows = (await sql`SELECT images, drop_hero FROM products WHERE slug = ${slug}`) as { images: string[]; drop_hero: { hero?: unknown } | null }[];
+    images = [
+      ...(Array.isArray(rows[0]?.images) ? rows[0].images : []),
+      ...heroImageUrls(rows[0]?.drop_hero?.hero as never),
+    ];
   } catch {
     images = [];
   }
