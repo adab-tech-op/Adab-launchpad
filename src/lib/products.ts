@@ -32,6 +32,7 @@ type Row = {
   drop_date: string | null;
   drop_end: string | null;
   in_shop: boolean | null;
+  drop_hero: unknown;
 };
 
 function rowToProduct(r: Row): Product {
@@ -60,6 +61,7 @@ function rowToProduct(r: Row): Product {
     dropDate: r.drop_date ?? undefined,
     dropEnd: r.drop_end ?? undefined,
     inShop: r.in_shop ?? false,
+    dropHero: (r.drop_hero && typeof r.drop_hero === "object") ? (r.drop_hero as import("@/lib/page-content").PageHero) : undefined,
   };
 }
 

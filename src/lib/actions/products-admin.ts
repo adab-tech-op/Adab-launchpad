@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { PageHero } from "@/lib/page-content";
 import { z } from "zod";
 import { sql } from "@/lib/db";
 import { requireMutator, recordAudit } from "@/lib/roles";
@@ -31,6 +32,7 @@ const schema = z.object({
   drop_date: z.string().trim().optional().or(z.literal("")), // ISO UTC or ""
   drop_end: z.string().trim().optional().or(z.literal("")), // ISO UTC or ""
   in_shop: z.boolean().optional(),
+  drop_hero: z.any().optional().nullable(),
   sort_order: z.number().int().min(0).max(100000),
 }).refine(
   (d) => !d.drop_end || !d.drop_date || new Date(d.drop_end) > new Date(d.drop_date),
@@ -92,11 +94,11 @@ export async function createProduct(input: ProductInput): Promise<ProductActionR
   const d = parsed.data;
   try {
     await sql`
-      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, drop_date, drop_end, in_shop, sort_order)
+      INSERT INTO products (slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, drop_date, drop_end, in_shop, drop_hero, sort_order)
       VALUES (${d.slug}, ${d.name}, ${d.status}, ${d.price_bdt}, ${d.founding_note || null}, ${d.color},
               ${JSON.stringify(d.swatches)}::jsonb, ${d.short}, ${JSON.stringify(d.images)}::jsonb,
               ${JSON.stringify(d.details)}::jsonb, ${d.model_note || null}, ${d.fabric_note || null}, ${d.story || null},
-              ${d.fit_note || null}, ${d.care_note || null}, ${d.delivery_note || null}, ${d.fabric_type_id ?? null}, ${d.discount_percent ?? 0}, ${d.discount_until || null}, ${d.drop_date || null}, ${d.drop_end || null}, ${d.in_shop ?? false}, ${d.sort_order})
+              ${d.fit_note || null}, ${d.care_note || null}, ${d.delivery_note || null}, ${d.fabric_type_id ?? null}, ${d.discount_percent ?? 0}, ${d.discount_until || null}, ${d.drop_date || null}, ${d.drop_end || null}, ${d.in_shop ?? false}, ${d.drop_hero ? JSON.stringify(d.drop_hero) : null}::jsonb, ${d.sort_order})
     `;
   } catch (err) {
     const msg = String((err as { message?: string })?.message ?? err);
@@ -138,6 +140,7 @@ export async function updateProduct(input: ProductInput): Promise<ProductActionR
         fabric_type_id = ${d.fabric_type_id ?? null},
         discount_percent = ${d.discount_percent ?? 0}, discount_until = ${d.discount_until || null},
         drop_date = ${d.drop_date || null}, drop_end = ${d.drop_end || null}, in_shop = ${d.in_shop ?? false},
+        drop_hero = ${d.drop_hero ? JSON.stringify(d.drop_hero) : null}::jsonb,
         sort_order = ${d.sort_order}, updated_at = now()
       WHERE slug = ${d.slug}
     `;
@@ -200,6 +203,7 @@ export type EditableProduct = {
   drop_date: string | null;
   drop_end: string | null;
   in_shop: boolean;
+  drop_hero: PageHero | null;
   sold_out?: boolean;
   sort_order: number;
 };
@@ -208,7 +212,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
   if (!(await mutatorEmail())) return null;
   try {
     const rows = (await sql`
-      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, drop_date, drop_end, in_shop, sold_out, sort_order
+      SELECT slug, name, status, price_bdt, founding_note, color, swatches, short, images, details, model_note, fabric_note, story, fit_note, care_note, delivery_note, fabric_type_id, discount_percent, discount_until, drop_date, drop_end, in_shop, drop_hero, sold_out, sort_order
       FROM products WHERE slug = ${slug}
     `) as EditableProduct[];
     const r = rows[0];
@@ -231,6 +235,7 @@ export async function getProductForEdit(slug: string): Promise<EditableProduct |
       drop_date: r.drop_date ?? null,
       drop_end: r.drop_end ?? null,
       in_shop: r.in_shop ?? false,
+      drop_hero: (r.drop_hero && typeof r.drop_hero === "object") ? r.drop_hero : null,
     };
   } catch (err) {
     console.error("[products-admin] getProductForEdit failed", err);
