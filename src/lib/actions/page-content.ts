@@ -125,6 +125,25 @@ function storedHeroUrls(hero: unknown): string[] {
   return urls;
 }
 
+// Every Cloudinary URL a page's content references: hero images (all breakpoints)
+// + story-part images + block icons (values / care sections).
+function collectContentImageUrls(content: unknown): string[] {
+  if (!content || typeof content !== "object") return [];
+  const c = content as { hero?: unknown; storyParts?: unknown; values?: unknown; sections?: unknown };
+  const urls = [...storedHeroUrls(c.hero)];
+  for (const arr of [c.storyParts, c.values, c.sections]) {
+    if (!Array.isArray(arr)) continue;
+    for (const b of arr) {
+      if (b && typeof b === "object") {
+        const blk = b as { image?: string; icon?: string };
+        if (typeof blk.image === "string" && blk.image) urls.push(blk.image);
+        if (typeof blk.icon === "string" && blk.icon) urls.push(blk.icon);
+      }
+    }
+  }
+  return urls;
+}
+
 /** Root/admin only. Saves the editable blocks for a page. */
 export async function savePageContent(slug: string, content: unknown): Promise<PageContentResult> {
   const actor = await requireMutator();
@@ -136,20 +155,12 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
   const parsed = shape.safeParse(content);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the content." };
 
-  // Collect the previous image URLs (hero across all breakpoints + story parts)
-  // so replaced/removed Cloudinary assets can be cleaned up after the write.
+  // Collect the previous image URLs (hero, story images, block icons) so
+  // replaced/removed Cloudinary assets can be cleaned up after the write.
   let oldImages: string[] = [];
   try {
-    const rows = (await sql`SELECT content FROM page_content WHERE slug = ${slug}`) as {
-      content: { hero?: unknown; storyParts?: { image?: string }[] };
-    }[];
-    const prev = rows[0]?.content;
-    if (prev) {
-      oldImages = [
-        ...storedHeroUrls(prev.hero),
-        ...(prev.storyParts ?? []).map((p) => p?.image).filter((u): u is string => !!u),
-      ];
-    }
+    const rows = (await sql`SELECT content FROM page_content WHERE slug = ${slug}`) as { content: unknown }[];
+    if (rows[0]?.content) oldImages = collectContentImageUrls(rows[0].content);
   } catch {
     oldImages = [];
   }
@@ -164,11 +175,7 @@ export async function savePageContent(slug: string, content: unknown): Promise<P
 
     // Best-effort cleanup of any image no longer referenced.
     if (oldImages.length) {
-      const data = parsed.data as { hero?: { images?: HeroImages }; storyParts?: { image?: string }[] };
-      const newImages = new Set<string>([
-        ...heroImageUrls(data.hero?.images),
-        ...(data.storyParts ?? []).map((p) => p?.image).filter((u): u is string => !!u),
-      ]);
+      const newImages = new Set<string>(collectContentImageUrls(parsed.data));
       const removed = oldImages.filter((u) => !newImages.has(u));
       if (removed.length) await deleteManyFromCloudinary(removed);
     }
