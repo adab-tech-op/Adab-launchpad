@@ -28,6 +28,7 @@ const GROUPS: NavGroup[] = [
       { href: "/studio/fabrics", label: "Fabrics", minRole: "admin" },
       { href: "/studio/discounts", label: "Discounts", minRole: "admin" },
       { href: "/studio/teasers", label: "Teasers", minRole: "admin" },
+      { href: "/studio/shop-settings", label: "Shop settings", minRole: "admin" },
     ],
   },
   {
