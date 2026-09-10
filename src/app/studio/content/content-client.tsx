@@ -10,6 +10,7 @@ import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, H
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle } from "@/lib/hero";
+import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
 import { UploadHint } from "@/components/studio/UploadHint";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 
@@ -371,7 +372,31 @@ export function ContentEditor({
             <TextRow label="Instagram handle" value={ct.instagram} onChange={(v) => setCt({ ...ct, instagram: v })} />
           </div>
         ) : tab === "drop" ? (
-          <HeroPageEditor value={dr} onChange={setDr} note="The hero at the top of the Drop page (above the countdown). Per-product drop dates are set on each product." />
+          <div className="space-y-6">
+            <div className="space-y-4 rounded-xl border border-border p-5">
+              <div className="flex items-center justify-between">
+                <p className={labelCls}>Default &ldquo;what&rsquo;s next&rdquo; section</p>
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={dr.announcementEnabled ?? true} onChange={(e) => setDr({ ...dr, announcementEnabled: e.target.checked })} className="accent-foreground" />
+                  Show it
+                </label>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Always appears at the bottom of the Drop page — your between/before-drops state. Set a date to run a countdown to an announced drop even before any product is scheduled; leave it empty for a &ldquo;more coming&rdquo; teaser with just the notify field.
+              </p>
+              <label className="block">
+                <span className="text-[11px] text-muted-foreground">Announced next-drop date (optional — Bangladesh time)</span>
+                <input
+                  type="datetime-local"
+                  className={`${inputCls} mt-1 max-w-xs`}
+                  value={isoToDhakaLocal(dr.nextDropDate)}
+                  onChange={(e) => setDr({ ...dr, nextDropDate: e.target.value ? dhakaLocalToISO(e.target.value) : "" })}
+                />
+                {dr.nextDropDate && <span className="mt-1 block text-[10px] text-muted-foreground">Dhaka: {formatDhaka(dr.nextDropDate)}</span>}
+              </label>
+            </div>
+            <HeroPageEditor value={dr} onChange={setDr} note="The hero for the default section (background, overlay, text). Per-product drop dates + their own heroes are set on each product." />
+          </div>
         ) : tab === "manifesto" ? (
           <>
             <HeroEditor hero={m.hero} onChange={(hero) => setM({ ...m, hero })} />

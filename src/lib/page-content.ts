@@ -47,6 +47,8 @@ export type HomeContent = {
   subcopy: string;
   subcopyColor: string; // hex
   body?: HomeBody; // editable page copy (home slug only; drop omits it)
+  nextDropDate?: string; // drop slug only: announced countdown target (ISO/UTC)
+  announcementEnabled?: boolean; // drop slug only: show the default/announcement section
 };
 
 export const HOME_BODY_DEFAULT: HomeBody = {
@@ -86,6 +88,8 @@ export const DROP_DEFAULT: HomeContent = {
   headingColor: "#f5f0e8",
   subcopy: "Limited pieces, released on a date. Once they're gone, they're gone.",
   subcopyColor: "#f5f0e8",
+  nextDropDate: "",
+  announcementEnabled: true,
 };
 
 // A standalone editable hero (image + overlay + text) — used for each product's
