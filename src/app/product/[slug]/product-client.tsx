@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { type Product } from "@/data/products";
 import { saleFor, formatPrice } from "@/lib/pricing";
 import { type DropState, formatDhaka } from "@/lib/drop";
@@ -12,31 +12,42 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import type { SizeGuideSettings, HandoverGuideSettings } from "@/lib/settings";
 
 // Feature flag: Founding Drop reservations vs. standard Add to Cart.
 // Flip to false once fulfilment + cart checkout are live.
 const dropModeActive = true;
 
-// Standard copy for the Fit / Care / Delivery accordions. Each product may
-// override these from the studio form; when its field is blank we fall back to
-// this, so the section always renders and boilerplate never needs retyping.
-const DEFAULT_FIT =
-  "Adab pieces are cut with a considered, relaxed fit. Choose your usual size, or size up for extra room.";
+// Standard copy for the Care accordion. Each product may override this from
+// the studio form; when its field is blank we fall back to this. (Fit &
+// Sizing and Delivery & Returns now open admin-editable popups instead — see
+// sizeGuide / handoverGuide props.)
 const DEFAULT_CARE =
   "Cold machine wash, inside out. Line dry in shade. Iron on medium with cloth in between.";
-const DEFAULT_DELIVERY =
-  "Dispatched from Dhaka within 48 hours of drop fulfilment. 7-day returns on unworn pieces with tags.";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"];
-const SIZE_TABLE = [
-  { size: "S", chest: 40, length: 30, sleeve: 24, shoulder: 17 },
-  { size: "M", chest: 42, length: 31, sleeve: 24.5, shoulder: 18 },
-  { size: "L", chest: 44, length: 32, sleeve: 25, shoulder: 19 },
-  { size: "XL", chest: 46, length: 32.5, sleeve: 25.5, shoulder: 19.5 },
-  { size: "XXL", chest: 48, length: 33, sleeve: 26, shoulder: 20 },
-];
 
-export function ProductClient({ product, allProducts, stock = {}, fabricCare, dropState, dropBuyable = true, staffPreview = false }: { product: Product; allProducts: Product[]; stock?: Record<string, number>; fabricCare?: string | null; dropState?: DropState; dropBuyable?: boolean; staffPreview?: boolean }) {
+export function ProductClient({
+  product,
+  allProducts,
+  stock = {},
+  fabricCare,
+  sizeGuide,
+  handoverGuide,
+  dropState,
+  dropBuyable = true,
+  staffPreview = false,
+}: {
+  product: Product;
+  allProducts: Product[];
+  stock?: Record<string, number>;
+  fabricCare?: string | null;
+  sizeGuide: SizeGuideSettings;
+  handoverGuide: HandoverGuideSettings;
+  dropState?: DropState;
+  dropBuyable?: boolean;
+  staffPreview?: boolean;
+}) {
   const router = useRouter();
   const { addItem, items, removeItem } = useCart();
   const soldOut = product.soldOut === true;
@@ -49,6 +60,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
   const [color, setColor] = useState(product.swatches[0]?.name ?? product.color);
   const [zoom, setZoom] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [handoverOpen, setHandoverOpen] = useState(false);
 
   const idx = allProducts.findIndex((p) => p.slug === product.slug);
   const prev = allProducts[(idx - 1 + allProducts.length) % allProducts.length];
@@ -336,15 +348,11 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
               {product.fabricNote || product.short}
             </p>
           </Accordion>
-          <Accordion title="Fit & Sizing">
-            <p className="whitespace-pre-line">{product.fitNote || DEFAULT_FIT}</p>
-          </Accordion>
+          <PopoverRow title="Fit & Sizing" onOpen={() => setGuideOpen(true)} />
           <Accordion title="Care Guide">
             <p className="whitespace-pre-line">{product.careNote || fabricCare || DEFAULT_CARE}</p>
           </Accordion>
-          <Accordion title="Delivery & Returns">
-            <p className="whitespace-pre-line">{product.deliveryNote || DEFAULT_DELIVERY}</p>
-          </Accordion>
+          <PopoverRow title="Delivery & Returns" onOpen={() => setHandoverOpen(true)} />
         </div>
 
         {/* Prev / Next */}
@@ -408,7 +416,7 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
         </div>
       )}
 
-      {/* Size guide modal */}
+      {/* Size guide modal (Fit & Sizing) */}
       {guideOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-lg rounded-2xl bg-background p-8 border border-border">
@@ -419,40 +427,75 @@ export function ProductClient({ product, allProducts, stock = {}, fabricCare, dr
             >
               <X className="h-5 w-5" strokeWidth={1.5} />
             </button>
-            <h3 className="font-editorial text-2xl">Size Guide</h3>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Measurements in inches. Garment flat.
-            </p>
+            <h3 className="font-editorial text-2xl">{sizeGuide.title}</h3>
+            {sizeGuide.note && <p className="mt-2 text-xs text-muted-foreground">{sizeGuide.note}</p>}
             <table className="mt-6 w-full text-sm">
               <thead className="text-xs uppercase tracking-[0.05em] text-muted-foreground">
                 <tr className="border-b border-border">
                   <th className="py-2 text-left font-normal">Size</th>
-                  <th className="py-2 text-right font-normal">Chest</th>
-                  <th className="py-2 text-right font-normal">Length</th>
-                  <th className="py-2 text-right font-normal">Sleeve</th>
-                  <th className="py-2 text-right font-normal">Shoulder</th>
+                  {sizeGuide.columns.map((c) => (
+                    <th key={c} className="py-2 text-right font-normal">{c}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {SIZE_TABLE.map((r) => (
+                {sizeGuide.rows.map((r) => (
                   <tr key={r.size} className="border-b border-border/60">
                     <td className="py-3">{r.size}</td>
-                    <td className="py-3 text-right tabular-nums">{r.chest}</td>
-                    <td className="py-3 text-right tabular-nums">{r.length}</td>
-                    <td className="py-3 text-right tabular-nums">{r.sleeve}</td>
-                    <td className="py-3 text-right tabular-nums">{r.shoulder}</td>
+                    {r.values.map((v, i) => (
+                      <td key={i} className="py-3 text-right tabular-nums">{v}</td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="mt-6 text-xs text-muted-foreground leading-relaxed">
-              Adab pieces are cut with a considered, relaxed fit. Choose your
-              usual size, or size up for extra room.
+            {(product.fitNote || sizeGuide.footer) && (
+              <p className="mt-6 text-xs text-muted-foreground leading-relaxed">
+                {product.fitNote || sizeGuide.footer}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Product Handover Guide modal (Delivery & Returns) */}
+      {handoverOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-lg rounded-2xl bg-background p-8 border border-border">
+            <button
+              onClick={() => setHandoverOpen(false)}
+              className="absolute right-4 top-4"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" strokeWidth={1.5} />
+            </button>
+            <h3 className="font-editorial text-2xl">{handoverGuide.title}</h3>
+            <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+              {product.deliveryNote || handoverGuide.body}
             </p>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+// A row styled like Accordion but that opens a popup instead of expanding
+// inline — used for FAQ-style entries backed by admin-editable content
+// elsewhere on the site (size guide, handover guide, and future per-product
+// FAQs). The outward-arrow badge signals "opens elsewhere" in place of the
+// expand chevron.
+function PopoverRow({ title, onOpen }: { title: string; onOpen: () => void }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="flex w-full items-center justify-between border-b border-border py-5 text-left"
+    >
+      <span className="font-sans text-lg">{title}</span>
+      <span className="flex items-center gap-1 text-muted-foreground" aria-hidden="true">
+        <ArrowUpRight className="h-4 w-4" strokeWidth={1.5} />
+      </span>
+    </button>
   );
 }
 

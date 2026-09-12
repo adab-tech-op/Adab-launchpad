@@ -71,6 +71,69 @@ export async function saveBanner(input: unknown): Promise<SettingsResult> {
   }
 }
 
+const sizeGuideSchema = z.object({
+  title: z.string().trim().min(1, "Title is required.").max(80),
+  note: z.string().trim().max(200),
+  columns: z.array(z.string().trim().max(40)).min(1).max(8),
+  rows: z
+    .array(
+      z.object({
+        size: z.string().trim().min(1).max(20),
+        values: z.array(z.string().trim().max(20)),
+      }),
+    )
+    .min(1)
+    .max(20),
+  footer: z.string().trim().max(400),
+});
+
+/** Root/admin only. Saves the editable Size Guide (Fit & Sizing popup). */
+export async function saveSizeGuide(input: unknown): Promise<SettingsResult> {
+  const actor = await requireMutator();
+  if (!actor) return { ok: false, error: "Not authorized." };
+  const parsed = sizeGuideSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the size guide fields." };
+  try {
+    await sql`
+      INSERT INTO site_settings (key, value, updated_at)
+      VALUES ('size_guide', ${JSON.stringify(parsed.data)}::jsonb, now())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `;
+    await recordAudit(actor.email, "settings.update", null, { size_guide: parsed.data.title });
+    revalidatePath("/product/[slug]", "page");
+    return { ok: true };
+  } catch (err) {
+    console.error("[settings] saveSizeGuide failed", err);
+    return { ok: false, error: "Could not save. Make sure db/site-settings.sql has been run." };
+  }
+}
+
+const handoverGuideSchema = z.object({
+  title: z.string().trim().min(1, "Title is required.").max(80),
+  body: z.string().trim().max(2000),
+});
+
+/** Root/admin only. Saves the editable Product Handover Guide (Delivery & Returns popup). */
+export async function saveHandoverGuide(input: unknown): Promise<SettingsResult> {
+  const actor = await requireMutator();
+  if (!actor) return { ok: false, error: "Not authorized." };
+  const parsed = handoverGuideSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the handover guide fields." };
+  try {
+    await sql`
+      INSERT INTO site_settings (key, value, updated_at)
+      VALUES ('handover_guide', ${JSON.stringify(parsed.data)}::jsonb, now())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `;
+    await recordAudit(actor.email, "settings.update", null, { handover_guide: parsed.data.title });
+    revalidatePath("/product/[slug]", "page");
+    return { ok: true };
+  } catch (err) {
+    console.error("[settings] saveHandoverGuide failed", err);
+    return { ok: false, error: "Could not save. Make sure db/site-settings.sql has been run." };
+  }
+}
+
 /** Root/admin. Toggles multi-product/multi-size ordering (offer feature). */
 export async function saveAllowMultiOrder(enabled: boolean): Promise<SettingsResult> {
   const actor = await requireMutator();
