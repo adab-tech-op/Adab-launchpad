@@ -4,7 +4,7 @@ import { Droplets, Wind, Flame, Package, type LucideIcon } from "lucide-react";
 import { getCareContent } from "@/lib/page-content-server";
 import { getFabricTypes } from "@/lib/fabrics-server";
 import { renderMarkdown } from "@/lib/markdown";
-import { FabricSearch } from "./fabric-search";
+import { FabricCareGrid } from "./fabric-care";
 
 export const metadata: Metadata = {
   title: "Care Guide — Adab",
@@ -54,7 +54,7 @@ export default async function CareGuide() {
             Each ADAB fabric has its own care. Search yours below.
           </p>
           <div className="mt-10">
-            <FabricSearch fabrics={fabrics} />
+            <FabricCareGrid fabrics={fabrics} />
           </div>
         </div>
       )}
