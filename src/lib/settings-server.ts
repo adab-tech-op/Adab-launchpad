@@ -1,6 +1,13 @@
 import "server-only";
 import { sql } from "@/lib/db";
-import { BANNER_DEFAULT, type BannerSettings } from "@/lib/settings";
+import {
+  BANNER_DEFAULT,
+  type BannerSettings,
+  SIZE_GUIDE_DEFAULT,
+  type SizeGuideSettings,
+  HANDOVER_GUIDE_DEFAULT,
+  type HandoverGuideSettings,
+} from "@/lib/settings";
 
 /** Default count of newest products shown on /latest when the setting or table
  *  is missing (pre-migration). */
@@ -37,6 +44,25 @@ export async function getBanner(): Promise<BannerSettings> {
     return { ...BANNER_DEFAULT, ...(raw as Partial<BannerSettings>) };
   }
   return BANNER_DEFAULT;
+}
+
+/** Reads the editable Size Guide (Fit & Sizing popup). Merges over the default
+ *  so a missing key/table (pre-save) keeps the original look. */
+export async function getSizeGuide(): Promise<SizeGuideSettings> {
+  const raw = await getSetting("size_guide");
+  if (raw && typeof raw === "object") {
+    return { ...SIZE_GUIDE_DEFAULT, ...(raw as Partial<SizeGuideSettings>) };
+  }
+  return SIZE_GUIDE_DEFAULT;
+}
+
+/** Reads the editable Product Handover Guide (Delivery & Returns popup). */
+export async function getHandoverGuide(): Promise<HandoverGuideSettings> {
+  const raw = await getSetting("handover_guide");
+  if (raw && typeof raw === "object") {
+    return { ...HANDOVER_GUIDE_DEFAULT, ...(raw as Partial<HandoverGuideSettings>) };
+  }
+  return HANDOVER_GUIDE_DEFAULT;
 }
 
 /** Whether customers may order multiple products/sizes in one order. Default
