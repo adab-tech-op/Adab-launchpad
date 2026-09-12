@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProductBySlug, getProductSlugs, getShopVisibleProducts } from "@/lib/products";
 import { getProductStock } from "@/lib/product-stock-server";
-import { getFabricCare } from "@/lib/fabrics-server";
+import { getFabricCare, getFabricTypeById } from "@/lib/fabrics-server";
 import { getDropWindowDays, getSizeGuide, getHandoverGuide } from "@/lib/settings-server";
 import { dropStateOf, isUserVisible, isDropPurchasable } from "@/lib/drop";
 import { currentUserIsStaff } from "@/lib/roles";
@@ -53,10 +53,11 @@ export default async function ProductPage({
   }
   const dropBuyable = product.dropDate ? isDropPurchasable(state) : true;
 
-  const [allProducts, stock, fabricCare, sizeGuide, handoverGuide] = await Promise.all([
+  const [allProducts, stock, fabricCare, fabric, sizeGuide, handoverGuide] = await Promise.all([
     getShopVisibleProducts(),
     getProductStock(slug),
     getFabricCare(product.fabricTypeId),
+    getFabricTypeById(product.fabricTypeId),
     getSizeGuide(),
     getHandoverGuide(),
   ]);
@@ -66,6 +67,7 @@ export default async function ProductPage({
       allProducts={allProducts}
       stock={stock}
       fabricCare={fabricCare}
+      fabric={fabric}
       sizeGuide={sizeGuide}
       handoverGuide={handoverGuide}
       dropState={state}

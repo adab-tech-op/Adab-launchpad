@@ -10,9 +10,11 @@ import { type DropState, formatDhaka } from "@/lib/drop";
 import { DropNotify } from "@/app/drop/drop-notify";
 import { ProductCard } from "@/components/site/ProductCard";
 import { WishlistButton } from "@/components/site/WishlistButton";
+import { FabricCareModal } from "@/components/site/FabricCareModal";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import type { SizeGuideSettings, HandoverGuideSettings } from "@/lib/settings";
+import type { FabricType } from "@/lib/fabrics";
 
 // Feature flag: Founding Drop reservations vs. standard Add to Cart.
 // Flip to false once fulfilment + cart checkout are live.
@@ -32,6 +34,7 @@ export function ProductClient({
   allProducts,
   stock = {},
   fabricCare,
+  fabric,
   sizeGuide,
   handoverGuide,
   dropState,
@@ -42,6 +45,7 @@ export function ProductClient({
   allProducts: Product[];
   stock?: Record<string, number>;
   fabricCare?: string | null;
+  fabric?: FabricType | null;
   sizeGuide: SizeGuideSettings;
   handoverGuide: HandoverGuideSettings;
   dropState?: DropState;
@@ -61,6 +65,7 @@ export function ProductClient({
   const [zoom, setZoom] = useState<string | null>(null);
   const [guideOpen, setGuideOpen] = useState(false);
   const [handoverOpen, setHandoverOpen] = useState(false);
+  const [careOpen, setCareOpen] = useState(false);
 
   const idx = allProducts.findIndex((p) => p.slug === product.slug);
   const prev = allProducts[(idx - 1 + allProducts.length) % allProducts.length];
@@ -349,9 +354,13 @@ export function ProductClient({
             </p>
           </Accordion>
           <PopoverRow title="Fit & Sizing" onOpen={() => setGuideOpen(true)} />
-          <Accordion title="Care Guide">
-            <p className="whitespace-pre-line">{product.careNote || fabricCare || DEFAULT_CARE}</p>
-          </Accordion>
+          {!product.careNote && fabric ? (
+            <PopoverRow title="Care Guide" onOpen={() => setCareOpen(true)} />
+          ) : (
+            <Accordion title="Care Guide">
+              <p className="whitespace-pre-line">{product.careNote || fabricCare || DEFAULT_CARE}</p>
+            </Accordion>
+          )}
           <PopoverRow title="Delivery & Returns" onOpen={() => setHandoverOpen(true)} />
         </div>
 
@@ -476,6 +485,8 @@ export function ProductClient({
           </div>
         </div>
       )}
+      {/* Fabric care popup (Care Guide) — same modal as the Care Guide page */}
+      {fabric && <FabricCareModal fabric={careOpen ? fabric : null} onClose={() => setCareOpen(false)} />}
     </>
   );
 }

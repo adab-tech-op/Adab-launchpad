@@ -16,6 +16,21 @@ export async function getFabricTypes(): Promise<FabricType[]> {
   }
 }
 
+/** A single fabric type by id, or null if unset/missing. Used by the PDP's
+ *  Care Guide popup, keyed to the product's own fabric type. */
+export async function getFabricTypeById(fabricTypeId: number | null | undefined): Promise<FabricType | null> {
+  if (!fabricTypeId) return null;
+  try {
+    const rows = (await sql`
+      SELECT id, slug, name, care_detail, thumbnail_url, details, washing, drying, ironing, storage, sort_order
+      FROM fabric_types WHERE id = ${fabricTypeId}
+    `) as FabricType[];
+    return rows[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** The care text for a product's linked fabric type, or null if unlinked /
  *  missing. Used as the Care Guide source on the PDP. */
 export async function getFabricCare(fabricTypeId: number | null | undefined): Promise<string | null> {
