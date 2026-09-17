@@ -7,7 +7,7 @@ import { Plus, Trash2, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
 import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent, HeroSlide, PageHero, ShopContent, ContactContent } from "@/lib/page-content";
-import { emptyPageHero } from "@/lib/page-content";
+import { emptyPageHero, HERO_AUTOPLAY_SECONDS_DEFAULT, HERO_AUTOPLAY_SECONDS_MIN, HERO_AUTOPLAY_SECONDS_MAX } from "@/lib/page-content";
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle } from "@/lib/hero";
@@ -341,6 +341,25 @@ export function ContentEditor({
               <div className="mt-4">
                 <HeroSlidesEditor value={h.heroSlides ?? []} onChange={(heroSlides) => setH({ ...h, heroSlides })} />
               </div>
+              {(h.heroSlides?.length ?? 0) > 1 && (
+                <label className="mt-5 block border-t border-border pt-4">
+                  <span className="text-[11px] text-muted-foreground">
+                    Seconds per slide ({HERO_AUTOPLAY_SECONDS_MIN}–{HERO_AUTOPLAY_SECONDS_MAX})
+                  </span>
+                  <input
+                    type="number"
+                    min={HERO_AUTOPLAY_SECONDS_MIN}
+                    max={HERO_AUTOPLAY_SECONDS_MAX}
+                    step={1}
+                    className={`${inputCls} mt-1 max-w-[8rem]`}
+                    value={h.heroAutoplaySeconds ?? HERO_AUTOPLAY_SECONDS_DEFAULT}
+                    onChange={(e) => setH({ ...h, heroAutoplaySeconds: e.target.value === "" ? undefined : Number(e.target.value) })}
+                  />
+                  <span className="mt-1 block text-[11px] text-muted-foreground">
+                    How long each slide is held before the next one fades in.
+                  </span>
+                </label>
+              )}
             </div>
             <div className="space-y-4 rounded-xl border border-border p-5">
               <p className={labelCls}>Home page copy</p>

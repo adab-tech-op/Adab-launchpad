@@ -4,9 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HeroBackground } from "./HeroBackground";
 import { overlayStyle } from "@/lib/hero";
-import type { HeroSlide } from "@/lib/page-content";
-
-const AUTOPLAY_MS = 6000;
+import { HERO_AUTOPLAY_SECONDS_DEFAULT, clampHeroAutoplaySeconds, type HeroSlide } from "@/lib/page-content";
 
 /**
  * The home hero: N slides, each with its own background image, overlay, and
@@ -14,19 +12,22 @@ const AUTOPLAY_MS = 6000;
  * `parallaxY` (if given) is applied only to the image layer, matching the old
  * single-image hero's parallax — text and controls stay put. `children` is
  * static content (CTA buttons) rendered once below the per-slide text, the
- * same on every slide.
+ * same on every slide. `autoplaySeconds` is how long each slide is held.
  */
 export function HeroCarousel({
   slides,
   label,
   parallaxY = 0,
+  autoplaySeconds = HERO_AUTOPLAY_SECONDS_DEFAULT,
   children,
 }: {
   slides: HeroSlide[];
   label?: string;
   parallaxY?: number;
+  autoplaySeconds?: number;
   children?: ReactNode;
 }) {
+  const intervalMs = clampHeroAutoplaySeconds(autoplaySeconds) * 1000;
   const [index, setIndex] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hoveredRef = useRef(false);
@@ -43,14 +44,14 @@ export function HeroCarousel({
     stop();
     if (count <= 1 || hoveredRef.current) return;
     if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    timerRef.current = setInterval(() => setIndex((i) => (i + 1) % count), AUTOPLAY_MS);
+    timerRef.current = setInterval(() => setIndex((i) => (i + 1) % count), intervalMs);
   };
 
   useEffect(() => {
     start();
     return stop;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [count]);
+  }, [count, intervalMs]);
 
   const go = (i: number) => {
     setIndex(((i % count) + count) % count);

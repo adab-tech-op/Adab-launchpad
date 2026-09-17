@@ -57,6 +57,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
           slides={home.heroSlides?.length ? home.heroSlides : [legacySlide(home)]}
           label="Adab piran — heritage-fusion menswear from Bangladesh"
           parallaxY={parallaxY}
+          autoplaySeconds={home.heroAutoplaySeconds}
         >
           <a
             href="#waitlist"
