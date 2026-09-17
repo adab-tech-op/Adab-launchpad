@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
 import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent, HeroSlide, PageHero, ShopContent, ContactContent } from "@/lib/page-content";
@@ -487,10 +487,12 @@ function emptyHeroSlide(): HeroSlide {
 // an add button. Always keeps at least one slide.
 function HeroSlidesEditor({ value, onChange }: { value: HeroSlide[]; onChange: (v: HeroSlide[]) => void }) {
   const slides = value.length ? value : [emptyHeroSlide()];
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const update = (i: number, slide: HeroSlide) => onChange(slides.map((s, si) => (si === i ? slide : s)));
   const remove = (i: number) => {
     if (slides.length <= 1) return;
     onChange(slides.filter((_, si) => si !== i));
+    setOpenIndex((cur) => (cur === null ? cur : cur === i ? null : cur > i ? cur - 1 : cur));
   };
   const move = (i: number, dir: -1 | 1) => {
     const j = i + dir;
@@ -498,36 +500,64 @@ function HeroSlidesEditor({ value, onChange }: { value: HeroSlide[]; onChange: (
     const next = [...slides];
     [next[i], next[j]] = [next[j], next[i]];
     onChange(next);
+    setOpenIndex((cur) => (cur === i ? j : cur === j ? i : cur));
   };
-  const add = () => onChange([...slides, emptyHeroSlide()]);
+  const add = () => {
+    onChange([...slides, emptyHeroSlide()]);
+    setOpenIndex(slides.length); // open the new one
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <p className="text-xs text-muted-foreground">
         The homepage hero cycles through these slides — image, heading, and subcopy each. It autoplays every few
         seconds, and visitors can also step through it manually. With just one slide, no controls are shown.
       </p>
-      {slides.map((slide, i) => (
-        <div key={i} className="rounded-2xl border border-border p-5">
-          <div className="flex items-center justify-between">
-            <p className={labelCls}>Slide {i + 1}</p>
-            <div className="flex items-center gap-1">
-              <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move slide up">
-                <ArrowUp className="h-4 w-4" />
+      {slides.map((slide, i) => {
+        const open = openIndex === i;
+        return (
+          <div key={i} className="overflow-hidden rounded-2xl border border-border">
+            <div className="flex items-center gap-3 p-4">
+              <button
+                type="button"
+                onClick={() => setOpenIndex(open ? null : i)}
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                aria-expanded={open}
+              >
+                {slide.hero.desktop ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={slide.hero.desktop} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                ) : (
+                  <div className="h-10 w-10 shrink-0 rounded-lg border border-dashed border-border" />
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className={labelCls}>Slide {i + 1}</span>
+                  <span className="block truncate text-sm text-muted-foreground">
+                    {slide.heading.split("\n")[0] || "Untitled"}
+                  </span>
+                </span>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
               </button>
-              <button type="button" onClick={() => move(i, 1)} disabled={i === slides.length - 1} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move slide down">
-                <ArrowDown className="h-4 w-4" />
-              </button>
-              <button type="button" onClick={() => remove(i)} disabled={slides.length <= 1} className="rounded-lg p-1.5 text-muted-foreground hover:text-red-600 disabled:opacity-30" aria-label="Remove slide">
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move slide up">
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => move(i, 1)} disabled={i === slides.length - 1} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move slide down">
+                  <ArrowDown className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => remove(i)} disabled={slides.length <= 1} className="rounded-lg p-1.5 text-muted-foreground hover:text-red-600 disabled:opacity-30" aria-label="Remove slide">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
+            {open && (
+              <div className="border-t border-border p-5">
+                <HeroPageEditor value={slide} onChange={(v) => update(i, v)} note="Background image for this slide only." />
+              </div>
+            )}
           </div>
-          <div className="mt-4">
-            <HeroPageEditor value={slide} onChange={(v) => update(i, v)} note="Background image for this slide only." />
-          </div>
-        </div>
-      ))}
+        );
+      })}
       <button
         type="button"
         onClick={add}
