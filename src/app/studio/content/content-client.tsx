@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
-import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent, ShopContent, ContactContent } from "@/lib/page-content";
+import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent, HeroSlide, PageHero, ShopContent, ContactContent } from "@/lib/page-content";
+import { emptyPageHero } from "@/lib/page-content";
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle } from "@/lib/hero";
@@ -335,7 +336,12 @@ export function ContentEditor({
       <div className="mt-6 space-y-8">
         {tab === "home" ? (
           <>
-            <HeroPageEditor value={h} onChange={setH} note="The big image behind the homepage headline. The buttons stay fixed." />
+            <div className="rounded-xl border border-border p-5">
+              <p className={labelCls}>Hero carousel</p>
+              <div className="mt-4">
+                <HeroSlidesEditor value={h.heroSlides ?? []} onChange={(heroSlides) => setH({ ...h, heroSlides })} />
+              </div>
+            </div>
             <div className="space-y-4 rounded-xl border border-border p-5">
               <p className={labelCls}>Home page copy</p>
               <TextRow label="Featured heading" value={homeBody.featuredHeading} onChange={(v) => setBody({ featuredHeading: v })} />
@@ -440,7 +446,7 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
 }
 
 // Shared editor for a page hero (home + drop): image, overlay, heading/subcopy + colours.
-function HeroPageEditor({ value, onChange, note }: { value: HomeContent; onChange: (v: HomeContent) => void; note: string }) {
+function HeroPageEditor<T extends PageHero>({ value, onChange, note }: { value: T; onChange: (v: T) => void; note: string }) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-border p-5">
@@ -468,6 +474,67 @@ function HeroPageEditor({ value, onChange, note }: { value: HomeContent; onChang
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function emptyHeroSlide(): HeroSlide {
+  return emptyPageHero();
+}
+
+// The home hero carousel: an ordered list of slides, each edited with the
+// same fields as a single page hero (HeroPageEditor), plus reorder/remove and
+// an add button. Always keeps at least one slide.
+function HeroSlidesEditor({ value, onChange }: { value: HeroSlide[]; onChange: (v: HeroSlide[]) => void }) {
+  const slides = value.length ? value : [emptyHeroSlide()];
+  const update = (i: number, slide: HeroSlide) => onChange(slides.map((s, si) => (si === i ? slide : s)));
+  const remove = (i: number) => {
+    if (slides.length <= 1) return;
+    onChange(slides.filter((_, si) => si !== i));
+  };
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= slides.length) return;
+    const next = [...slides];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const add = () => onChange([...slides, emptyHeroSlide()]);
+
+  return (
+    <div className="space-y-6">
+      <p className="text-xs text-muted-foreground">
+        The homepage hero cycles through these slides — image, heading, and subcopy each. It autoplays every few
+        seconds, and visitors can also step through it manually. With just one slide, no controls are shown.
+      </p>
+      {slides.map((slide, i) => (
+        <div key={i} className="rounded-2xl border border-border p-5">
+          <div className="flex items-center justify-between">
+            <p className={labelCls}>Slide {i + 1}</p>
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move slide up">
+                <ArrowUp className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => move(i, 1)} disabled={i === slides.length - 1} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30" aria-label="Move slide down">
+                <ArrowDown className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => remove(i)} disabled={slides.length <= 1} className="rounded-lg p-1.5 text-muted-foreground hover:text-red-600 disabled:opacity-30" aria-label="Remove slide">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          <div className="mt-4">
+            <HeroPageEditor value={slide} onChange={(v) => update(i, v)} note="Background image for this slide only." />
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={add}
+        className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs uppercase tracking-[0.05em] hover:border-foreground"
+      >
+        <Plus className="h-4 w-4" /> Add slide
+      </button>
     </div>
   );
 }

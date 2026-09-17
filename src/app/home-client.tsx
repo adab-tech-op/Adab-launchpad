@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { AuthErrorCatcher } from "@/components/site/AuthErrorCatcher";
-import { HeroBackground } from "@/components/site/HeroBackground";
-import { overlayStyle } from "@/lib/hero";
-import type { HomeContent } from "@/lib/page-content";
+import { HeroCarousel } from "@/components/site/HeroCarousel";
+import type { HomeContent, HeroSlide } from "@/lib/page-content";
 import { HOME_BODY_DEFAULT } from "@/lib/page-content";
 import type { Product } from "@/data/products";
 
@@ -16,10 +15,22 @@ const scrap2 = "/assets/scrapbook-2.jpg";
 const scrap3 = "/assets/scrapbook-3.jpg";
 const scrap4 = "/assets/scrapbook-4.jpg";
 
+// Pre-carousel fallback: a single slide built from home's legacy hero fields.
+// getHomeContent() already guarantees a non-empty heroSlides array, so this
+// only matters if that ever changes.
+function legacySlide(home: HomeContent): HeroSlide {
+  return {
+    hero: home.hero,
+    overlay: home.overlay,
+    heading: home.heading,
+    headingColor: home.headingColor,
+    subcopy: home.subcopy,
+    subcopyColor: home.subcopyColor,
+  };
+}
+
 export function HomeClient({ products, home }: { products: Product[]; home: HomeContent }) {
-  const pictureRef = useRef<HTMLDivElement>(null);
   const [parallaxY, setParallaxY] = useState(0);
-  const overlay = overlayStyle(home.overlay);
   const body = home.body ?? HOME_BODY_DEFAULT;
 
   useEffect(() => {
@@ -42,42 +53,24 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
       </Suspense>
       {/* Hero */}
       <section data-reveal-images-skip className="relative h-[calc(100dvh-4rem)] min-h-[600px] w-full overflow-hidden">
-        <div
-          ref={pictureRef}
-          className="absolute -top-[10%] left-0 h-[120%] w-full will-change-transform"
-          style={{ transform: `translateY(${parallaxY}px)` }}
+        <HeroCarousel
+          slides={home.heroSlides?.length ? home.heroSlides : [legacySlide(home)]}
+          label="Adab piran — heritage-fusion menswear from Bangladesh"
+          parallaxY={parallaxY}
         >
-          <HeroBackground images={home.hero} label="Adab piran — heritage-fusion menswear from Bangladesh" />
-        </div>
-        {overlay && <div className="absolute inset-0" style={overlay} />}
-
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col px-5 md:px-8 pb-16 md:pb-16">
-          <div className="min-h-20 flex-1 md:min-h-24" aria-hidden="true" />
-          <h1 className="mt-6 font-display text-6xl md:text-8xl lg:text-9xl leading-[0.9]" style={{ color: home.headingColor }}>
-            {home.heading.split("\n").map((line, i) => (
-              <span key={i} className="block">{line || "\u00A0"}</span>
-            ))}
-          </h1>
-          {home.subcopy && (
-            <p className="mt-6 max-w-xl font-editorial text-3xl md:text-4xl leading-snug" style={{ color: home.subcopyColor }}>
-              {home.subcopy}
-            </p>
-          )}
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#waitlist"
-              className="rounded-full bg-primary px-6 py-3 text-xs uppercase font-bold text-white hover:bg-primary/90 transition-colors"
-            >
-              Join the Waitlist
-            </a>
-            <Link
-              href="/product/adab-piran-warm-charcoal"
-              className="rounded-full border border-primary bg-background px-6 py-3 text-xs uppercase font-bold text-primary hover:bg-background/90 transition-colors"
-            >
-              Explore the Piran
-            </Link>
-          </div>
-        </div>
+          <a
+            href="#waitlist"
+            className="rounded-full bg-primary px-6 py-3 text-xs uppercase font-bold text-white hover:bg-primary/90 transition-colors"
+          >
+            Join the Waitlist
+          </a>
+          <Link
+            href="/product/adab-piran-warm-charcoal"
+            className="rounded-full border border-primary bg-background px-6 py-3 text-xs uppercase font-bold text-primary hover:bg-background/90 transition-colors"
+          >
+            Explore the Piran
+          </Link>
+        </HeroCarousel>
       </section>
 
       {/* Brand story strip */}

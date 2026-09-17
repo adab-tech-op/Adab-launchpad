@@ -11,10 +11,11 @@ import {
   type ManifestoContent,
   type CareContent,
   type HomeContent,
+  type HeroSlide,
   type ShopContent,
   type ContactContent,
 } from "@/lib/page-content";
-import { normalizeHeroImages, normalizeOverlay } from "@/lib/hero";
+import { normalizeHeroImages, normalizeOverlay, defaultOverlay } from "@/lib/hero";
 
 async function readContent<T>(slug: string, fallback: T): Promise<T> {
   try {
@@ -56,12 +57,41 @@ export async function getHomeContent(): Promise<HomeContent> {
   // keep the fixed-length arrays sane
   body.trust = [0, 1, 2].map((i) => body.trust?.[i] ?? HOME_BODY_DEFAULT.trust[i]);
   body.menu = [0, 1, 2].map((i) => body.menu?.[i] ?? HOME_BODY_DEFAULT.menu[i]);
+  const resolvedHero = hero.desktop ? hero : HOME_DEFAULT.hero;
+  const resolvedOverlay = c?.overlay ? normalizeOverlay(c.overlay, undefined) : HOME_DEFAULT.overlay;
+
+  // Hero carousel: normalize each slide's own images/overlay. An empty or
+  // missing array (a pre-carousel row, or every slide deleted) falls back to
+  // a single slide built from the legacy hero/overlay/heading fields above,
+  // so the page still renders instead of showing nothing.
+  const rawSlides = Array.isArray(c?.heroSlides) ? c.heroSlides : [];
+  const heroSlides: HeroSlide[] = rawSlides.length
+    ? rawSlides.map((s) => ({
+        hero: normalizeHeroImages(s?.hero, undefined),
+        overlay: s?.overlay ? normalizeOverlay(s.overlay, undefined) : defaultOverlay(),
+        heading: s?.heading ?? "",
+        headingColor: s?.headingColor || "#1c1c1c",
+        subcopy: s?.subcopy ?? "",
+        subcopyColor: s?.subcopyColor || "#1c1c1c",
+      }))
+    : [
+        {
+          hero: resolvedHero,
+          overlay: resolvedOverlay,
+          heading: c?.heading ?? HOME_DEFAULT.heading,
+          headingColor: c?.headingColor || HOME_DEFAULT.headingColor,
+          subcopy: c?.subcopy ?? HOME_DEFAULT.subcopy,
+          subcopyColor: c?.subcopyColor || HOME_DEFAULT.subcopyColor,
+        },
+      ];
+
   return {
     ...HOME_DEFAULT,
     ...c,
-    hero: hero.desktop ? hero : HOME_DEFAULT.hero,
-    overlay: c?.overlay ? normalizeOverlay(c.overlay, undefined) : HOME_DEFAULT.overlay,
+    hero: resolvedHero,
+    overlay: resolvedOverlay,
     body,
+    heroSlides,
   };
 }
 

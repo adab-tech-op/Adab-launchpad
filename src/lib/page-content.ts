@@ -46,6 +46,8 @@ export type HomeContent = {
   headingColor: string; // hex
   subcopy: string;
   subcopyColor: string; // hex
+  heroSlides?: HeroSlide[]; // home slug only: the hero carousel. Empty/missing
+  // falls back to the single hero/overlay/heading/... fields above.
   body?: HomeBody; // editable page copy (home slug only; drop omits it)
   nextDropDate?: string; // drop slug only: announced countdown target (ISO/UTC)
   announcementEnabled?: boolean; // drop slug only: show the default/announcement section
@@ -65,18 +67,37 @@ export const HOME_BODY_DEFAULT: HomeBody = {
   scrapbookSubcopy: "People, places, textures, and moments around Adab.",
 };
 
+const HOME_HERO_IMAGES_DEFAULT = {
+  ...emptyHeroImages(),
+  desktop: "/assets/hero-desktop.jpg",
+  phone: "/assets/hero-main.jpg",
+};
+// Current look: cream wash rising from the bottom, ink text.
+const HOME_OVERLAY_DEFAULT: HeroOverlay = { enabled: true, color: "#FAF6EF", opacity: 85, from: "bottom" };
+const HOME_HEADING_DEFAULT = "OLD SOUL.\nNEW CUT.";
+const HOME_HEADING_COLOR_DEFAULT = "#1c1c1c";
+const HOME_SUBCOPY_DEFAULT = "Same DNA. New Language.";
+const HOME_SUBCOPY_COLOR_DEFAULT = "#1c1c1c";
+
 export const HOME_DEFAULT: HomeContent = {
-  hero: {
-    ...emptyHeroImages(),
-    desktop: "/assets/hero-desktop.jpg",
-    phone: "/assets/hero-main.jpg",
-  },
-  // Current look: cream wash rising from the bottom, ink text.
-  overlay: { enabled: true, color: "#FAF6EF", opacity: 85, from: "bottom" },
-  heading: "OLD SOUL.\nNEW CUT.",
-  headingColor: "#1c1c1c",
-  subcopy: "Same DNA. New Language.",
-  subcopyColor: "#1c1c1c",
+  hero: HOME_HERO_IMAGES_DEFAULT,
+  overlay: HOME_OVERLAY_DEFAULT,
+  heading: HOME_HEADING_DEFAULT,
+  headingColor: HOME_HEADING_COLOR_DEFAULT,
+  subcopy: HOME_SUBCOPY_DEFAULT,
+  subcopyColor: HOME_SUBCOPY_COLOR_DEFAULT,
+  // Single slide seeded from the exact values above, so the carousel renders
+  // identically to the old single-hero look until an admin adds more slides.
+  heroSlides: [
+    {
+      hero: HOME_HERO_IMAGES_DEFAULT,
+      overlay: HOME_OVERLAY_DEFAULT,
+      heading: HOME_HEADING_DEFAULT,
+      headingColor: HOME_HEADING_COLOR_DEFAULT,
+      subcopy: HOME_SUBCOPY_DEFAULT,
+      subcopyColor: HOME_SUBCOPY_COLOR_DEFAULT,
+    },
+  ],
   body: HOME_BODY_DEFAULT,
 };
 
@@ -102,6 +123,10 @@ export type PageHero = {
   subcopy: string;
   subcopyColor: string;
 };
+
+// One slide of the home hero carousel — same shape as PageHero (image, overlay,
+// heading, subcopy, colors), named separately for clarity at the call sites.
+export type HeroSlide = PageHero;
 
 export function emptyPageHero(): PageHero {
   return {
