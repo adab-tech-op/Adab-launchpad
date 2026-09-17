@@ -14,7 +14,7 @@ const FAQ = [
   },
   {
     q: "What is a piran?",
-    a: "The piran was a short-hemmed, full-sleeve shirt worn by men across East Bengal — today's Bangladesh — in the 1950s and 60s. Over time it lengthened into the panjabi we know now. Adab reinterprets that earlier moment: the same DNA, in today's fabric, cut, and embroidery. You can read the full story on our Manifesto.",
+    a: "The piran was a short-hemmed, full-sleeve shirt worn by men across East Bengal — today's Bangladesh — in the 1950s and 60s. Over time it lengthened into the panjabi we know now. Adab reinterprets that earlier moment: the same DNA, in today's fabric, cut, and embroidery. You can read the full story on our Adab Story page.",
   },
   {
     q: "How does the drop model work?",

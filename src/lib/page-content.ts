@@ -149,7 +149,7 @@ export type CareContent = {
 export const MANIFESTO_DEFAULT: ManifestoContent = {
   hero: {
     images: emptyHeroImages(),
-    eyebrow: "Manifesto & History",
+    eyebrow: "Adab Story",
     heading: "We don't believe history gets lost.\nIt just waits.",
     subcopy: "",
     textTheme: "light",

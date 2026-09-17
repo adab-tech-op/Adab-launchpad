@@ -88,10 +88,10 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
               {`“${body.storyQuote}”`}
             </p>
             <Link
-              href="/manifesto"
+              href="/adab-story"
               className="mt-10 inline-block text-sm uppercase tracking-[0.08em] text-foreground border-b border-foreground pb-1 hover:text-primary hover:border-primary transition-colors"
             >
-              Read the Manifesto →
+              Read the Adab Story →
             </Link>
           </div>
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl paper-grain">

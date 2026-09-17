@@ -109,7 +109,7 @@ const shapes = {
 type Slug = keyof typeof shapes;
 
 const PATH_FOR_SLUG: Record<Slug, string> = {
-  manifesto: "/manifesto",
+  manifesto: "/adab-story",
   care: "/care-guide",
   home: "/",
   drop: "/drop",

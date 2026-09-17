@@ -9,7 +9,7 @@ import { overlayStyle } from "@/lib/hero";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "The Adab Manifesto & History — Old Soul. New Cut.",
+  title: "The Adab Story — Old Soul. New Cut.",
   description:
     "Adab reinterprets the piran, a short-hemmed shirt worn across East Bengal in the 1950s-60s. Heritage-fusion menswear made in Bangladesh.",
 };
