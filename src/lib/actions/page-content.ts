@@ -61,6 +61,8 @@ const shapes = {
     values: z.array(blockSchema).max(12),
   }),
   care: z.object({
+    heading: z.string().trim().max(120).default("Care Guide."),
+    subcopy: z.string().trim().max(400).default(""),
     sections: z.array(blockSchema).max(12),
   }),
   home: z.object({

@@ -21,10 +21,8 @@ export default async function CareGuide() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 md:px-8 py-24 md:py-32">
-      <h1 className="mt-4 font-sans text-5xl md:text-6xl leading-[0.95]">Care Guide.</h1>
-      <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
-        Adab pieces are designed for repeat wear. Care for them gently and they&rsquo;ll stay with you longer.
-      </p>
+      <h1 className="mt-4 font-sans text-5xl md:text-6xl leading-[0.95]">{content.heading}</h1>
+      <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">{content.subcopy}</p>
 
       <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
         {content.sections.map((s, i) => {

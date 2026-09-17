@@ -42,8 +42,11 @@ export async function getManifestoContent(): Promise<ManifestoContent> {
   };
 }
 
-export function getCareContent(): Promise<CareContent> {
-  return readContent("care", CARE_DEFAULT);
+export async function getCareContent(): Promise<CareContent> {
+  const c = await readContent<Partial<CareContent>>("care", CARE_DEFAULT);
+  // Merge over the default so a row saved before heading/subcopy existed
+  // still renders (falls back instead of showing blank/undefined copy).
+  return { ...CARE_DEFAULT, ...c };
 }
 
 export async function getHomeContent(): Promise<HomeContent> {
