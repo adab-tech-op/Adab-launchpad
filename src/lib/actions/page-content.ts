@@ -46,6 +46,16 @@ const overlaySchema = z.object({
     .default("bottom"),
 });
 
+// One home-hero-carousel slide — image + overlay + its own heading/subcopy.
+const heroSlideSchema = z.object({
+  hero: heroImagesSchema,
+  overlay: overlaySchema,
+  heading: z.string().trim().max(200).default(""),
+  headingColor: z.string().trim().max(9).default("#1c1c1c"),
+  subcopy: z.string().trim().max(400).default(""),
+  subcopyColor: z.string().trim().max(9).default("#1c1c1c"),
+});
+
 // Each page has a known shape; validate against it before storing.
 const shapes = {
   manifesto: z.object({
@@ -72,6 +82,7 @@ const shapes = {
     headingColor: z.string().trim().max(9).default("#1c1c1c"),
     subcopy: z.string().trim().max(400).default(""),
     subcopyColor: z.string().trim().max(9).default("#1c1c1c"),
+    heroSlides: z.array(heroSlideSchema).max(8).optional(),
     body: z.object({
       featuredHeading: z.string().trim().max(160).default(""),
       featuredSubcopy: z.string().trim().max(300).default(""),
@@ -128,11 +139,17 @@ function storedHeroUrls(hero: unknown): string[] {
 }
 
 // Every Cloudinary URL a page's content references: hero images (all breakpoints)
-// + story-part images + block icons (values / care sections).
+// + story-part images + block icons (values / care sections) + hero-carousel
+// slide images.
 function collectContentImageUrls(content: unknown): string[] {
   if (!content || typeof content !== "object") return [];
-  const c = content as { hero?: unknown; storyParts?: unknown; values?: unknown; sections?: unknown };
+  const c = content as { hero?: unknown; storyParts?: unknown; values?: unknown; sections?: unknown; heroSlides?: unknown };
   const urls = [...storedHeroUrls(c.hero)];
+  if (Array.isArray(c.heroSlides)) {
+    for (const s of c.heroSlides) {
+      if (s && typeof s === "object") urls.push(...storedHeroUrls((s as { hero?: unknown }).hero));
+    }
+  }
   for (const arr of [c.storyParts, c.values, c.sections]) {
     if (!Array.isArray(arr)) continue;
     for (const b of arr) {
