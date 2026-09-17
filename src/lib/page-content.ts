@@ -75,11 +75,14 @@ export const HERO_AUTOPLAY_SECONDS_MIN = 2;
 export const HERO_AUTOPLAY_SECONDS_MAX = 30;
 
 /** Clamps a stored/edited interval into the supported range, falling back to
- *  the default for anything missing or non-numeric. */
+ *  the default for anything missing or non-numeric. Fractional seconds are
+ *  allowed (4.5s is valid); rounded to one decimal place. */
 export function clampHeroAutoplaySeconds(v: unknown): number {
+  if (v === null || v === undefined || v === "") return HERO_AUTOPLAY_SECONDS_DEFAULT;
   const n = typeof v === "number" ? v : Number(v);
   if (!Number.isFinite(n)) return HERO_AUTOPLAY_SECONDS_DEFAULT;
-  return Math.min(HERO_AUTOPLAY_SECONDS_MAX, Math.max(HERO_AUTOPLAY_SECONDS_MIN, Math.round(n)));
+  const clamped = Math.min(HERO_AUTOPLAY_SECONDS_MAX, Math.max(HERO_AUTOPLAY_SECONDS_MIN, n));
+  return Math.round(clamped * 10) / 10;
 }
 
 const HOME_HERO_IMAGES_DEFAULT = {
