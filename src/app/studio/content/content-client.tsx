@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Trash2, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
 import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent, HeroSlide, PageHero, ShopContent, ContactContent } from "@/lib/page-content";
-import { emptyPageHero, HERO_AUTOPLAY_SECONDS_DEFAULT, HERO_AUTOPLAY_SECONDS_MIN, HERO_AUTOPLAY_SECONDS_MAX } from "@/lib/page-content";
+import { emptyPageHero, clampHeroAutoplaySeconds, HERO_AUTOPLAY_SECONDS_DEFAULT, HERO_AUTOPLAY_SECONDS_MIN, HERO_AUTOPLAY_SECONDS_MAX } from "@/lib/page-content";
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle } from "@/lib/hero";
@@ -342,23 +342,12 @@ export function ContentEditor({
                 <HeroSlidesEditor value={h.heroSlides ?? []} onChange={(heroSlides) => setH({ ...h, heroSlides })} />
               </div>
               {(h.heroSlides?.length ?? 0) > 1 && (
-                <label className="mt-5 block border-t border-border pt-4">
-                  <span className="text-[11px] text-muted-foreground">
-                    Seconds per slide ({HERO_AUTOPLAY_SECONDS_MIN}–{HERO_AUTOPLAY_SECONDS_MAX})
-                  </span>
-                  <input
-                    type="number"
-                    min={HERO_AUTOPLAY_SECONDS_MIN}
-                    max={HERO_AUTOPLAY_SECONDS_MAX}
-                    step={1}
-                    className={`${inputCls} mt-1 max-w-[8rem]`}
-                    value={h.heroAutoplaySeconds ?? HERO_AUTOPLAY_SECONDS_DEFAULT}
-                    onChange={(e) => setH({ ...h, heroAutoplaySeconds: e.target.value === "" ? undefined : Number(e.target.value) })}
+                <div className="mt-5 border-t border-border pt-4">
+                  <AutoplaySecondsField
+                    value={h.heroAutoplaySeconds}
+                    onChange={(heroAutoplaySeconds) => setH({ ...h, heroAutoplaySeconds })}
                   />
-                  <span className="mt-1 block text-[11px] text-muted-foreground">
-                    How long each slide is held before the next one fades in.
-                  </span>
-                </label>
+                </div>
               )}
             </div>
             <div className="space-y-4 rounded-xl border border-border p-5">
@@ -504,6 +493,67 @@ function emptyHeroSlide(): HeroSlide {
 // The home hero carousel: an ordered list of slides, each edited with the
 // same fields as a single page hero (HeroPageEditor), plus reorder/remove and
 // an add button. Always keeps at least one slide.
+// Number field for the carousel interval. Keeps its own draft string so the
+// box can be empty (or mid-typed, like "4.") while editing — binding straight
+// to the number and falling back to a default would repaint that default the
+// moment the field is cleared, making it impossible to backspace. The value is
+// only normalized/clamped on blur.
+function AutoplaySecondsField({ value, onChange }: { value: number | undefined; onChange: (v: number | undefined) => void }) {
+  const committed = value ?? HERO_AUTOPLAY_SECONDS_DEFAULT;
+  const [draft, setDraft] = useState<string>(String(committed));
+  const [focused, setFocused] = useState(false);
+
+  // Follow external changes (tab switch, reset) while not actively editing.
+  useEffect(() => {
+    if (!focused) setDraft(String(committed));
+  }, [committed, focused]);
+
+  const commit = () => {
+    setFocused(false);
+    const trimmed = draft.trim();
+    if (trimmed === "") {
+      onChange(undefined); // cleared -> back to the default
+      setDraft(String(HERO_AUTOPLAY_SECONDS_DEFAULT));
+      return;
+    }
+    const next = clampHeroAutoplaySeconds(trimmed);
+    onChange(next);
+    setDraft(String(next));
+  };
+
+  return (
+    <label className="block">
+      <span className="text-[11px] text-muted-foreground">
+        Seconds per slide ({HERO_AUTOPLAY_SECONDS_MIN}–{HERO_AUTOPLAY_SECONDS_MAX}, decimals allowed)
+      </span>
+      <input
+        type="number"
+        inputMode="decimal"
+        min={HERO_AUTOPLAY_SECONDS_MIN}
+        max={HERO_AUTOPLAY_SECONDS_MAX}
+        step={0.5}
+        className={`${inputCls} mt-1 max-w-[8rem]`}
+        value={draft}
+        onFocus={() => setFocused(true)}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          const raw = e.target.value.trim();
+          if (raw === "") return; // let it stay empty while typing
+          const n = Number(raw);
+          if (Number.isFinite(n)) onChange(n); // clamped on blur
+        }}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+        }}
+      />
+      <span className="mt-1 block text-[11px] text-muted-foreground">
+        How long each slide is held before the next one fades in.
+      </span>
+    </label>
+  );
+}
+
 function HeroSlidesEditor({ value, onChange }: { value: HeroSlide[]; onChange: (v: HeroSlide[]) => void }) {
   const slides = value.length ? value : [emptyHeroSlide()];
   const [openIndex, setOpenIndex] = useState<number | null>(null);
