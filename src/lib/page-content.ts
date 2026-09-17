@@ -48,6 +48,8 @@ export type HomeContent = {
   subcopyColor: string; // hex
   heroSlides?: HeroSlide[]; // home slug only: the hero carousel. Empty/missing
   // falls back to the single hero/overlay/heading/... fields above.
+  heroAutoplaySeconds?: number; // home slug only: seconds each slide is held
+  // before advancing. Clamped 2-30; defaults to HERO_AUTOPLAY_SECONDS_DEFAULT.
   body?: HomeBody; // editable page copy (home slug only; drop omits it)
   nextDropDate?: string; // drop slug only: announced countdown target (ISO/UTC)
   announcementEnabled?: boolean; // drop slug only: show the default/announcement section
@@ -66,6 +68,19 @@ export const HOME_BODY_DEFAULT: HomeBody = {
   scrapbookHeading: "From the Adab Scrapbook.",
   scrapbookSubcopy: "People, places, textures, and moments around Adab.",
 };
+
+/** Seconds a hero slide is held before advancing, when unset. */
+export const HERO_AUTOPLAY_SECONDS_DEFAULT = 6;
+export const HERO_AUTOPLAY_SECONDS_MIN = 2;
+export const HERO_AUTOPLAY_SECONDS_MAX = 30;
+
+/** Clamps a stored/edited interval into the supported range, falling back to
+ *  the default for anything missing or non-numeric. */
+export function clampHeroAutoplaySeconds(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return HERO_AUTOPLAY_SECONDS_DEFAULT;
+  return Math.min(HERO_AUTOPLAY_SECONDS_MAX, Math.max(HERO_AUTOPLAY_SECONDS_MIN, Math.round(n)));
+}
 
 const HOME_HERO_IMAGES_DEFAULT = {
   ...emptyHeroImages(),
@@ -98,6 +113,7 @@ export const HOME_DEFAULT: HomeContent = {
       subcopyColor: HOME_SUBCOPY_COLOR_DEFAULT,
     },
   ],
+  heroAutoplaySeconds: HERO_AUTOPLAY_SECONDS_DEFAULT,
   body: HOME_BODY_DEFAULT,
 };
 

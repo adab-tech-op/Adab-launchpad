@@ -83,6 +83,7 @@ const shapes = {
     subcopy: z.string().trim().max(400).default(""),
     subcopyColor: z.string().trim().max(9).default("#1c1c1c"),
     heroSlides: z.array(heroSlideSchema).max(8).optional(),
+    heroAutoplaySeconds: z.coerce.number().int().min(2).max(30).optional(),
     body: z.object({
       featuredHeading: z.string().trim().max(160).default(""),
       featuredSubcopy: z.string().trim().max(300).default(""),

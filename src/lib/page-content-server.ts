@@ -12,6 +12,7 @@ import {
   type CareContent,
   type HomeContent,
   type HeroSlide,
+  clampHeroAutoplaySeconds,
   type ShopContent,
   type ContactContent,
 } from "@/lib/page-content";
@@ -92,6 +93,7 @@ export async function getHomeContent(): Promise<HomeContent> {
     overlay: resolvedOverlay,
     body,
     heroSlides,
+    heroAutoplaySeconds: clampHeroAutoplaySeconds(c?.heroAutoplaySeconds),
   };
 }
 
