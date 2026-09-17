@@ -138,6 +138,8 @@ export const CONTACT_DEFAULT: ContactContent = {
 };
 
 export type CareContent = {
+  heading: string;
+  subcopy: string;
   sections: Block[];
 };
 
@@ -168,6 +170,8 @@ export const MANIFESTO_DEFAULT: ManifestoContent = {
 };
 
 export const CARE_DEFAULT: CareContent = {
+  heading: "Care Guide.",
+  subcopy: "Adab pieces are designed for repeat wear. Care for them gently and they'll stay with you longer.",
   sections: [
     { title: "Washing", body: "Wash cold, turn inside out, and use a gentle detergent. Wash similar colors together to keep tones true." },
     { title: "Drying", body: "Dry in the shade. Avoid direct sunlight for long stretches. Avoid tumble drying unless the care label allows it." },

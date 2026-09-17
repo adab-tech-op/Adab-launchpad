@@ -404,7 +404,14 @@ export function ContentEditor({
             <BlockList label="Values (icon cards)" blocks={m.values} onChange={(values) => setM({ ...m, values })} />
           </>
         ) : (
-          <BlockList label="Care sections (icon cards)" blocks={c.sections} onChange={(sections) => setC({ ...c, sections })} />
+          <div className="space-y-6">
+            <div className="space-y-4 rounded-xl border border-border p-5">
+              <p className={labelCls}>Care guide page copy</p>
+              <TextRow label="Heading" value={c.heading} onChange={(v) => setC({ ...c, heading: v })} />
+              <TextRow label="Subcopy" value={c.subcopy} onChange={(v) => setC({ ...c, subcopy: v })} />
+            </div>
+            <BlockList label="Care sections (icon cards)" blocks={c.sections} onChange={(sections) => setC({ ...c, sections })} />
+          </div>
         )}
       </div>
 
