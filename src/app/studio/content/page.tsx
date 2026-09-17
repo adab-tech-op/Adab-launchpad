@@ -16,7 +16,7 @@ export default async function ContentPage() {
     <div>
       <h1 className="font-editorial text-4xl">Content.</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Edit the copy and heroes across Home, Drop, Shop, Manifesto, Care guide, and Contact. Markdown supported where noted; Bengali and English can be mixed.
+        Edit the copy and heroes across Home, Drop, Shop, Adab Story, Care guide, and Contact. Markdown supported where noted; Bengali and English can be mixed.
       </p>
       <div className="mt-8">
         <ContentEditor manifesto={manifesto} care={care} home={home} drop={drop} shop={shop} contact={contact} />

@@ -26,7 +26,7 @@ export const ANNOUNCEMENT_DEFAULTS: AnnouncementSettings = {
 export const ANNOUNCEMENT_PAGES: { path: string; label: string }[] = [
   { path: "/", label: "Home" },
   { path: "/shop", label: "Shop" },
-  { path: "/manifesto", label: "Manifesto" },
+  { path: "/adab-story", label: "Adab Story" },
   { path: "/care-guide", label: "Care guide" },
   { path: "/scrapbook", label: "Scrapbook" },
   { path: "/contact", label: "Contact" },

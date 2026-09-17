@@ -50,7 +50,7 @@ export function SiteFooter() {
           <FooterCol
             title="Brand"
             links={[
-              { to: "/manifesto", label: "Manifesto" },
+              { to: "/adab-story", label: "Adab Story" },
               { to: "/scrapbook", label: "Scrapbook" },
               { to: "/contact", label: "Contact" },
             ]}

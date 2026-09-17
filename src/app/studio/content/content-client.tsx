@@ -289,7 +289,7 @@ export function ContentEditor({
   const [pending, startTransition] = useTransition();
 
   const tabLabel = (t: typeof tab) =>
-    ({ home: "Home", drop: "Drop", shop: "Shop", manifesto: "Manifesto", care: "Care guide", contact: "Contact" })[t];
+    ({ home: "Home", drop: "Drop", shop: "Shop", manifesto: "Adab Story", care: "Care guide", contact: "Contact" })[t];
 
   const save = () =>
     startTransition(async () => {
