@@ -57,13 +57,14 @@ export default async function Manifesto() {
         </div>
       </section>
 
-      {/* Four-part story — scroll-driven editorial: paired images stick beside
-          the text and transition as each section enters view (see component). */}
+      {/* The story — scroll-driven editorial: paired media sticks beside the
+          text and transitions as each chapter enters view (see component). */}
       <ManifestoEditorial
         sections={content.storyParts.map((part) => ({
           title: part.title,
           bodyHtml: renderMarkdown(part.body),
           image: part.image || undefined,
+          video: part.video || undefined,
         }))}
       />
 

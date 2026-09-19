@@ -15,10 +15,14 @@ const blockSchema = z.object({
   icon: z.string().trim().max(600).optional().default(""),
 });
 
-// Story parts also carry an optional paired image (Cloudinary URL). Without
-// this, zod would strip the image key on save.
+// Story parts also carry an optional paired image/video (Cloudinary URLs) and
+// an English counterpart for the chapter. Without this, zod would strip these
+// keys on save.
 const storyBlockSchema = blockSchema.extend({
   image: z.string().trim().max(600).optional().default(""),
+  video: z.string().trim().max(600).optional().default(""),
+  titleEn: z.string().trim().max(200).optional().default(""),
+  bodyEn: z.string().trim().max(4000).optional().default(""),
 });
 
 const focalSchema = z.object({
@@ -156,9 +160,10 @@ function collectContentImageUrls(content: unknown): string[] {
     if (!Array.isArray(arr)) continue;
     for (const b of arr) {
       if (b && typeof b === "object") {
-        const blk = b as { image?: string; icon?: string };
+        const blk = b as { image?: string; icon?: string; video?: string };
         if (typeof blk.image === "string" && blk.image) urls.push(blk.image);
         if (typeof blk.icon === "string" && blk.icon) urls.push(blk.icon);
+        if (typeof blk.video === "string" && blk.video) urls.push(blk.video);
       }
     }
   }
