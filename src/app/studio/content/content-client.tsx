@@ -13,7 +13,7 @@ import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle } from "@/lib/hero";
 import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
 import { UploadHint } from "@/components/studio/UploadHint";
-import { uploadToCloudinary } from "@/lib/cloudinary";
+import { uploadToCloudinary, uploadVideoToCloudinary } from "@/lib/cloudinary";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
@@ -118,6 +118,7 @@ function StoryBlockList({
   onChange: (next: StoryBlock[]) => void;
 }) {
   const [uploadingAt, setUploadingAt] = useState<number | null>(null);
+  const [uploadingVideoAt, setUploadingVideoAt] = useState<number | null>(null);
   const update = (i: number, patch: Partial<StoryBlock>) =>
     onChange(blocks.map((b, j) => (j === i ? { ...b, ...patch } : b)));
   const remove = (i: number) => onChange(blocks.filter((_, j) => j !== i));
@@ -128,7 +129,7 @@ function StoryBlockList({
     [next[i], next[j]] = [next[j], next[i]];
     onChange(next);
   };
-  const add = () => onChange([...blocks, { title: "", body: "", image: "" }]);
+  const add = () => onChange([...blocks, { title: "", body: "", image: "", video: "", titleEn: "", bodyEn: "" }]);
 
   const onUpload = async (i: number, file: File) => {
     setUploadingAt(i);
@@ -140,6 +141,19 @@ function StoryBlockList({
       toast.error(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploadingAt(null);
+    }
+  };
+
+  const onUploadVideo = async (i: number, file: File) => {
+    setUploadingVideoAt(i);
+    try {
+      const url = await uploadVideoToCloudinary(file);
+      update(i, { video: url });
+      toast.success("Video uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingVideoAt(null);
     }
   };
 
@@ -172,6 +186,27 @@ function StoryBlockList({
                 <div className="prose-editorial mt-1.5 text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: renderMarkdown(b.body) }} />
               </div>
             </div>
+            {/* English counterpart — stored now, shown when a language toggle
+                is added. Leave blank if you don't need it yet. */}
+            <details className="mt-3">
+              <summary className="cursor-pointer text-[11px] uppercase tracking-[0.05em] text-muted-foreground">
+                English version (optional — stored for a future language toggle)
+              </summary>
+              <div className="mt-2 space-y-2">
+                <input
+                  className={inputCls}
+                  value={b.titleEn ?? ""}
+                  onChange={(e) => update(i, { titleEn: e.target.value })}
+                  placeholder="Title in English"
+                />
+                <textarea
+                  className={`${inputCls} min-h-24 resize-y font-mono text-xs`}
+                  value={b.bodyEn ?? ""}
+                  onChange={(e) => update(i, { bodyEn: e.target.value })}
+                  placeholder="Body in English — markdown supported."
+                />
+              </div>
+            </details>
             {/* Paired image — sticks/transitions beside this section as it scrolls */}
             <UploadHint spec="manifestoStory" className="mt-3" />
             <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -188,6 +223,25 @@ function StoryBlockList({
               {b.image && (
                 <button type="button" onClick={() => update(i, { image: "" })} className="text-sm text-muted-foreground hover:text-foreground">Remove image</button>
               )}
+            </div>
+            {/* Optional video — takes precedence over the image, which then
+                acts as its poster frame. */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {b.video ? (
+                <video src={b.video} className="h-16 w-14 shrink-0 rounded object-cover ring-1 ring-border" muted playsInline />
+              ) : (
+                <div className="grid h-16 w-14 shrink-0 place-items-center rounded bg-muted text-[9px] uppercase tracking-wide text-muted-foreground">No video</div>
+              )}
+              <label className="cursor-pointer rounded-full border border-border px-4 py-2 text-sm hover:border-primary">
+                {uploadingVideoAt === i ? "Uploading…" : b.video ? "Replace video" : "Upload video (optional)"}
+                <input type="file" accept="video/*" className="hidden" disabled={uploadingVideoAt === i} onChange={(e) => { const f = e.target.files?.[0]; if (f) onUploadVideo(i, f); }} />
+              </label>
+              {b.video && (
+                <button type="button" onClick={() => update(i, { video: "" })} className="text-sm text-muted-foreground hover:text-foreground">Remove video</button>
+              )}
+              <p className="w-full text-[11px] text-muted-foreground">
+                If set, the video plays here instead of the image (muted, looping). The image above becomes its poster frame.
+              </p>
             </div>
           </div>
         ))}
@@ -414,7 +468,7 @@ export function ContentEditor({
         ) : tab === "manifesto" ? (
           <>
             <HeroEditor hero={m.hero} onChange={(hero) => setM({ ...m, hero })} />
-            <StoryBlockList label="Story parts (numbered I, II, III… — each with a paired image)" blocks={m.storyParts} onChange={(storyParts) => setM({ ...m, storyParts })} />
+            <StoryBlockList label="Story chapters (numbered I, II, III… — each with a paired image or video)" blocks={m.storyParts} onChange={(storyParts) => setM({ ...m, storyParts })} />
             <BlockList label="Values (icon cards)" blocks={m.values} onChange={(values) => setM({ ...m, values })} />
           </>
         ) : (

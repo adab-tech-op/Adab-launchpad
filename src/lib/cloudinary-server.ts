@@ -39,7 +39,10 @@ export async function deleteFromCloudinary(url: string | null | undefined): Prom
       .update(`public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`)
       .digest("hex");
     const body = new URLSearchParams({ public_id: publicId, api_key: API_KEY, timestamp: String(timestamp), signature });
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/destroy`, { method: "POST", body });
+    // Videos live under a different resource type; deleting one via the image
+    // endpoint silently no-ops and leaves the asset orphaned.
+    const resourceType = /\/video\/upload\//.test(url) ? "video" : "image";
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/${resourceType}/destroy`, { method: "POST", body });
     if (!res.ok) {
       console.error(`[cloudinary] destroy failed (${res.status}) for ${publicId}`, await res.text().catch(() => ""));
     }

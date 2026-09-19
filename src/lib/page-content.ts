@@ -6,10 +6,20 @@ import { emptyHeroImages, defaultOverlay, type HeroImages, type HeroOverlay } fr
 
 export type Block = { title: string; body: string; icon?: string }; // icon = optional uploaded SVG (falls back to the built-in card icon)
 
-// A story part additionally carries an optional paired image (Cloudinary URL),
-// shown in the scroll-driven editorial layout on the manifesto page. Empty/unset
-// = no image (the layout falls back to a titled placeholder panel).
-export type StoryBlock = Block & { image?: string };
+// A story part additionally carries an optional paired image or video
+// (Cloudinary URL), shown in the scroll-driven editorial layout on the Adab
+// Story page. When `video` is set it takes precedence and `image` acts as its
+// poster frame. Neither set = a titled placeholder panel.
+//
+// titleEn/bodyEn hold the English of the same chapter. The page renders the
+// primary title/body today; the English pair is stored so a language toggle
+// can be added later without a migration or re-entry of copy.
+export type StoryBlock = Block & {
+  image?: string;
+  video?: string;
+  titleEn?: string;
+  bodyEn?: string;
+};
 
 export type ManifestoHero = {
   images: HeroImages; // 3-breakpoint hero (desktop required; tablet/phone optional)
@@ -200,10 +210,36 @@ export const MANIFESTO_DEFAULT: ManifestoContent = {
     overlay: defaultOverlay(),
   },
   storyParts: [
-    { title: "ORIGIN TENSION", body: "Bangladeshi men have had two options: Western clothing that isn't really theirs, or the panjabi — reserved for occasions. Nothing to wear every day that carries their own history." },
-    { title: "THE HERITAGE", body: "In the mid-20th century, men across East Bengal — today's Bangladesh — wore a short-hemmed, full-sleeve shirt called the piran. In 1958, Bengali writer Rajshekhar Basu wrote: 'The piran's shape is like today's panjabi — but shorter.'" },
-    { title: "THE BRIDGE", body: "The piran never disappeared — it evolved into today's longer panjabi. Our attention simply drifted elsewhere. Adab reinterprets that specific moment of evolution in today's cut, fabric, and embroidery." },
-    { title: "THE PROMISE", body: "Wearing Adab isn't bringing something back. It's writing the next chapter. Your own history, in today's language." },
+    {
+      title: "ইতিহাস হারায় না। অপেক্ষা করে।",
+      body: "আমরা বিশ্বাস করি না ইতিহাস হারিয়ে যায়। ও শুধু অপেক্ষা করে — কেউ ফিরে তাকাবে বলে।",
+      titleEn: "History doesn't get lost. It waits.",
+      bodyEn: "We don't believe history gets lost. It simply waits — for someone to look back.",
+    },
+    {
+      title: "১৯৫০-এর ঢাকা। একটা ছেলে। একটা জামা। নাম — পিরান।",
+      body: "পঞ্চাশের দশকে পূর্ব বাংলার একটা ছেলে ঈদের সকালে বেরিয়েছিল একটা খাটো, পরিপাটি জামা পরে, নাম তার পিরান। সময়ের সাথে সেই জামার ঝুল বেড়েছে, নাম বদলেছে, আমাদের চোখও অন্যদিকে ঘুরে গেছে। কিন্তু ডিজাইনটা মরেনি।",
+      titleEn: "1950s Dhaka. A boy. A shirt. Its name — piran.",
+      bodyEn: "In the fifties, a boy in East Bengal stepped out on Eid morning in a short, neatly cut shirt called the piran. Over time its hem grew longer, its name changed, and our attention drifted elsewhere. But the design never died.",
+    },
+    {
+      title: "আমরা জাদুঘর বানাচ্ছি না।",
+      body: "আদব সেই ফিরে তাকানো। আমরা পুরনো নকশাকে কাচের বাক্সে রাখছি না — আজকের ভাষায় বলছি। এটা সংরক্ষণ না। এটা পরবর্তী অধ্যায়।",
+      titleEn: "We're not building a museum.",
+      bodyEn: "Adab is that looking back. We're not putting an old design behind glass — we're saying it in today's language. This isn't preservation. This is the next chapter.",
+    },
+    {
+      title: "একই DNA। নতুন ভাষা।",
+      body: "একই ঝুল, একই সহজতা, কিন্তু আজকের ছেলেটার জন্য, আজকের বাংলাদেশের জন্য। Unpretentious design, tonal thread। পুরনো নকশার grammar, আজকের কাটে।",
+      titleEn: "Same DNA. New language.",
+      bodyEn: "The same hem, the same ease — but for today's young man, for today's Bangladesh. Unpretentious design, tonal thread. The grammar of an old pattern, in today's cut.",
+    },
+    {
+      title: "পুরনো প্রাণ। নতুন কাট।",
+      body: "যে ছেলেটা জানে তার নিজের ইতিহাস আছে — শুধু সেটা বলার মতো জামা ছিল না এতদিন। এখন আছে। ঝুল কম, গল্প লম্বা — এটাই আদব।",
+      titleEn: "Old soul. New cut.",
+      bodyEn: "The young man who knows he has a history of his own — he just never had the shirt to say it with. Now he does. Shorter hem, longer story — that is Adab.",
+    },
   ],
   values: [
     { title: "Truth", body: "Every historical claim is source-backed. If we can't prove it, we don't say it." },
