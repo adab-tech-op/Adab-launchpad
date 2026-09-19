@@ -11,7 +11,7 @@ import type { FabricType } from "@/lib/fabrics";
 import { UploadHint } from "@/components/studio/UploadHint";
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
-import { emptyPageHero } from "@/lib/page-content";
+import { emptyPageHero, resolveTimerColor } from "@/lib/page-content";
 import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
@@ -281,6 +281,15 @@ export function ProductForm({
                 <div className="mt-1 flex items-center gap-2">
                   <input className={inputCls} value={dropHero.subcopy} onChange={(e) => setDropHero({ subcopy: e.target.value })} />
                   <input type="color" value={dropHero.subcopyColor} onChange={(e) => setDropHero({ subcopyColor: e.target.value })} className="h-9 w-10 shrink-0 rounded border border-border bg-transparent" />
+                </div>
+              </label>
+              <label className="block">
+                <span className="text-[11px] text-muted-foreground">Countdown colour</span>
+                <div className="mt-1 flex items-center gap-2">
+                  <p className="flex-1 text-[11px] text-muted-foreground">
+                    Digits, labels, drop date line, and notify field. Defaults to the subcopy colour.
+                  </p>
+                  <input type="color" value={resolveTimerColor(dropHero)} onChange={(e) => setDropHero({ timerColor: e.target.value })} className="h-9 w-10 shrink-0 rounded border border-border bg-transparent" />
                 </div>
               </label>
             </div>

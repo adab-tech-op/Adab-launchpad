@@ -46,6 +46,7 @@ export type HomeContent = {
   headingColor: string; // hex
   subcopy: string;
   subcopyColor: string; // hex
+  timerColor?: string; // drop slug only: countdown colour (falls back to subcopyColor)
   heroSlides?: HeroSlide[]; // home slug only: the hero carousel. Empty/missing
   // falls back to the single hero/overlay/heading/... fields above.
   heroAutoplaySeconds?: number; // home slug only: seconds each slide is held
@@ -128,6 +129,7 @@ export const DROP_DEFAULT: HomeContent = {
   headingColor: "#f5f0e8",
   subcopy: "Limited pieces, released on a date. Once they're gone, they're gone.",
   subcopyColor: "#f5f0e8",
+  timerColor: "#f5f0e8",
   nextDropDate: "",
   announcementEnabled: true,
 };
@@ -141,6 +143,8 @@ export type PageHero = {
   headingColor: string;
   subcopy: string;
   subcopyColor: string;
+  timerColor?: string; // drop heroes only: countdown digits/labels. Falls back
+  // to subcopyColor when unset, so existing heroes keep their current look.
 };
 
 // One slide of the home hero carousel — same shape as PageHero (image, overlay,
@@ -155,6 +159,7 @@ export function emptyPageHero(): PageHero {
     headingColor: "#f5f0e8",
     subcopy: "",
     subcopyColor: "#f5f0e8",
+    timerColor: "#f5f0e8",
   };
 }
 
@@ -225,3 +230,9 @@ export const CARE_DEFAULT: CareContent = {
 };
 
 export const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+
+/** Countdown colour for a drop hero: its own timerColor when set, else the
+ *  subcopy colour, so heroes saved before timerColor existed look unchanged. */
+export function resolveTimerColor(h: { timerColor?: string; subcopyColor?: string }): string {
+  return h.timerColor || h.subcopyColor || "#f5f0e8";
+}

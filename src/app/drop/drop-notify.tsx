@@ -8,10 +8,14 @@ export function DropNotify({
   source = "drop_notify",
   productSlug,
   compact = false,
+  color,
 }: {
   source?: string;
   productSlug?: string;
   compact?: boolean;
+  /** On-image variant: field border/text follow this colour so the form stays
+   *  readable over a dark hero. Omitted keeps the default page styling. */
+  color?: string;
 }) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,7 +35,11 @@ export function DropNotify({
   };
 
   if (done) {
-    return <p className="text-sm text-muted-foreground">You&rsquo;re on the list — we&rsquo;ll email you when it drops.</p>;
+    return (
+      <p className={`text-sm ${color ? "" : "text-muted-foreground"}`} style={color ? { color, opacity: 0.85 } : undefined}>
+        You&rsquo;re on the list — we&rsquo;ll email you when it drops.
+      </p>
+    );
   }
 
   return (
@@ -42,7 +50,8 @@ export function DropNotify({
         onChange={(e) => setEmail(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
         placeholder="you@email.com"
-        className="min-w-0 flex-1 rounded-full border border-border bg-transparent px-4 py-2.5 text-sm outline-none focus:border-foreground"
+        className={`min-w-0 flex-1 rounded-full border bg-transparent px-4 py-2.5 text-sm outline-none placeholder:text-current placeholder:opacity-60 ${color ? "" : "border-border focus:border-foreground"}`}
+        style={color ? { color, borderColor: color } : undefined}
       />
       <button
         onClick={submit}

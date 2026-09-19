@@ -101,6 +101,7 @@ const shapes = {
     headingColor: z.string().trim().max(9).default("#f5f0e8"),
     subcopy: z.string().trim().max(400).default(""),
     subcopyColor: z.string().trim().max(9).default("#f5f0e8"),
+    timerColor: z.string().trim().max(9).optional(),
     nextDropDate: z.string().trim().max(40).default(""),
     announcementEnabled: z.boolean().default(true),
   }),

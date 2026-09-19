@@ -7,7 +7,7 @@ import { Plus, Trash2, ArrowUp, ArrowDown, ChevronDown } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { savePageContent } from "@/lib/actions/page-content";
 import type { Block, StoryBlock, ManifestoContent, ManifestoHero, CareContent, HomeContent, HeroSlide, PageHero, ShopContent, ContactContent } from "@/lib/page-content";
-import { emptyPageHero, clampHeroAutoplaySeconds, HERO_AUTOPLAY_SECONDS_DEFAULT, HERO_AUTOPLAY_SECONDS_MIN, HERO_AUTOPLAY_SECONDS_MAX } from "@/lib/page-content";
+import { emptyPageHero, resolveTimerColor, clampHeroAutoplaySeconds, HERO_AUTOPLAY_SECONDS_DEFAULT, HERO_AUTOPLAY_SECONDS_MIN, HERO_AUTOPLAY_SECONDS_MAX } from "@/lib/page-content";
 import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle } from "@/lib/hero";
@@ -409,7 +409,7 @@ export function ContentEditor({
                 {dr.nextDropDate && <span className="mt-1 block text-[10px] text-muted-foreground">Dhaka: {formatDhaka(dr.nextDropDate)}</span>}
               </label>
             </div>
-            <HeroPageEditor value={dr} onChange={setDr} note="The hero for the default section (background, overlay, text). Per-product drop dates + their own heroes are set on each product." />
+            <HeroPageEditor value={dr} onChange={setDr} withTimer note="The hero for the default section (background, overlay, text). Per-product drop dates + their own heroes are set on each product." />
           </div>
         ) : tab === "manifesto" ? (
           <>
@@ -454,7 +454,18 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
 }
 
 // Shared editor for a page hero (home + drop): image, overlay, heading/subcopy + colours.
-function HeroPageEditor<T extends PageHero>({ value, onChange, note }: { value: T; onChange: (v: T) => void; note: string }) {
+function HeroPageEditor<T extends PageHero>({
+  value,
+  onChange,
+  note,
+  withTimer = false,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  note: string;
+  /** Drop heroes show a countdown, so they get a colour for it too. */
+  withTimer?: boolean;
+}) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-border p-5">
@@ -481,6 +492,17 @@ function HeroPageEditor<T extends PageHero>({ value, onChange, note }: { value: 
             <ColorField value={value.subcopyColor} onChange={(subcopyColor) => onChange({ ...value, subcopyColor })} />
           </div>
         </div>
+        {withTimer && (
+          <div>
+            <label className={labelCls}>Countdown colour</label>
+            <div className="mt-1 flex items-center gap-3">
+              <p className="flex-1 text-xs text-muted-foreground">
+                Digits, labels, the drop date line, and the notify field. Defaults to the subcopy colour.
+              </p>
+              <ColorField value={resolveTimerColor(value)} onChange={(timerColor) => onChange({ ...value, timerColor })} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
