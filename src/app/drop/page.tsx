@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getDropContent } from "@/lib/page-content-server";
 import { getDropProducts, getPreviousDropDate, type DropProduct } from "@/lib/products";
-import { emptyPageHero, type PageHero } from "@/lib/page-content";
+import { emptyPageHero, resolveTimerColor, type PageHero } from "@/lib/page-content";
 import { ProductCard } from "@/components/site/ProductCard";
 import { HeroBackground } from "@/components/site/HeroBackground";
 import { overlayStyle } from "@/lib/hero";
@@ -41,8 +41,9 @@ export default async function DropPage() {
       {upcoming.map((p) => {
         const hero = heroFor(p);
         const ov = overlayStyle(hero.overlay);
+        const timer = resolveTimerColor(hero);
         return (
-          <section key={p.slug} className={`relative flex min-h-[70vh] items-center justify-center overflow-hidden px-5 py-20 text-center ${!hero.hero.desktop ? "bg-foreground" : ""}`}>
+          <section key={p.slug} className={`relative flex min-h-[calc(100dvh-4rem)] items-center justify-center overflow-hidden px-5 py-20 text-center ${!hero.hero.desktop ? "bg-foreground" : ""}`}>
             <HeroBackground images={hero.hero} />
             {ov && <div className="absolute inset-0" style={ov} />}
             <div className="relative z-10 mx-auto max-w-3xl">
@@ -51,12 +52,12 @@ export default async function DropPage() {
               {hero.subcopy && <p className="mx-auto mt-3 max-w-xl font-editorial text-lg md:text-2xl" style={{ color: hero.subcopyColor }}>{hero.subcopy}</p>}
               {p.dropDate && (
                 <div className="mt-8">
-                  <DropCountdown target={p.dropDate} url={`${SITE_URL}/product/${p.slug}`} title={p.name} />
+                  <DropCountdown target={p.dropDate} url={`${SITE_URL}/product/${p.slug}`} title={p.name} color={timer} />
                 </div>
               )}
               <div className="mt-8 flex flex-col items-center gap-2">
                 <p className="text-[11px] uppercase tracking-[0.08em]" style={{ color: hero.subcopyColor, opacity: 0.8 }}>Notify me when it drops</p>
-                <DropNotify productSlug={p.slug} />
+                <DropNotify productSlug={p.slug} color={timer} />
               </div>
             </div>
           </section>
@@ -84,8 +85,9 @@ export default async function DropPage() {
 function DefaultSection({ content, prevDate }: { content: Awaited<ReturnType<typeof getDropContent>>; prevDate: string | null }) {
   const ov = overlayStyle(content.overlay);
   const hasImage = !!content.hero.desktop;
+  const timer = resolveTimerColor(content);
   return (
-    <section className={`relative flex min-h-[70vh] items-center justify-center overflow-hidden px-5 py-20 text-center ${!hasImage ? "bg-foreground" : ""}`}>
+    <section className={`relative flex min-h-[calc(100dvh-4rem)] items-center justify-center overflow-hidden px-5 py-20 text-center ${!hasImage ? "bg-foreground" : ""}`}>
       <HeroBackground images={content.hero} />
       {ov && <div className="absolute inset-0" style={ov} />}
       <div className="relative z-10 mx-auto max-w-3xl">
@@ -93,15 +95,15 @@ function DefaultSection({ content, prevDate }: { content: Awaited<ReturnType<typ
         {content.subcopy && <p className="mx-auto mt-3 max-w-xl font-editorial text-lg md:text-2xl" style={{ color: content.subcopyColor }}>{content.subcopy}</p>}
         <div className="mt-8">
           {content.nextDropDate ? (
-            <DropCountdown target={content.nextDropDate} url={`${SITE_URL}/drop`} title="ADAB Drop" />
+            <DropCountdown target={content.nextDropDate} url={`${SITE_URL}/drop`} title="ADAB Drop" color={timer} />
           ) : (
-            <p className="text-sm uppercase tracking-[0.08em]" style={{ color: content.subcopyColor }}>No drop scheduled yet</p>
+            <p className="text-sm uppercase tracking-[0.08em]" style={{ color: timer }}>No drop scheduled yet</p>
           )}
         </div>
         {prevDate && <p className="mt-5 text-xs" style={{ color: content.subcopyColor, opacity: 0.75 }}>Previous drop {timeAgo(prevDate)}</p>}
         <div className="mt-8 flex flex-col items-center gap-2">
           <p className="text-[11px] uppercase tracking-[0.08em]" style={{ color: content.subcopyColor, opacity: 0.8 }}>Get notified</p>
-          <DropNotify />
+          <DropNotify color={timer} />
         </div>
       </div>
     </section>
