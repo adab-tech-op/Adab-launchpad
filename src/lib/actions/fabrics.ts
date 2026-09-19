@@ -21,6 +21,14 @@ const schema = z.object({
   drying: z.string().trim().max(2000).optional().default(""),
   ironing: z.string().trim().max(2000).optional().default(""),
   storage: z.string().trim().max(2000).optional().default(""),
+  at_a_glance: z.string().trim().max(160).optional().default(""),
+  overlay_enabled: z.coerce.boolean().optional().default(true),
+  overlay_color: z.string().trim().max(9).optional().default("#26364A"),
+  overlay_opacity: z.coerce.number().int().min(0).max(100).optional().default(16),
+  overlay_from: z
+    .enum(["solid", "bottom", "top", "left", "right", "bottom-left", "bottom-right", "top-left", "top-right"])
+    .optional()
+    .default("solid"),
   sort_order: z.coerce.number().int().min(0).max(100000).optional(),
 });
 
@@ -38,15 +46,15 @@ export async function createFabricType(input: unknown): Promise<FabricResult> {
   if (!slug) return { ok: false, error: "Name must contain letters or numbers." };
   try {
     await sql`
-      INSERT INTO fabric_types (slug, name, care_detail, thumbnail_url, details, washing, drying, ironing, storage, sort_order)
-      VALUES (${slug}, ${p.data.name}, ${p.data.care_detail}, ${p.data.thumbnail_url}, ${p.data.details}, ${p.data.washing}, ${p.data.drying}, ${p.data.ironing}, ${p.data.storage}, ${p.data.sort_order ?? 0})
+      INSERT INTO fabric_types (slug, name, care_detail, thumbnail_url, details, washing, drying, ironing, storage, at_a_glance, overlay_enabled, overlay_color, overlay_opacity, overlay_from, sort_order)
+      VALUES (${slug}, ${p.data.name}, ${p.data.care_detail}, ${p.data.thumbnail_url}, ${p.data.details}, ${p.data.washing}, ${p.data.drying}, ${p.data.ironing}, ${p.data.storage}, ${p.data.at_a_glance}, ${p.data.overlay_enabled}, ${p.data.overlay_color}, ${p.data.overlay_opacity}, ${p.data.overlay_from}, ${p.data.sort_order ?? 0})
     `;
     await recordAudit(actor.email, "fabric.create", slug);
     revalidate();
     return { ok: true };
   } catch (err) {
     console.error("[fabrics] create failed", err);
-    return { ok: false, error: "Could not create — that name may already exist. (If this is the first one, make sure db/fabric-types.sql and db/fabric-care-detail.sql have been run.)" };
+    return { ok: false, error: "Could not create — that name may already exist. (If this is the first one, make sure db/fabric-types.sql, db/fabric-care-detail.sql and db/fabric-card-overlay.sql have been run.)" };
   }
 }
 
@@ -69,7 +77,10 @@ export async function updateFabricType(id: number, input: unknown): Promise<Fabr
       UPDATE fabric_types
       SET name = ${p.data.name}, care_detail = ${p.data.care_detail}, thumbnail_url = ${p.data.thumbnail_url},
           details = ${p.data.details}, washing = ${p.data.washing}, drying = ${p.data.drying},
-          ironing = ${p.data.ironing}, storage = ${p.data.storage}, sort_order = ${p.data.sort_order ?? 0}
+          ironing = ${p.data.ironing}, storage = ${p.data.storage}, at_a_glance = ${p.data.at_a_glance},
+          overlay_enabled = ${p.data.overlay_enabled}, overlay_color = ${p.data.overlay_color},
+          overlay_opacity = ${p.data.overlay_opacity}, overlay_from = ${p.data.overlay_from},
+          sort_order = ${p.data.sort_order ?? 0}
       WHERE id = ${id}
     `;
     await recordAudit(actor.email, "fabric.update", String(id));

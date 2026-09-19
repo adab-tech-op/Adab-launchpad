@@ -7,6 +7,8 @@ import { Plus, Trash2, UploadCloud } from "lucide-react";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { createFabricType, updateFabricType, deleteFabricType } from "@/lib/actions/fabrics";
 import { CARE_SECTIONS, type FabricType } from "@/lib/fabrics";
+import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
+import type { HeroOverlay } from "@/lib/hero";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
@@ -20,6 +22,11 @@ type Draft = {
   drying: string;
   ironing: string;
   storage: string;
+  at_a_glance: string;
+  overlay_enabled: boolean;
+  overlay_color: string;
+  overlay_opacity: number;
+  overlay_from: string;
 };
 
 function draftFrom(f: Partial<FabricType>): Draft {
@@ -32,6 +39,21 @@ function draftFrom(f: Partial<FabricType>): Draft {
     drying: f.drying ?? "",
     ironing: f.ironing ?? "",
     storage: f.storage ?? "",
+    at_a_glance: f.at_a_glance ?? "",
+    overlay_enabled: f.overlay_enabled ?? true,
+    overlay_color: f.overlay_color ?? "#26364A",
+    overlay_opacity: f.overlay_opacity ?? 16,
+    overlay_from: f.overlay_from ?? "solid",
+  };
+}
+
+/** The card photo's tint, edited with the same control set as the heroes. */
+function overlayOf(d: Draft): HeroOverlay {
+  return {
+    enabled: d.overlay_enabled,
+    color: d.overlay_color,
+    opacity: d.overlay_opacity,
+    from: d.overlay_from as HeroOverlay["from"],
   };
 }
 
@@ -129,7 +151,24 @@ function FabricRow({ fabric }: { fabric: FabricType }) {
             <span className={labelCls}>Little details <span className="normal-case tracking-normal">(short card blurb)</span></span>
             <textarea className={`${inputCls} mt-1 resize-y`} rows={2} value={draft.details} onChange={(e) => set({ details: e.target.value })} />
           </label>
+          <label className="mt-3 block">
+            <span className={labelCls}>At a glance <span className="normal-case tracking-normal">(one line on the card)</span></span>
+            <input
+              className={`${inputCls} mt-1`}
+              value={draft.at_a_glance}
+              onChange={(e) => set({ at_a_glance: e.target.value })}
+              placeholder="Hand wash cold · Dry flat in shade · Medium iron"
+            />
+          </label>
         </div>
+      </div>
+
+      <div className="mt-4">
+        <HeroOverlayEditor
+          value={overlayOf(draft)}
+          onChange={(o) => set({ overlay_enabled: o.enabled, overlay_color: o.color, overlay_opacity: o.opacity, overlay_from: o.from })}
+          previewImage={draft.thumbnail_url || undefined}
+        />
       </div>
 
       <CareFields draft={draft} set={set} />

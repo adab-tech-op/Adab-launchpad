@@ -478,7 +478,10 @@ export function ContentEditor({
               <TextRow label="Heading" value={c.heading} onChange={(v) => setC({ ...c, heading: v })} />
               <TextRow label="Subcopy" value={c.subcopy} onChange={(v) => setC({ ...c, subcopy: v })} />
             </div>
-            <BlockList label="Care sections (icon cards)" blocks={c.sections} onChange={(sections) => setC({ ...c, sections })} />
+            <p className="text-xs text-muted-foreground">
+              Per-fabric care — photo, blurb, at-a-glance line and the full washing/drying/ironing/storage
+              instructions — is edited under Catalog → Fabrics.
+            </p>
           </div>
         )}
       </div>

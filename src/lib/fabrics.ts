@@ -12,6 +12,13 @@ export type FabricType = {
   drying: string;
   ironing: string;
   storage: string;
+  at_a_glance: string; // one short line, e.g. "Hand wash cold · Shade dry · Medium iron"
+  // The card's photo runs full-bleed down one side, so each fabric tints its
+  // own image the way a hero overlay does.
+  overlay_enabled: boolean;
+  overlay_color: string;
+  overlay_opacity: number; // 0-100
+  overlay_from: string; // solid | bottom | top | left | right | corners
   sort_order: number;
 };
 
