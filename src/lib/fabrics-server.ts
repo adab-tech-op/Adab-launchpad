@@ -7,7 +7,7 @@ import type { FabricType } from "@/lib/fabrics";
 export async function getFabricTypes(): Promise<FabricType[]> {
   try {
     const rows = (await sql`
-      SELECT id, slug, name, care_detail, thumbnail_url, details, washing, drying, ironing, storage, sort_order
+      SELECT id, slug, name, care_detail, thumbnail_url, details, washing, drying, ironing, storage, at_a_glance, overlay_enabled, overlay_color, overlay_opacity, overlay_from, sort_order
       FROM fabric_types ORDER BY sort_order, name
     `) as FabricType[];
     return rows;
@@ -22,7 +22,7 @@ export async function getFabricTypeById(fabricTypeId: number | null | undefined)
   if (!fabricTypeId) return null;
   try {
     const rows = (await sql`
-      SELECT id, slug, name, care_detail, thumbnail_url, details, washing, drying, ironing, storage, sort_order
+      SELECT id, slug, name, care_detail, thumbnail_url, details, washing, drying, ironing, storage, at_a_glance, overlay_enabled, overlay_color, overlay_opacity, overlay_from, sort_order
       FROM fabric_types WHERE id = ${fabricTypeId}
     `) as FabricType[];
     return rows[0] ?? null;
