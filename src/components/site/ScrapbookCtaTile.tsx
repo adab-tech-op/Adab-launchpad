@@ -17,26 +17,12 @@ const MAILTO =
  * state is gated to (scripting: enabled) in globals.css so no-JS visitors still
  * see the card; reduced-motion reveals it immediately.
  */
-export function ScrapbookCtaTile({
-  className = "",
-  animate = true,
-}: {
-  className?: string;
-  /** Off when the tile is inside ScrapbookCtaReveal: the pile lifting away is
-   *  the reveal, and a second fade underneath it would leave the invitation
-   *  invisible at the exact moment the cards clear. */
-  animate?: boolean;
-}) {
+export function ScrapbookCtaTile({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    if (!animate) {
-      el.classList.add("is-revealed");
-      return;
-    }
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       el.classList.add("is-revealed");
@@ -57,14 +43,13 @@ export function ScrapbookCtaTile({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [animate]);
+  }, []);
 
   return (
     <div
       ref={ref}
       className={
-        (animate ? "cta-reveal " : "") +
-        "break-inside-avoid overflow-hidden rounded-lg border border-border p-8 text-center paper-grain md:p-10 " +
+        "cta-reveal break-inside-avoid overflow-hidden rounded-lg border border-border p-8 text-center paper-grain md:p-10 " +
         className
       }
     >
