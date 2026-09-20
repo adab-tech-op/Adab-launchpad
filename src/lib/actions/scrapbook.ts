@@ -23,6 +23,10 @@ const addSchema = z.object({
   kind: z.enum(["photo", "object"]).optional().default("photo"),
   span: z.enum(["normal", "tall", "wide"]).optional().default("normal"),
   group_label: z.string().trim().max(80).optional().default(""),
+  col_start: z.coerce.number().int().min(0).max(11).optional().default(0),
+  col_span: z.coerce.number().int().min(2).max(12).optional().default(4),
+  nudge_y: z.coerce.number().int().min(-240).max(240).optional().default(0),
+  rotation: z.coerce.number().min(-4).max(4).optional().default(0),
 });
 
 export async function addScrapbookImage(input: unknown): Promise<ScrapbookResult> {
@@ -33,10 +37,11 @@ export async function addScrapbookImage(input: unknown): Promise<ScrapbookResult
   try {
     // Append to the end of the current order.
     await sql`
-      INSERT INTO scrapbook_images (image_url, caption, caption_bn, place, taken_on, credit, kind, span, group_label, sort_order)
+      INSERT INTO scrapbook_images (image_url, caption, caption_bn, place, taken_on, credit, kind, span, group_label, col_start, col_span, nudge_y, rotation, sort_order)
       VALUES (
         ${p.data.image_url}, ${p.data.caption ?? ""}, ${p.data.caption_bn}, ${p.data.place}, ${p.data.taken_on},
         ${p.data.credit}, ${p.data.kind}, ${p.data.span}, ${p.data.group_label},
+        ${p.data.col_start}, ${p.data.col_span}, ${p.data.nudge_y}, ${p.data.rotation},
         COALESCE((SELECT MAX(sort_order) + 1 FROM scrapbook_images), 1)
       )
     `;
@@ -58,6 +63,10 @@ const updateSchema = z.object({
   kind: z.enum(["photo", "object"]).optional().default("photo"),
   span: z.enum(["normal", "tall", "wide"]).optional().default("normal"),
   group_label: z.string().trim().max(80).optional().default(""),
+  col_start: z.coerce.number().int().min(0).max(11).optional().default(0),
+  col_span: z.coerce.number().int().min(2).max(12).optional().default(4),
+  nudge_y: z.coerce.number().int().min(-240).max(240).optional().default(0),
+  rotation: z.coerce.number().min(-4).max(4).optional().default(0),
   sort_order: z.coerce.number().int().min(0).max(100000),
 });
 
@@ -71,7 +80,9 @@ export async function updateScrapbookImage(id: number, input: unknown): Promise<
       UPDATE scrapbook_images
       SET caption = ${p.data.caption}, caption_bn = ${p.data.caption_bn}, place = ${p.data.place},
           taken_on = ${p.data.taken_on}, credit = ${p.data.credit}, kind = ${p.data.kind},
-          span = ${p.data.span}, group_label = ${p.data.group_label}, sort_order = ${p.data.sort_order}
+          span = ${p.data.span}, group_label = ${p.data.group_label}, col_start = ${p.data.col_start},
+          col_span = ${p.data.col_span}, nudge_y = ${p.data.nudge_y}, rotation = ${p.data.rotation},
+          sort_order = ${p.data.sort_order}
       WHERE id = ${id}`;
     await recordAudit(actor.email, "scrapbook.update", String(id));
     revalidate();

@@ -13,8 +13,15 @@ export type ScrapbookImage = {
   kind: ScrapbookKind; // 'object' renders on paper stock with a slight tilt
   span: ScrapbookSpan; // breaks the uniform tile rhythm
   group_label: string; // "Drop 01" — chronology
+  // Authored collage placement (desktop board only — see db/scrapbook-collage.sql)
+  col_start: number; // 0-11 on a 12-column board
+  col_span: number; // 2-12
+  nudge_y: number; // px up/down, creates the overlap
+  rotation: number; // degrees, -4..4
   sort_order: number;
 };
+
+export const COLLAGE_COLUMNS = 12;
 
 export const SCRAPBOOK_KINDS: { value: ScrapbookKind; label: string; hint: string }[] = [
   { value: "photo", label: "Photograph", hint: "Full-bleed image tile." },
@@ -27,11 +34,13 @@ export const SCRAPBOOK_SPANS: { value: ScrapbookSpan; label: string }[] = [
   { value: "wide", label: "Wide" },
 ];
 
-/** Stable per-item tilt for 'object' tiles. Deterministic from the id so the
- *  page doesn't reshuffle on every render (and matches server and client). */
-export function objectTilt(id: number): number {
+/** A card's tilt: the authored rotation when set, otherwise a stable
+ *  id-derived fallback so an unplaced card still looks pinned rather than
+ *  perfectly square. Deterministic, so server and client agree. */
+export function tiltOf(img: { id: number; rotation?: number }): number {
+  if (img.rotation) return img.rotation;
   const steps = [-1.6, 1.1, -0.8, 1.7, -1.2, 0.9];
-  return steps[id % steps.length];
+  return steps[img.id % steps.length];
 }
 
 /** The provenance line under a tile: "Islampur Road, Dhaka · March 2026". */
