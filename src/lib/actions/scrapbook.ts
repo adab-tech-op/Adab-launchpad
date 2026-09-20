@@ -16,6 +16,13 @@ function revalidate() {
 const addSchema = z.object({
   image_url: z.string().trim().url("A valid image URL is required.").max(600),
   caption: z.string().trim().max(200).optional(),
+  caption_bn: z.string().trim().max(200).optional().default(""),
+  place: z.string().trim().max(120).optional().default(""),
+  taken_on: z.string().trim().max(60).optional().default(""),
+  credit: z.string().trim().max(80).optional().default(""),
+  kind: z.enum(["photo", "object"]).optional().default("photo"),
+  span: z.enum(["normal", "tall", "wide"]).optional().default("normal"),
+  group_label: z.string().trim().max(80).optional().default(""),
 });
 
 export async function addScrapbookImage(input: unknown): Promise<ScrapbookResult> {
@@ -26,9 +33,10 @@ export async function addScrapbookImage(input: unknown): Promise<ScrapbookResult
   try {
     // Append to the end of the current order.
     await sql`
-      INSERT INTO scrapbook_images (image_url, caption, sort_order)
+      INSERT INTO scrapbook_images (image_url, caption, caption_bn, place, taken_on, credit, kind, span, group_label, sort_order)
       VALUES (
-        ${p.data.image_url}, ${p.data.caption ?? ""},
+        ${p.data.image_url}, ${p.data.caption ?? ""}, ${p.data.caption_bn}, ${p.data.place}, ${p.data.taken_on},
+        ${p.data.credit}, ${p.data.kind}, ${p.data.span}, ${p.data.group_label},
         COALESCE((SELECT MAX(sort_order) + 1 FROM scrapbook_images), 1)
       )
     `;
@@ -43,6 +51,13 @@ export async function addScrapbookImage(input: unknown): Promise<ScrapbookResult
 
 const updateSchema = z.object({
   caption: z.string().trim().max(200),
+  caption_bn: z.string().trim().max(200).optional().default(""),
+  place: z.string().trim().max(120).optional().default(""),
+  taken_on: z.string().trim().max(60).optional().default(""),
+  credit: z.string().trim().max(80).optional().default(""),
+  kind: z.enum(["photo", "object"]).optional().default("photo"),
+  span: z.enum(["normal", "tall", "wide"]).optional().default("normal"),
+  group_label: z.string().trim().max(80).optional().default(""),
   sort_order: z.coerce.number().int().min(0).max(100000),
 });
 
@@ -52,7 +67,12 @@ export async function updateScrapbookImage(id: number, input: unknown): Promise<
   const p = updateSchema.safeParse(input);
   if (!p.success) return { ok: false, error: p.error.issues[0]?.message ?? "Check the fields." };
   try {
-    await sql`UPDATE scrapbook_images SET caption = ${p.data.caption}, sort_order = ${p.data.sort_order} WHERE id = ${id}`;
+    await sql`
+      UPDATE scrapbook_images
+      SET caption = ${p.data.caption}, caption_bn = ${p.data.caption_bn}, place = ${p.data.place},
+          taken_on = ${p.data.taken_on}, credit = ${p.data.credit}, kind = ${p.data.kind},
+          span = ${p.data.span}, group_label = ${p.data.group_label}, sort_order = ${p.data.sort_order}
+      WHERE id = ${id}`;
     await recordAudit(actor.email, "scrapbook.update", String(id));
     revalidate();
     return { ok: true };
