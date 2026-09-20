@@ -46,11 +46,7 @@ export default async function ScrapbookPage() {
         </p>
       </section>
 
-      <section
-        data-reveal-skip
-        data-reveal-images-skip
-        className="mx-auto max-w-7xl px-5 md:px-8 pb-24"
-      >
+      <section className="mx-auto max-w-7xl px-5 md:px-8 pb-24">
         {images.length === 0 ? (
           <div className="mx-auto max-w-md">
             <ScrapbookCtaTile />
