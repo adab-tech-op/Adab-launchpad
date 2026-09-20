@@ -1,7 +1,6 @@
 import { ScrapbookTile } from "@/components/site/ScrapbookTile";
 import { COLLAGE_COLUMNS, type ScrapbookImage } from "@/lib/scrapbook";
 import type { ReactNode } from "react";
-import { ScrapbookDeal } from "@/components/site/ScrapbookDeal";
 
 /**
  * The collage board.
@@ -30,13 +29,12 @@ export function ScrapbookBoard({ items, cta }: { items: ScrapbookImage[]; cta?: 
   const insertAt = Math.min(4, items.length);
 
   return (
-    <ScrapbookDeal>
+    <>
       {/* Desktop — authored board */}
       <div className="hidden lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-6">
         {items.map((img, i) => (
           <div
             key={img.id}
-            data-deal-card
             className="min-w-0"
             style={{
               gridColumn: `${clampStart(img) + 1} / span ${clampSpan(img)}`,
@@ -61,7 +59,7 @@ export function ScrapbookBoard({ items, cta }: { items: ScrapbookImage[]; cta?: 
       {/* Tablet — two columns, overlap only across the seam */}
       <div className="hidden sm:grid sm:grid-cols-2 sm:gap-x-6 lg:hidden">
         {withCta(items, insertAt, cta).map((node, i) => (
-          <div key={i} data-deal-card className="min-w-0" style={{ marginTop: i % 2 === 1 ? "2.5rem" : 0, marginBottom: "2rem" }}>
+          <div key={i} className="min-w-0" style={{ marginTop: i % 2 === 1 ? "2.5rem" : 0, marginBottom: "2rem" }}>
             {node}
           </div>
         ))}
@@ -70,12 +68,12 @@ export function ScrapbookBoard({ items, cta }: { items: ScrapbookImage[]; cta?: 
       {/* Mobile — single column, tilt only */}
       <div className="grid grid-cols-1 sm:hidden">
         {withCta(items, insertAt, cta).map((node, i) => (
-          <div key={i} data-deal-card className="min-w-0" style={{ marginBottom: "2rem" }}>
+          <div key={i} className="min-w-0" style={{ marginBottom: "2rem" }}>
             {node}
           </div>
         ))}
       </div>
-    </ScrapbookDeal>
+    </>
   );
 }
 
