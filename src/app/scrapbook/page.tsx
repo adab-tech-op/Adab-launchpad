@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getScrapbookImages } from "@/lib/scrapbook-server";
 import { ScrapbookCtaTile } from "@/components/site/ScrapbookCtaTile";
-import { ScrapbookTile } from "@/components/site/ScrapbookTile";
+import { ScrapbookBoard } from "@/components/site/ScrapbookBoard";
 import type { ScrapbookImage } from "@/lib/scrapbook";
 
 export const metadata: Metadata = {
@@ -30,10 +30,6 @@ export default async function ScrapbookPage() {
   const images = await getScrapbookImages();
   const groups = groupTiles(images);
 
-  // The CTA goes inside the first group's flow, roughly a third in, so it
-  // reads as part of the scrapbook rather than a footer bolted on.
-  const insertAt = Math.min(4, groups[0]?.items.length ?? 0);
-
   return (
     <>
       <section className="mx-auto max-w-7xl px-5 md:px-8 pt-20 md:pt-28 pb-12">
@@ -49,31 +45,22 @@ export default async function ScrapbookPage() {
             <ScrapbookCtaTile />
           </div>
         ) : (
-          groups.map((group, gi) => {
-            const tiles = group.items.map((img) => <ScrapbookTile key={img.id} img={img} />);
-            const withCta =
-              gi === 0
-                ? [
-                    ...tiles.slice(0, insertAt),
-                    <ScrapbookCtaTile key="cta" className="mb-4 md:mb-5" />,
-                    ...tiles.slice(insertAt),
-                  ]
-                : tiles;
-
-            return (
-              <div key={`${group.label}-${gi}`} className={gi > 0 ? "mt-16 md:mt-20" : ""}>
-                {group.label && (
-                  <div className="mb-8 flex items-center gap-5">
-                    <h2 className="shrink-0 font-display text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                      {group.label}
-                    </h2>
-                    <span className="h-px flex-1 bg-border" aria-hidden="true" />
-                  </div>
-                )}
-                <div className="columns-1 gap-4 sm:columns-2 md:columns-3 md:gap-5">{withCta}</div>
-              </div>
-            );
-          })
+          groups.map((group, gi) => (
+            <div key={`${group.label}-${gi}`} className={gi > 0 ? "mt-20 md:mt-24" : ""}>
+              {group.label && (
+                <div className="mb-8 flex items-center gap-5">
+                  <h2 className="shrink-0 font-display text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {group.label}
+                  </h2>
+                  <span className="h-px flex-1 bg-border" aria-hidden="true" />
+                </div>
+              )}
+              <ScrapbookBoard
+                items={group.items}
+                cta={gi === 0 ? <ScrapbookCtaTile key="cta" /> : undefined}
+              />
+            </div>
+          ))
         )}
       </section>
     </>

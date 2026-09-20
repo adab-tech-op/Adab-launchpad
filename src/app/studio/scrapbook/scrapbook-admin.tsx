@@ -20,6 +20,10 @@ type Draft = {
   kind: ScrapbookKind;
   span: ScrapbookSpan;
   group_label: string;
+  col_start: string;
+  col_span: string;
+  nudge_y: string;
+  rotation: string;
   sort_order: string;
 };
 
@@ -33,6 +37,10 @@ function draftOf(img: ScrapbookImage): Draft {
     kind: img.kind,
     span: img.span,
     group_label: img.group_label,
+    col_start: String(img.col_start),
+    col_span: String(img.col_span),
+    nudge_y: String(img.nudge_y),
+    rotation: String(img.rotation),
     sort_order: String(img.sort_order),
   };
 }
@@ -84,6 +92,36 @@ function Tile({ img }: { img: ScrapbookImage }) {
           {SCRAPBOOK_KINDS.find((k) => k.value === d.kind)?.hint}
         </p>
         <input className={inputCls} value={d.group_label} onChange={(e) => set({ group_label: e.target.value })} placeholder="Group — e.g. Drop 01" />
+
+        {/* Desktop board placement. Tablet and mobile ignore these and fall
+            back to sort order, so a card can never cover a caption there. */}
+        <details>
+          <summary className="cursor-pointer text-[11px] uppercase tracking-[0.05em] text-muted-foreground">
+            Placement on the board (desktop)
+          </summary>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="text-[11px] text-muted-foreground">Column (0–11)</span>
+              <input className={inputCls} type="number" min={0} max={11} value={d.col_start} onChange={(e) => set({ col_start: e.target.value })} />
+            </label>
+            <label className="block">
+              <span className="text-[11px] text-muted-foreground">Width (2–12)</span>
+              <input className={inputCls} type="number" min={2} max={12} value={d.col_span} onChange={(e) => set({ col_span: e.target.value })} />
+            </label>
+            <label className="block">
+              <span className="text-[11px] text-muted-foreground">Nudge up/down (px)</span>
+              <input className={inputCls} type="number" min={-240} max={240} step={10} value={d.nudge_y} onChange={(e) => set({ nudge_y: e.target.value })} />
+            </label>
+            <label className="block">
+              <span className="text-[11px] text-muted-foreground">Tilt (−4 to 4°)</span>
+              <input className={inputCls} type="number" min={-4} max={4} step={0.1} value={d.rotation} onChange={(e) => set({ rotation: e.target.value })} />
+            </label>
+          </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+            Negative nudge pulls a card up so it tucks under its neighbour — that overlap is what makes the board
+            feel pinned rather than gridded. Column + width must stay within 12.
+          </p>
+        </details>
         <div className="flex items-center gap-2">
           <input className={`${inputCls} w-20`} type="number" min={0} value={d.sort_order} onChange={(e) => set({ sort_order: e.target.value })} aria-label="Sort order" />
           <button onClick={save} disabled={pending || !dirty} className="rounded-full bg-foreground px-4 py-1.5 text-sm text-background disabled:opacity-40">
