@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { getCareContent } from "@/lib/page-content-server";
 import { getFabricTypes } from "@/lib/fabrics-server";
 import { FabricCareGrid } from "./fabric-care";
@@ -29,9 +28,7 @@ export default async function CareGuide() {
 
       {fabrics.length > 0 && (
         <div className="mt-14">
-          <Suspense fallback={null}>
-            <FabricCareGrid fabrics={fabrics} />
-          </Suspense>
+          <FabricCareGrid fabrics={fabrics} />
         </div>
       )}
 
