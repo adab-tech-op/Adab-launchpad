@@ -57,8 +57,8 @@ export default async function Manifesto() {
         </div>
       </section>
 
-      {/* The story — scroll-driven editorial: paired media sticks beside the
-          text and transitions as each chapter enters view (see component). */}
+      {/* The story — five sections, each with a title, one media holder and a
+          long passage behind a See more toggle, one after another. */}
       <ManifestoEditorial
         sections={content.storyParts.map((part) => ({
           title: part.title,
