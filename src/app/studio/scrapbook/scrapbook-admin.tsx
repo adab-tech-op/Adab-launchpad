@@ -6,21 +6,48 @@ import { toast } from "sonner";
 import { Trash2, UploadCloud } from "lucide-react";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { addScrapbookImage, updateScrapbookImage, deleteScrapbookImage } from "@/lib/actions/scrapbook";
-import type { ScrapbookImage } from "@/lib/scrapbook";
+import { SCRAPBOOK_KINDS, SCRAPBOOK_SPANS, type ScrapbookImage, type ScrapbookKind, type ScrapbookSpan } from "@/lib/scrapbook";
 import { UploadHint } from "@/components/studio/UploadHint";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 
+type Draft = {
+  caption: string;
+  caption_bn: string;
+  place: string;
+  taken_on: string;
+  credit: string;
+  kind: ScrapbookKind;
+  span: ScrapbookSpan;
+  group_label: string;
+  sort_order: string;
+};
+
+function draftOf(img: ScrapbookImage): Draft {
+  return {
+    caption: img.caption,
+    caption_bn: img.caption_bn,
+    place: img.place,
+    taken_on: img.taken_on,
+    credit: img.credit,
+    kind: img.kind,
+    span: img.span,
+    group_label: img.group_label,
+    sort_order: String(img.sort_order),
+  };
+}
+
 function Tile({ img }: { img: ScrapbookImage }) {
   const router = useRouter();
-  const [caption, setCaption] = useState(img.caption);
-  const [order, setOrder] = useState(String(img.sort_order));
+  const original = draftOf(img);
+  const [d, setD] = useState<Draft>(original);
+  const set = (patch: Partial<Draft>) => setD((p) => ({ ...p, ...patch }));
   const [pending, start] = useTransition();
-  const dirty = caption !== img.caption || order !== String(img.sort_order);
+  const dirty = (Object.keys(original) as (keyof Draft)[]).some((k) => d[k] !== original[k]);
 
   const save = () =>
     start(async () => {
-      const res = await updateScrapbookImage(img.id, { caption, sort_order: order });
+      const res = await updateScrapbookImage(img.id, d);
       if (res.ok) { toast.success("Saved"); router.refresh(); }
       else toast.error(res.error);
     });
@@ -38,9 +65,27 @@ function Tile({ img }: { img: ScrapbookImage }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={img.image_url} alt={img.caption || "scrapbook"} className="aspect-square w-full object-cover" />
       <div className="space-y-2 p-3">
-        <input className={inputCls} value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Caption (optional)" />
+        <input className={inputCls} value={d.caption} onChange={(e) => set({ caption: e.target.value })} placeholder="Caption — English" />
+        <input className={inputCls} value={d.caption_bn} onChange={(e) => set({ caption_bn: e.target.value })} placeholder="ক্যাপশন — বাংলা (optional)" />
+        <div className="grid grid-cols-2 gap-2">
+          <input className={inputCls} value={d.place} onChange={(e) => set({ place: e.target.value })} placeholder="Place" />
+          <input className={inputCls} value={d.taken_on} onChange={(e) => set({ taken_on: e.target.value })} placeholder="When — e.g. March 2026" />
+        </div>
+        <input className={inputCls} value={d.credit} onChange={(e) => set({ credit: e.target.value })} placeholder="Credit — Rafi, or @handle (submitted moments)" />
+        <div className="grid grid-cols-2 gap-2">
+          <select className={inputCls} value={d.kind} onChange={(e) => set({ kind: e.target.value as ScrapbookKind })} aria-label="Tile kind">
+            {SCRAPBOOK_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+          </select>
+          <select className={inputCls} value={d.span} onChange={(e) => set({ span: e.target.value as ScrapbookSpan })} aria-label="Tile size">
+            {SCRAPBOOK_SPANS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+        </div>
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          {SCRAPBOOK_KINDS.find((k) => k.value === d.kind)?.hint}
+        </p>
+        <input className={inputCls} value={d.group_label} onChange={(e) => set({ group_label: e.target.value })} placeholder="Group — e.g. Drop 01" />
         <div className="flex items-center gap-2">
-          <input className={`${inputCls} w-20`} type="number" min={0} value={order} onChange={(e) => setOrder(e.target.value)} aria-label="Sort order" />
+          <input className={`${inputCls} w-20`} type="number" min={0} value={d.sort_order} onChange={(e) => set({ sort_order: e.target.value })} aria-label="Sort order" />
           <button onClick={save} disabled={pending || !dirty} className="rounded-full bg-foreground px-4 py-1.5 text-sm text-background disabled:opacity-40">
             {pending ? "…" : "Save"}
           </button>

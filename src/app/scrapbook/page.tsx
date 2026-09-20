@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getScrapbookImages } from "@/lib/scrapbook-server";
 import { ScrapbookCtaTile } from "@/components/site/ScrapbookCtaTile";
+import { ScrapbookTile } from "@/components/site/ScrapbookTile";
+import type { ScrapbookImage } from "@/lib/scrapbook";
 
 export const metadata: Metadata = {
   title: "Scrapbook — ADAB",
@@ -10,38 +12,27 @@ export const metadata: Metadata = {
 
 export const revalidate = 60; // ISR: admin edits appear within ~1 min
 
+/** Group tiles by their label, preserving sort order and keeping ungrouped
+ *  items together. A scrapbook has chronology; a flat grid has none — the
+ *  dividers are what turn a pile into a sequence. */
+function groupTiles(images: ScrapbookImage[]): { label: string; items: ScrapbookImage[] }[] {
+  const groups: { label: string; items: ScrapbookImage[] }[] = [];
+  for (const img of images) {
+    const label = img.group_label.trim();
+    const last = groups[groups.length - 1];
+    if (last && last.label === label) last.items.push(img);
+    else groups.push({ label, items: [img] });
+  }
+  return groups;
+}
+
 export default async function ScrapbookPage() {
   const images = await getScrapbookImages();
+  const groups = groupTiles(images);
 
-  // Drop the "Share your ADAB moment" CTA into the grid as a masonry tile,
-  // roughly a third of the way in (after up to 4 images) so it reads as part of
-  // the scrapbook rather than a footer. With fewer images it lands at the end.
-  const insertAt = Math.min(4, images.length);
-  const tiles = images.map((img) => (
-    <figure
-      key={img.id}
-      className="group relative mb-3 break-inside-avoid overflow-hidden rounded-lg md:mb-4"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={img.image_url}
-        alt={img.caption || "ADAB scrapbook"}
-        className="w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        loading="lazy"
-      />
-      {img.caption && (
-        <figcaption className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-foreground/70 to-transparent p-4 pt-12 text-sm text-background transition-transform duration-500 group-hover:translate-y-0">
-          {img.caption}
-        </figcaption>
-      )}
-    </figure>
-  ));
-
-  const grid = [
-    ...tiles.slice(0, insertAt),
-    <ScrapbookCtaTile key="cta" className="mb-3 md:mb-4" />,
-    ...tiles.slice(insertAt),
-  ];
+  // The CTA goes inside the first group's flow, roughly a third in, so it
+  // reads as part of the scrapbook rather than a footer bolted on.
+  const insertAt = Math.min(4, groups[0]?.items.length ?? 0);
 
   return (
     <>
@@ -58,7 +49,31 @@ export default async function ScrapbookPage() {
             <ScrapbookCtaTile />
           </div>
         ) : (
-          <div className="columns-2 gap-3 md:columns-3 md:gap-4">{grid}</div>
+          groups.map((group, gi) => {
+            const tiles = group.items.map((img) => <ScrapbookTile key={img.id} img={img} />);
+            const withCta =
+              gi === 0
+                ? [
+                    ...tiles.slice(0, insertAt),
+                    <ScrapbookCtaTile key="cta" className="mb-4 md:mb-5" />,
+                    ...tiles.slice(insertAt),
+                  ]
+                : tiles;
+
+            return (
+              <div key={`${group.label}-${gi}`} className={gi > 0 ? "mt-16 md:mt-20" : ""}>
+                {group.label && (
+                  <div className="mb-8 flex items-center gap-5">
+                    <h2 className="shrink-0 font-display text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {group.label}
+                    </h2>
+                    <span className="h-px flex-1 bg-border" aria-hidden="true" />
+                  </div>
+                )}
+                <div className="columns-1 gap-4 sm:columns-2 md:columns-3 md:gap-5">{withCta}</div>
+              </div>
+            );
+          })
         )}
       </section>
     </>
