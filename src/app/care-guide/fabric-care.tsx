@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import { Search, ArrowRight } from "lucide-react";
 import { type FabricType } from "@/lib/fabrics";
 import { overlayStyle } from "@/lib/hero";
@@ -76,33 +76,40 @@ function FabricCard({ fabric, onOpen }: { fabric: FabricType; onOpen: () => void
 export function FabricCareGrid({ fabrics }: { fabrics: FabricType[] }) {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<FabricType | null>(null);
-  const router = useRouter();
-  const params = useSearchParams();
-
   // Deep link: /care-guide?fabric=khadi opens that fabric, so the popup is
-  // shareable, the back button closes it, and the product page's Care Guide
-  // row can point straight at the right fabric.
-  const slug = params.get("fabric");
-  useEffect(() => {
-    if (!slug) {
-      setSelected(null);
-      return;
-    }
-    setSelected(fabrics.find((f) => f.slug === slug) ?? null);
-  }, [slug, fabrics]);
-
-  const open = useCallback(
-    (f: FabricType) => {
-      setSelected(f);
-      router.push(`/care-guide?fabric=${encodeURIComponent(f.slug)}`, { scroll: false });
+  // shareable and the back button closes it.
+  //
+  // This deliberately reads location/history directly rather than using
+  // useSearchParams(): that hook forces a statically-rendered page to bail out
+  // of prerendering, which shipped this entire grid as an empty Suspense
+  // fallback — no fabric cards, no search, nothing in the HTML for crawlers or
+  // for anyone before hydration. Reading the URL on mount keeps the page
+  // server-rendered; the popup just resolves a beat later.
+  const openBySlug = useCallback(
+    (slug: string | null) => {
+      setSelected(slug ? (fabrics.find((f) => f.slug === slug) ?? null) : null);
     },
-    [router],
+    [fabrics],
   );
+
+  useEffect(() => {
+    const fromUrl = () => new URLSearchParams(window.location.search).get("fabric");
+    openBySlug(fromUrl());
+    // Back/forward should close or reopen the popup.
+    const onPop = () => openBySlug(fromUrl());
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [openBySlug]);
+
+  const open = useCallback((f: FabricType) => {
+    setSelected(f);
+    window.history.pushState(null, "", `/care-guide?fabric=${encodeURIComponent(f.slug)}`);
+  }, []);
 
   const close = useCallback(() => {
     setSelected(null);
-    router.push("/care-guide", { scroll: false });
-  }, [router]);
+    window.history.pushState(null, "", "/care-guide");
+  }, []);
 
   // Searching only the name meant "tumble dry" or "embroidery" returned
   // nothing, even though the answer was sitting in the care text.
