@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { tiltOf, type ScrapbookImage } from "@/lib/scrapbook";
+import { BlurImage } from "@/components/site/BlurImage";
 
 /** Where each covering card travels as it clears out. Hand-placed rather than
  *  generated: the pile should look stacked, and the exits should fan outward
@@ -112,8 +113,7 @@ export function ScrapbookCtaReveal({ covers, children }: { covers: ScrapbookImag
               }}
             >
               <div className="overflow-hidden rounded-lg shadow-[0_18px_44px_rgba(28,28,28,0.22)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.image_url} alt="" className="aspect-[4/5] w-full object-cover" loading="lazy" />
+                <BlurImage src={img.image_url} alt="" className="aspect-[4/5] w-full object-cover" />
               </div>
             </div>
           );

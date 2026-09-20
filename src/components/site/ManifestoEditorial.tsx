@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ROMAN } from "@/lib/page-content";
 import { cn } from "@/lib/utils";
+import { BlurImage } from "@/components/site/BlurImage";
 
 export type EditorialSection = {
   title: string;
@@ -38,8 +39,7 @@ function ChapterMedia({ section, index, eager }: { section: EditorialSection; in
   }
   if (section.image) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={section.image} alt="" className="h-full w-full object-cover" loading={eager ? "eager" : "lazy"} />
+      <BlurImage src={section.image} alt="" className="h-full w-full object-cover" wrapperClassName="h-full w-full" eager={eager} />
     );
   }
   return <PlaceholderPanel index={index} title={section.title} />;

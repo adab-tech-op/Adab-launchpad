@@ -6,6 +6,7 @@ import { Search, ArrowRight } from "lucide-react";
 import { type FabricType } from "@/lib/fabrics";
 import { overlayStyle } from "@/lib/hero";
 import { FabricCareModal } from "@/components/site/FabricCareModal";
+import { BlurImage } from "@/components/site/BlurImage";
 
 /** The card's photo runs full-bleed down one side, so each fabric tints its
  *  own image with the same overlay model the heroes use. */
@@ -33,8 +34,7 @@ function MediaPanel({ fabric, stacked }: { fabric: FabricType; stacked?: boolean
   const ov = panelOverlay(fabric);
   return (
     <div className={base}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={fabric.thumbnail_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+      <BlurImage src={fabric.thumbnail_url} alt="" className="h-full w-full object-cover" wrapperClassName="h-full w-full" />
       {ov && <div className="absolute inset-0" style={ov} />}
     </div>
   );

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { CENTER_FOCAL, type FocalPoint, type HeroImages } from "@/lib/hero";
+import { lqipUrl } from "@/lib/lqip";
 
 function layer(url: string, f: FocalPoint): CSSProperties {
   const style: CSSProperties = {
@@ -42,6 +43,13 @@ export function HeroBackground({
     : layer(images.desktop, images.focalTablet ?? CENTER_FOCAL);
   const desktopStyle = layer(images.desktop, CENTER_FOCAL);
 
+  // The hero is the largest image on the site and the first thing a visitor
+  // waits on. A tiny pre-blurred copy underneath means the fold shows the
+  // photograph's colour and shape immediately, resolving into focus, instead
+  // of a flat block. Sits behind all three breakpoint layers, so whichever one
+  // paints simply covers it.
+  const placeholder = lqipUrl(images.desktop);
+
   return (
     <div
       className={`absolute inset-0 overflow-hidden ${className}`}
@@ -49,6 +57,13 @@ export function HeroBackground({
       aria-label={label}
       aria-hidden={label ? undefined : true}
     >
+      {placeholder && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url("${placeholder}")` }}
+        />
+      )}
       <div className="absolute inset-0 md:hidden" style={phoneStyle} />
       <div className="absolute inset-0 hidden md:block lg:hidden" style={tabletStyle} />
       <div className="absolute inset-0 hidden lg:block" style={desktopStyle} />
