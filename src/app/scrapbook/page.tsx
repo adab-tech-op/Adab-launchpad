@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getScrapbookImages } from "@/lib/scrapbook-server";
 import { ScrapbookCtaTile } from "@/components/site/ScrapbookCtaTile";
+import { ScrapbookCtaReveal } from "@/components/site/ScrapbookCtaReveal";
 import { ScrapbookBoard } from "@/components/site/ScrapbookBoard";
 import type { ScrapbookImage } from "@/lib/scrapbook";
 
@@ -24,6 +25,12 @@ function groupTiles(images: ScrapbookImage[]): { label: string; items: Scrapbook
     else groups.push({ label, items: [img] });
   }
   return groups;
+}
+
+/** The pile that covers the invitation: the most recent tiles, so the cards
+ *  lifting away are the visitor's own scrapbook rather than stock shapes. */
+function coverPile(images: ScrapbookImage[]): ScrapbookImage[] {
+  return [...images].reverse().slice(0, 5);
 }
 
 export default async function ScrapbookPage() {
@@ -55,12 +62,17 @@ export default async function ScrapbookPage() {
                   <span className="h-px flex-1 bg-border" aria-hidden="true" />
                 </div>
               )}
-              <ScrapbookBoard
-                items={group.items}
-                cta={gi === 0 ? <ScrapbookCtaTile key="cta" /> : undefined}
-              />
+              <ScrapbookBoard items={group.items} />
             </div>
           ))
+        )}
+
+        {/* The invitation, centred at the foot of the board and buried under a
+            pile of cards that lift away as you scroll it into view. */}
+        {images.length > 0 && (
+          <ScrapbookCtaReveal covers={coverPile(images)}>
+            <ScrapbookCtaTile animate={false} />
+          </ScrapbookCtaReveal>
         )}
       </section>
     </>
