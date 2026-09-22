@@ -10,11 +10,21 @@ import { requireUser } from "@/lib/auth-guard";
 // Prefer the role guards in @/lib/roles for new code; the helpers here remain
 // for the bootstrap allowlist and back-compat.
 
+/** Admins seeded in code as well as in admin_roles, so the isolation gate can
+ *  never lock them out — env misconfiguration or an unrun migration would
+ *  otherwise leave nobody able to reach the site at all. The table remains the
+ *  real source of truth; this is a floor, not a ceiling. */
+const SEEDED_ADMIN_EMAILS = [
+  "islam83.safiqul@gmail.com",
+  "dasgupta.bitop@gmail.com",
+];
+
 export function adminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS ?? "")
+  const fromEnv = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
+  return Array.from(new Set([...fromEnv, ...SEEDED_ADMIN_EMAILS]));
 }
 
 /** Back-compat: true if the email is an env-allowlisted admin OR the bootstrap

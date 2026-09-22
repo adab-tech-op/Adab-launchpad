@@ -134,6 +134,29 @@ export async function saveHandoverGuide(input: unknown): Promise<SettingsResult>
   }
 }
 
+/** Root/admin only. Turns the site-wide isolation gate on or off.
+ *  Root-only would be safer, but an admin locked out by a stale setting has no
+ *  other way to reopen the site, so this matches the other settings' level. */
+export async function saveIsolationMode(enabled: boolean): Promise<SettingsResult> {
+  const actor = await requireMutator();
+  if (!actor) return { ok: false, error: "Not authorized." };
+  try {
+    await sql`
+      INSERT INTO site_settings (key, value, updated_at)
+      VALUES ('isolation_mode', ${JSON.stringify(!!enabled)}::jsonb, now())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
+    `;
+    await recordAudit(actor.email, "settings.update", null, { isolation_mode: !!enabled });
+    // The gate runs in the root layout and robots.txt reads the same flag, so
+    // every route's output changes with this.
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (err) {
+    console.error("[settings] saveIsolationMode failed", err);
+    return { ok: false, error: "Could not save. Make sure db/site-settings.sql has been run." };
+  }
+}
+
 /** Root/admin. Toggles multi-product/multi-size ordering (offer feature). */
 export async function saveAllowMultiOrder(enabled: boolean): Promise<SettingsResult> {
   const actor = await requireMutator();

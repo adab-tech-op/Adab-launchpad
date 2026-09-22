@@ -61,3 +61,13 @@ export const HANDOVER_GUIDE_DEFAULT: HandoverGuideSettings = {
   title: "Product Handover Guide",
   body: "Dispatched from Dhaka within 48 hours of drop fulfilment. 7-day returns on unworn pieces with tags.",
 };
+
+// ---- Isolation mode -------------------------------------------------------
+// Closes the entire public site behind the sign-in gate: only studio users
+// (root / admin / moderator) see anything. Temporary pre-launch measure,
+// toggleable from Studio → Settings.
+//
+// Defaults to ON, deliberately. If the settings table is unreachable or the
+// row has not been written yet, failing closed keeps an unlaunched storefront
+// private; failing open would expose it on exactly the errors nobody notices.
+export const ISOLATION_MODE_DEFAULT = true;

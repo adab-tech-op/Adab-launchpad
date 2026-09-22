@@ -1,6 +1,7 @@
 import "server-only";
 import { sql } from "@/lib/db";
 import {
+  ISOLATION_MODE_DEFAULT,
   BANNER_DEFAULT,
   type BannerSettings,
   SIZE_GUIDE_DEFAULT,
@@ -78,4 +79,14 @@ export async function getDropWindowDays(): Promise<number> {
   const n = typeof raw === "number" ? raw : parseInt(String(raw), 10);
   if (Number.isFinite(n) && n >= 1 && n <= 60) return n;
   return 7;
+}
+
+/** Whether the whole site is closed behind the sign-in gate. Fails CLOSED: a
+ *  missing table, an unwritten row or a DB error all keep the site private,
+ *  because the failure mode of guessing wrong the other way is publishing an
+ *  unlaunched storefront. */
+export async function getIsolationMode(): Promise<boolean> {
+  const raw = await getSetting("isolation_mode");
+  if (raw === null || raw === undefined) return ISOLATION_MODE_DEFAULT;
+  return raw === true || raw === "true";
 }
