@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import faviconAsset from "@/assets/adab-favicon.png.asset.json";
 import { Providers } from "./providers";
+import { enforceIsolation } from "@/lib/isolation";
 
 const OG_IMAGE =
   "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c50ba1d9-e873-40f6-a52a-236f758689cf/id-preview-174b26e9--0c11bc6e-f46a-4f4a-ab91-3c2d19d5bd54.lovable.app-1783908184456.png";
@@ -35,11 +36,17 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Runs before anything renders: while isolation mode is on, everything
+  // except the sign-in routes redirects to the gate. Placed in the root layout
+  // so a page added later is closed by default rather than needing to
+  // remember to guard itself.
+  await enforceIsolation();
+
   return (
     <html lang="en">
       <head>

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
-import { saveBanner, saveSizeGuide, saveHandoverGuide } from "@/lib/actions/settings";
+import { saveBanner, saveSizeGuide, saveHandoverGuide, saveIsolationMode } from "@/lib/actions/settings";
 import type { BannerSettings, SizeGuideSettings, HandoverGuideSettings } from "@/lib/settings";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
@@ -193,17 +193,63 @@ function HandoverGuideEditor({ initial }: { initial: HandoverGuideSettings }) {
   );
 }
 
+
+function IsolationEditor({ initial }: { initial: boolean }) {
+  const [on, setOn] = useState(initial);
+  const [pending, start] = useTransition();
+
+  const toggle = (next: boolean) =>
+    start(async () => {
+      const res = await saveIsolationMode(next);
+      if (res.ok) {
+        setOn(next);
+        toast.success(next ? "Isolation mode on — site is private" : "Isolation mode off — site is public");
+      } else toast.error(res.error);
+    });
+
+  return (
+    <div className={`rounded-xl border p-5 ${on ? "border-amber-500/60 bg-amber-500/5" : "border-border"}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <span className={labelCls}>Isolation mode</span>
+          <p className="mt-1 text-sm">
+            {on ? "The site is private." : "The site is live to the public."}
+          </p>
+        </div>
+        <label className="flex shrink-0 items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={on}
+            disabled={pending}
+            onChange={(e) => toggle(e.target.checked)}
+          />
+          {pending ? "Saving…" : on ? "On" : "Off"}
+        </label>
+      </div>
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+        While on, every page redirects to sign-in and only studio users (root, admin, moderator) can get in — a
+        customer account is not a way through. Search engines are asked not to crawl, and every response carries a
+        noindex header. Turning this off publishes the whole site immediately.
+      </p>
+    </div>
+  );
+}
+
 export function SettingsClient({
   banner,
   sizeGuide,
   handoverGuide,
+  isolation,
 }: {
   banner: BannerSettings;
   sizeGuide: SizeGuideSettings;
   handoverGuide: HandoverGuideSettings;
+  isolation: boolean;
 }) {
   return (
     <div className="space-y-8">
+      <IsolationEditor initial={isolation} />
       <BannerEditor initial={banner} />
       <SizeGuideEditor initial={sizeGuide} />
       <HandoverGuideEditor initial={handoverGuide} />
