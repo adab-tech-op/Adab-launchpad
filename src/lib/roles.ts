@@ -35,6 +35,28 @@ export async function getRoleForEmail(email: string): Promise<Role | null> {
 
 export type Actor = { email: string; role: Role };
 
+/** Same as currentActor(), but resolves from an explicit Headers object
+ *  instead of next/headers — middleware cannot use next/headers, and the gate
+ *  has to run there (a layout gate is skipped on client-side navigation).
+ *
+ *  Returns null for an anonymous visitor, a signed-in CUSTOMER, and an admin
+ *  whose role has since been revoked: the role is re-read on every request, so
+ *  removing someone from admin_roles locks them out immediately rather than
+ *  when their session happens to expire. */
+export async function actorForHeaders(h: Headers): Promise<Actor | null> {
+  let session = null;
+  try {
+    session = await auth.api.getSession({ headers: h });
+  } catch (err) {
+    if (err && typeof err === "object" && "digest" in err) throw err;
+    return null;
+  }
+  if (!session) return null;
+  const role = await getRoleForEmail(session.user.email);
+  if (!role) return null;
+  return { email: session.user.email, role };
+}
+
 /** The acting user's email + role, or null if not signed in / not an admin. */
 export async function currentActor(): Promise<Actor | null> {
   let session = null;
