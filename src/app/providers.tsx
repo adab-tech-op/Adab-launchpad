@@ -6,6 +6,7 @@ import { CartProvider } from "@/context/CartContext";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { NewsletterModal } from "@/components/site/NewsletterModal";
+import { WelcomeModal } from "@/components/site/WelcomeModal";
 import { ScrollReveal } from "@/components/site/ScrollReveal";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -17,6 +18,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <CartProvider>
         <SiteHeader />
         <NewsletterModal />
+        <WelcomeModal />
         <ScrollReveal />
         <main>{children}</main>
         <SiteFooter />

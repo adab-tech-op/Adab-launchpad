@@ -15,7 +15,13 @@ function safeNext(raw: string | null): string | null {
 
 function SignInInner() {
   const router = useRouter();
-  const next = safeNext(useSearchParams().get("next"));
+  const params = useSearchParams();
+  const next = safeNext(params.get("next"));
+  // Arriving via the isolation gate: land on the homepage with the welcome
+  // modal, not on the account page. Someone sent here by the gate was trying
+  // to see the site, not manage their account.
+  const fromGate = params.get("gate") === "1";
+  const destination = next ?? (fromGate ? "/?welcome=1" : "/account");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,7 +41,7 @@ function SignInInner() {
         toast.error(error.message ?? "Could not sign in.");
         return;
       }
-      router.push(next ?? "/account");
+      router.push(destination);
       router.refresh();
     } catch (err) {
       // Network / CORS / server error — surface it instead of spinning forever.
@@ -47,7 +53,7 @@ function SignInInner() {
   };
 
   const resend = async () => {
-    await authClient.sendVerificationEmail({ email, callbackURL: next ?? "/account" });
+    await authClient.sendVerificationEmail({ email, callbackURL: destination });
     toast("Verification email sent. Check your inbox.");
   };
 
