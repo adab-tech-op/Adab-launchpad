@@ -41,6 +41,16 @@ function SignInInner() {
         toast.error(error.message ?? "Could not sign in.");
         return;
       }
+      if (fromGate) {
+        // A full page load, not router.push(). The welcome modal is mounted
+        // once in Providers and checks the URL on mount — a client-side
+        // navigation leaves it mounted, so its effect never re-runs and the
+        // modal never appears. A hard navigation also guarantees the server
+        // sees the newly-set session cookie on the very next request, which
+        // is what the isolation gate is checking.
+        window.location.assign(destination);
+        return;
+      }
       router.push(destination);
       router.refresh();
     } catch (err) {
