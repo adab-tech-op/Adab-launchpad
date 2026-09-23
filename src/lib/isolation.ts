@@ -13,7 +13,6 @@ import { currentActor } from "@/lib/roles";
  */
 const OPEN_PREFIXES = [
   "/signin",
-  "/signup",
   // An invitee is not staff yet — that is the whole point of the invitation —
   // so the gate would bounce them to sign-in with no way back to the token.
   // The link is safe to leave open: /invite/accept does nothing without a

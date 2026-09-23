@@ -8,10 +8,14 @@ import { AuthShell, authInput, authLabel } from "@/components/site/AuthShell";
 
 export default function SignUpForm({
   initialEmail = "",
+  lockedEmail = false,
   orderRef = "",
   next = null,
 }: {
   initialEmail?: string;
+  /** Set when an invitation decided the address: the field is shown read-only
+   *  so the invite cannot be redirected to a different account. */
+  lockedEmail?: boolean;
   orderRef?: string;
   next?: string | null;
 }) {
@@ -97,7 +101,20 @@ export default function SignUpForm({
         </label>
         <label className="block">
           {authLabel("Email")}
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={authInput + " mt-2"} />
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            readOnly={lockedEmail}
+            aria-readonly={lockedEmail || undefined}
+            className={authInput + " mt-2" + (lockedEmail ? " cursor-not-allowed opacity-70" : "")}
+          />
+          {lockedEmail && (
+            <span className="mt-1.5 block text-[11px] text-muted-foreground">
+              Your invitation was sent to this address, so your account must use it.
+            </span>
+          )}
         </label>
         <label className="block">
           {authLabel("Password")}
