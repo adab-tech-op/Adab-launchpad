@@ -1,36 +1,82 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getIsolationMode } from "@/lib/settings-server";
+import { actorForHeaders } from "@/lib/roles";
 
 /**
- * Two jobs, both cheap enough to run on every request.
+ * The isolation gate.
  *
- * 1. Publishes the request path as a header so the server-side isolation gate
- *    (see @/lib/isolation) can tell which routes to let through — the gate
- *    itself needs a DB + session lookup, which middleware can't do here.
+ * This MUST live in middleware, not in the root layout. Next does not re-run a
+ * layout on client-side navigation, so a layout-based gate is skipped entirely
+ * the moment someone clicks a <Link> — which is exactly how the navbar logo
+ * became a bypass: the sign-in page renders the header, and clicking the logo
+ * soft-navigated straight into the site without the gate ever running.
  *
- * 2. Sends `X-Robots-Tag: noindex, nofollow` on every response. robots.txt is
- *    only a request not to crawl; this header is what actually keeps a page
- *    out of an index if it is reached another way — a shared link, a
- *    third-party crawler, a preview URL. Belt and braces while the site is
- *    unlaunched.
+ * Middleware runs on every request, including the RSC payload fetches that
+ * client-side navigation makes, so there is no route into the app that skips
+ * it. It also covers route handlers (sitemap, API), which never pass through
+ * the root layout at all.
  *
- * Deliberately does NOT enforce the gate itself. Doing that here would mean
- * trusting the presence of a session cookie, which proves only that someone
- * once signed in — not that they are a studio user, and not that the cookie is
- * still valid. The real check runs server-side where the session and role can
- * actually be verified.
+ * Runs on the Node runtime because the check needs a real session lookup and a
+ * database read. Trusting the mere presence of a session cookie would let any
+ * signed-in customer — or a removed admin whose cookie is still valid — walk
+ * straight through.
  */
-export function middleware(req: NextRequest) {
-  const headers = new Headers(req.headers);
-  headers.set("x-pathname", req.nextUrl.pathname);
+export const config = {
+  runtime: "nodejs",
+  // Everything except Next's build assets. Auth endpoints are included so they
+  // get the noindex header; the allowlist below lets them function.
+  matcher: ["/((?!_next/static|_next/image).*)"],
+};
 
-  const res = NextResponse.next({ request: { headers } });
+/** Paths that must stay reachable, or nobody could sign in to pass the gate. */
+const OPEN_PREFIXES = [
+  "/signin",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/api/auth",
+  "/robots.txt",
+  "/favicon",
+  "/assets",
+];
+
+function isOpenPath(pathname: string): boolean {
+  return OPEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p));
+}
+
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  const headers = new Headers(req.headers);
+  headers.set("x-pathname", pathname);
+  const pass = () => {
+    const res = NextResponse.next({ request: { headers } });
+    res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return res;
+  };
+
+  if (isOpenPath(pathname)) return pass();
+
+  let isolated = true; // fail closed if the setting can't be read
+  try {
+    isolated = await getIsolationMode();
+  } catch {
+    // keep the default
+  }
+  if (!isolated) return pass();
+
+  let actor = null;
+  try {
+    actor = await actorForHeaders(req.headers);
+  } catch {
+    actor = null; // any failure resolving the actor leaves them outside
+  }
+  if (actor) return pass();
+
+  const url = req.nextUrl.clone();
+  url.pathname = "/signin";
+  url.search = "?gate=1";
+  const res = NextResponse.redirect(url);
   res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
   return res;
 }
-
-export const config = {
-  // Everything except Next's own assets and the favicon. The auth API is
-  // included on purpose: it needs the noindex header too, and the gate lets it
-  // through by path.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-};
