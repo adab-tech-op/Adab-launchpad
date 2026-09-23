@@ -20,17 +20,39 @@ export function bootstrapRootEmail(): string | null {
 /** Resolve a role for an email: the admin_roles table wins; if there's no row,
  *  fall back to env (ROOT_ADMIN_EMAIL -> root, ADMIN_EMAILS -> admin). Returns
  *  null for a non-admin. Never throws — a DB error degrades to env-only. */
+/**
+ * admin_roles is AUTHORITATIVE. A successful lookup that finds no row means no
+ * access — full stop.
+ *
+ * This used to fall through to the ADMIN_EMAILS env list whenever the table
+ * had no row, which meant removing someone in Studio → Team did nothing at all
+ * if their address was also in that variable: the table said "not an admin"
+ * and the env list handed the role straight back on the next request. A
+ * revoked admin kept full access, and the dashboard showed them as removed.
+ *
+ * Exactly one exception survives, deliberately: the bootstrap root owner. That
+ * is the break-glass account for the person who owns the deployment, so they
+ * cannot lock themselves out of their own site. Everyone else is governed by
+ * the table and nothing else.
+ *
+ * The env list still applies when the table is UNREACHABLE (pre-migration, or
+ * a database error) — otherwise a missing table would lock out every admin at
+ * once. That branch is a genuine outage fallback, not a second source of truth.
+ */
 export async function getRoleForEmail(email: string): Promise<Role | null> {
   const lower = email.toLowerCase();
   try {
     const rows = (await sql`SELECT role FROM admin_roles WHERE email = ${lower} LIMIT 1`) as { role: Role }[];
     if (rows[0]) return rows[0].role;
+    // Table reachable, no row: they are not an admin. Break-glass owner only.
+    return bootstrapRootEmail() === lower ? "root" : null;
   } catch {
-    // admin_roles missing (pre-migration) — fall through to env.
+    // admin_roles unreachable — fall back to env so an outage does not lock
+    // every admin out at once.
+    if (bootstrapRootEmail() === lower) return "root";
+    if (adminEmails().includes(lower)) return "admin";
+    return null;
   }
-  if (bootstrapRootEmail() === lower) return "root";
-  if (adminEmails().includes(lower)) return "admin";
-  return null;
 }
 
 export type Actor = { email: string; role: Role };
@@ -181,10 +203,11 @@ const ONLINE_WINDOW_MS = 5 * 60 * 1000;
 export async function getRoster(): Promise<RosterMember[]> {
   const byEmail = new Map<string, { role: Role; fromEnv: boolean }>();
 
-  // Env-derived first (so table rows overwrite them below).
+  // Only the break-glass owner is env-derived now. Other ADMIN_EMAILS entries
+  // no longer grant access while the table is reachable, so listing them here
+  // would show people as admins who are not.
   const root = bootstrapRootEmail();
   if (root) byEmail.set(root, { role: "root", fromEnv: true });
-  for (const e of adminEmails()) if (!byEmail.has(e)) byEmail.set(e, { role: "admin", fromEnv: true });
 
   try {
     const rows = (await sql`SELECT email, role FROM admin_roles`) as { email: string; role: Role }[];

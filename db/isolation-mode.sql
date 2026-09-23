@@ -16,11 +16,7 @@ INSERT INTO site_settings (key, value, updated_at)
 VALUES ('isolation_mode', 'true'::jsonb, now())
 ON CONFLICT (key) DO NOTHING;
 
--- 2. The two new admins. admin_roles is the real RBAC source (email is the
---    primary key, lowercased on write). ON CONFLICT DO NOTHING so an existing
---    role — including root — is never demoted by re-running this.
-INSERT INTO admin_roles (email, role, invited_by)
-VALUES
-  ('islam83.safiqul@gmail.com', 'admin', 'isolation-mode migration'),
-  ('dasgupta.bitop@gmail.com',  'admin', 'isolation-mode migration')
-ON CONFLICT (email) DO NOTHING;
+-- 2. (removed) Two admins were seeded here. They are now invited through
+--    Studio → Team like anyone else, and admin_roles is authoritative, so
+--    seeding roles from a migration would defeat the ability to revoke them.
+--    See db/reset-seeded-admins.sql.
