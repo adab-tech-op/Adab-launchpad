@@ -14,6 +14,12 @@ import { currentActor } from "@/lib/roles";
 const OPEN_PREFIXES = [
   "/signin",
   "/signup",
+  // An invitee is not staff yet — that is the whole point of the invitation —
+  // so the gate would bounce them to sign-in with no way back to the token.
+  // The link is safe to leave open: /invite/accept does nothing without a
+  // valid, unexpired token, and accepting still requires a signed-in session
+  // whose email matches the invited address.
+  "/invite",
   "/forgot-password",
   "/reset-password",
   "/api/auth", // Better Auth endpoints — sign-in cannot complete without them
