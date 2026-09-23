@@ -3,6 +3,7 @@ import "./globals.css";
 import faviconAsset from "@/assets/adab-favicon.png.asset.json";
 import { Providers } from "./providers";
 import { enforceIsolation } from "@/lib/isolation";
+import { getIsolationMode } from "@/lib/settings-server";
 
 const OG_IMAGE =
   "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c50ba1d9-e873-40f6-a52a-236f758689cf/id-preview-174b26e9--0c11bc6e-f46a-4f4a-ab91-3c2d19d5bd54.lovable.app-1783908184456.png";
@@ -46,6 +47,8 @@ export default async function RootLayout({
   // so a page added later is closed by default rather than needing to
   // remember to guard itself.
   await enforceIsolation();
+  // Anyone still rendering after the gate is either staff or on an auth page.
+  const isolated = await getIsolationMode();
 
   return (
     <html lang="en">
@@ -58,7 +61,7 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers isolated={isolated}>{children}</Providers>
       </body>
     </html>
   );
