@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getIsolationMode } from "@/lib/settings-server";
 import { actorForHeaders } from "@/lib/roles";
 import { sql } from "@/lib/db";
+import { hasPendingInvite } from "@/lib/invitations-server";
 
 /**
  * The isolation gate.
@@ -101,9 +102,15 @@ export async function middleware(req: NextRequest) {
     return res;
   };
 
+  // The sign-up API is checked before the blanket /api/auth allowance:
+  // blocking the /signup PAGE is cosmetic while the endpoint behind it stays
+  // open, since anyone holding an invite link could POST whichever address
+  // they liked and register it.
+  const isSignUpApi = req.method === "POST" && pathname.startsWith("/api/auth/sign-up");
+
   // Cheap path first: assets, auth endpoints and robots never need a database
   // read. /signin is excluded because while closed it needs the gate flag.
-  if (isOpenPath(pathname) && pathname !== "/signin") return pass();
+  if (isOpenPath(pathname) && pathname !== "/signin" && !isSignUpApi) return pass();
 
   let isolated = true; // fail closed if the setting can't be read
   try {
@@ -124,6 +131,24 @@ export async function middleware(req: NextRequest) {
   // Already flagged — let it render. Without this it would fall through to the
   // actor check below and redirect to itself forever.
   if (pathname === "/signin") return pass();
+
+  // Sign-up API: only for an address that already has an invitation waiting.
+  // The read-only field on the form is a courtesy; THIS is the enforcement.
+  if (isSignUpApi) {
+    let email: string | null = null;
+    try {
+      // Clone so the original body stream stays intact for the route itself.
+      const body = (await req.clone().json()) as { email?: string };
+      email = typeof body.email === "string" ? body.email : null;
+    } catch {
+      email = null;
+    }
+    if (await hasPendingInvite(email)) return pass();
+    return NextResponse.json(
+      { error: "Sign-up is by invitation only while ADAB is in private beta." },
+      { status: 403 },
+    );
+  }
 
   // Sign-up: invitation-only while closed.
   if (pathname === "/signup" || pathname.startsWith("/signup/")) {

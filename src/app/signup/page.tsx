@@ -1,4 +1,5 @@
 import SignUpForm from "./signup-form";
+import { invitedEmailForToken, tokenFromNext } from "@/lib/invitations-server";
 
 export const metadata = { title: "Create your account — ADAB" };
 
@@ -13,5 +14,21 @@ export default async function SignUpPage({
   searchParams: Promise<{ email?: string; ref?: string; next?: string }>;
 }) {
   const sp = await searchParams;
-  return <SignUpForm initialEmail={sp.email ?? ""} orderRef={sp.ref ?? ""} next={safeNext(sp.next)} />;
+  const next = safeNext(sp.next);
+
+  // Arriving from an invitation: the address is decided by whoever sent it,
+  // not by whoever opens the link. Carry it forward and lock the field so a
+  // forwarded invite cannot be used to register some other address — which
+  // would waste a verification email and end in rejection at the accept step
+  // anyway.
+  const invitedEmail = await invitedEmailForToken(tokenFromNext(next));
+
+  return (
+    <SignUpForm
+      initialEmail={invitedEmail ?? sp.email ?? ""}
+      lockedEmail={!!invitedEmail}
+      orderRef={sp.ref ?? ""}
+      next={next}
+    />
+  );
 }
