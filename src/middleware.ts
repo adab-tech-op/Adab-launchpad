@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getIsolationMode } from "@/lib/settings-server";
 import { actorForHeaders } from "@/lib/roles";
+import { sql } from "@/lib/db";
 
 /**
  * The isolation gate.
@@ -31,7 +32,6 @@ export const config = {
 /** Paths that must stay reachable, or nobody could sign in to pass the gate. */
 const OPEN_PREFIXES = [
   "/signin",
-  "/signup",
   // An invitee is not staff yet — that is the whole point of the invitation —
   // so the gate would bounce them to sign-in with no way back to the token.
   // The link is safe to leave open: /invite/accept does nothing without a
@@ -45,6 +45,46 @@ const OPEN_PREFIXES = [
   "/favicon",
   "/assets",
 ];
+
+/**
+ * /signup is NOT open while the site is closed.
+ *
+ * Leaving it open let any stranger register, which did not get them in — the
+ * gate needs a role, and a self-registered account has none — but it did let
+ * them fill the user table and fire a verification email from our domain, on
+ * our sending quota, for an account that can never do anything. Offering
+ * "create an account" on a lock also reads as a way in, so people try, fail,
+ * and conclude the site is broken.
+ *
+ * So sign-up is reachable only while carrying a real invitation: the token
+ * must exist in admin_invitations, be unexpired and unaccepted. A fabricated
+ * token does not open it.
+ */
+async function signupCarriesValidInvite(url: URL): Promise<boolean> {
+  const next = url.searchParams.get("next");
+  if (!next) return false;
+
+  let token: string | null = null;
+  try {
+    // next is a relative path like /invite/accept?token=...
+    token = new URL(next, url.origin).searchParams.get("token");
+  } catch {
+    return false;
+  }
+  if (!token) return false;
+
+  try {
+    const rows = (await sql`
+      SELECT 1 FROM admin_invitations
+      WHERE token = ${token} AND accepted_at IS NULL AND expires_at > now()
+      LIMIT 1
+    `) as unknown[];
+    return rows.length > 0;
+  } catch {
+    // Can't verify the invitation — keep sign-up closed rather than guess.
+    return false;
+  }
+}
 
 function isOpenPath(pathname: string): boolean {
   return OPEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p));
@@ -61,7 +101,9 @@ export async function middleware(req: NextRequest) {
     return res;
   };
 
-  if (isOpenPath(pathname)) return pass();
+  // Cheap path first: assets, auth endpoints and robots never need a database
+  // read. /signin is excluded because while closed it needs the gate flag.
+  if (isOpenPath(pathname) && pathname !== "/signin") return pass();
 
   let isolated = true; // fail closed if the setting can't be read
   try {
@@ -70,6 +112,27 @@ export async function middleware(req: NextRequest) {
     // keep the default
   }
   if (!isolated) return pass();
+
+  // A direct visit to /signin while closed should look the same as being sent
+  // there by the gate: invitation-only copy, no "create an account" link that
+  // only bounces. Marking the URL is enough — the page reads the flag.
+  if (pathname === "/signin" && !req.nextUrl.searchParams.has("gate")) {
+    const url = req.nextUrl.clone();
+    url.searchParams.set("gate", "1");
+    return NextResponse.redirect(url);
+  }
+  // Already flagged — let it render. Without this it would fall through to the
+  // actor check below and redirect to itself forever.
+  if (pathname === "/signin") return pass();
+
+  // Sign-up: invitation-only while closed.
+  if (pathname === "/signup" || pathname.startsWith("/signup/")) {
+    if (await signupCarriesValidInvite(req.nextUrl)) return pass();
+    const url = req.nextUrl.clone();
+    url.pathname = "/signin";
+    url.search = "?gate=1";
+    return NextResponse.redirect(url);
+  }
 
   let actor = null;
   try {

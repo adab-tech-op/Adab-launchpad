@@ -69,16 +69,28 @@ function SignInInner() {
 
   return (
     <AuthShell
-      eyebrow="Account"
+      eyebrow={fromGate ? "ADAB" : "Account"}
       title="Sign in."
-      subtitle="Welcome back. Sign in to track your reservations and wishlist."
+      subtitle={
+        fromGate
+          ? "ADAB is not open to the public yet. Sign in to continue."
+          : "Welcome back. Sign in to track your reservations and wishlist."
+      }
       footer={
-        <>
-          New here?{" "}
-          <Link href="/signup" className="text-foreground underline underline-offset-4 hover:text-primary">
-            Create an account
-          </Link>
-        </>
+        // No "create an account" on the gate. Sign-up is invitation-only while
+        // the site is closed, so offering it would send people down a road that
+        // ends in a registered account that still cannot open anything — which
+        // reads as the site being broken rather than closed.
+        fromGate ? (
+          <>Access is by invitation while we finish building.</>
+        ) : (
+          <>
+            New here?{" "}
+            <Link href="/signup" className="text-foreground underline underline-offset-4 hover:text-primary">
+              Create an account
+            </Link>
+          </>
+        )
       }
     >
       <form onSubmit={submit} className="space-y-4">
