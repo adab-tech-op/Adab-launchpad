@@ -29,7 +29,17 @@ function legacySlide(home: HomeContent): HeroSlide {
   };
 }
 
-export function HomeClient({ products, home }: { products: Product[]; home: HomeContent }) {
+export function HomeClient({
+  products,
+  home,
+  scrapbookTeasers = [],
+}: {
+  products: Product[];
+  home: HomeContent;
+  /** First few real scrapbook entries, newest curation first. Empty falls back
+   *  to the bundled assets so the strip is never blank. */
+  scrapbookTeasers?: string[];
+}) {
   const [parallaxY, setParallaxY] = useState(0);
   const body = home.body ?? HOME_BODY_DEFAULT;
 
@@ -90,7 +100,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
           </div>
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl paper-grain">
             <img
-              src={storyArchival}
+              src={body.storyImage || storyArchival}
               alt=""
               aria-hidden
               loading="lazy"
@@ -165,7 +175,7 @@ export function HomeClient({ products, home }: { products: Product[]; home: Home
           </Link>
         </div>
         <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {[scrap1, scrap2, scrap3, scrap4].map((src, i) => (
+          {(scrapbookTeasers.length > 0 ? scrapbookTeasers : [scrap1, scrap2, scrap3, scrap4]).map((src, i) => (
             <div
               key={i}
               className="relative aspect-square overflow-hidden rounded-2xl bg-[color:var(--paper)]"

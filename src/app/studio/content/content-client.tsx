@@ -108,6 +108,53 @@ function BlockList({
 
 // Like BlockList, but each story part also has a paired image (Cloudinary
 // upload) shown in the scroll-driven editorial on the manifesto page.
+/** The image beside the story quote on the homepage. Was a hardcoded file, so
+ *  it could only be changed by editing code and redeploying. */
+function StoryImageField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+
+  const upload = async (file: File) => {
+    setUploading(true);
+    try {
+      onChange(await uploadToCloudinary(file));
+      toast.success("Image uploaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <span className={labelCls}>Story image</span>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        {value ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={value} alt="" className="h-20 w-16 shrink-0 rounded object-cover ring-1 ring-border" />
+        ) : (
+          <div className="grid h-20 w-16 shrink-0 place-items-center rounded bg-muted text-[9px] uppercase tracking-wide text-muted-foreground">
+            Default
+          </div>
+        )}
+        <label className="cursor-pointer rounded-full border border-border px-4 py-2 text-sm hover:border-primary">
+          {uploading ? "Uploading…" : value ? "Replace" : "Upload"}
+          <input type="file" accept="image/*" className="hidden" disabled={uploading}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
+        </label>
+        {value && (
+          <button type="button" onClick={() => onChange("")} className="text-sm text-muted-foreground hover:text-foreground">
+            Use default
+          </button>
+        )}
+      </div>
+      <p className="mt-1.5 text-[11px] text-muted-foreground">
+        Sits beside the story quote. Leave empty to keep the bundled image.
+      </p>
+    </div>
+  );
+}
+
 function StoryBlockList({
   label,
   blocks,
@@ -366,6 +413,7 @@ export function ContentEditor({
   const homeBody = h.body ?? {
     featuredHeading: "", featuredSubcopy: "", storyQuote: "",
     trust: ["", "", ""], menu: ["", "", ""], scrapbookHeading: "", scrapbookSubcopy: "",
+    storyImage: "",
   };
   const setBody = (patch: Partial<NonNullable<HomeContent["body"]>>) =>
     setH({ ...h, body: { ...homeBody, ...patch } });
@@ -409,6 +457,7 @@ export function ContentEditor({
               <TextRow label="Featured heading" value={homeBody.featuredHeading} onChange={(v) => setBody({ featuredHeading: v })} />
               <TextRow label="Featured subcopy" value={homeBody.featuredSubcopy} onChange={(v) => setBody({ featuredSubcopy: v })} />
               <TextRow label="Story quote" value={homeBody.storyQuote} onChange={(v) => setBody({ storyQuote: v })} />
+              <StoryImageField value={homeBody.storyImage ?? ""} onChange={(storyImage) => setBody({ storyImage })} />
               <div className="grid gap-2 sm:grid-cols-3">
                 {[0, 1, 2].map((i) => (
                   <TextRow key={i} label={`Trust line ${i + 1}`} value={homeBody.trust[i] ?? ""} onChange={(v) => { const t = [...homeBody.trust]; t[i] = v; setBody({ trust: t }); }} />

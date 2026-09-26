@@ -47,6 +47,7 @@ export type HomeBody = {
   menu: string[]; // the 3 mini-menu labels
   scrapbookHeading: string;
   scrapbookSubcopy: string;
+  storyImage?: string; // the brand-story strip image (Cloudinary URL)
 };
 
 export type HomeContent = {
@@ -78,6 +79,9 @@ export const HOME_BODY_DEFAULT: HomeBody = {
   menu: ["Piran", "Hoodie", "Coming Next"],
   scrapbookHeading: "From the Adab Scrapbook.",
   scrapbookSubcopy: "People, places, textures, and moments around Adab.",
+  // Empty means "use the bundled asset", so the homepage keeps working before
+  // anything is uploaded.
+  storyImage: "",
 };
 
 /** Seconds a hero slide is held before advancing, when unset. */
