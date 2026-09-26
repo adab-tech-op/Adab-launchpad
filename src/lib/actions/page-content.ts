@@ -96,6 +96,7 @@ const shapes = {
       menu: z.array(z.string().trim().max(60)).max(3).default([]),
       scrapbookHeading: z.string().trim().max(160).default(""),
       scrapbookSubcopy: z.string().trim().max(300).default(""),
+      storyImage: z.string().trim().max(600).optional().default(""),
     }).optional(),
   }),
   drop: z.object({
@@ -149,8 +150,12 @@ function storedHeroUrls(hero: unknown): string[] {
 // slide images.
 function collectContentImageUrls(content: unknown): string[] {
   if (!content || typeof content !== "object") return [];
-  const c = content as { hero?: unknown; storyParts?: unknown; values?: unknown; sections?: unknown; heroSlides?: unknown };
+  const c = content as {
+    hero?: unknown; storyParts?: unknown; values?: unknown; sections?: unknown; heroSlides?: unknown;
+    body?: { storyImage?: string };
+  };
   const urls = [...storedHeroUrls(c.hero)];
+  if (typeof c.body?.storyImage === "string" && c.body.storyImage) urls.push(c.body.storyImage);
   if (Array.isArray(c.heroSlides)) {
     for (const s of c.heroSlides) {
       if (s && typeof s === "object") urls.push(...storedHeroUrls((s as { hero?: unknown }).hero));
