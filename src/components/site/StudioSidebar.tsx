@@ -67,15 +67,15 @@ export function StudioSidebar({ role }: { role: Role }) {
   })).filter((g) => g.links.length > 0);
 
   return (
-    <aside className="lg:sticky lg:top-24 h-fit lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:pr-2 lg:[scrollbar-width:thin]">
-      <p className="font-display text-[11px] uppercase tracking-[0.08em] text-primary">ADAB Studio</p>
-      <p className="mt-1 text-xs text-muted-foreground">{ROLE_LABEL[role]}</p>
+    <aside className="h-fit rounded-2xl bg-primary p-5 text-primary-foreground lg:sticky lg:top-10 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:[scrollbar-width:thin]">
+      <p className="font-display text-[11px] uppercase tracking-[0.08em] text-primary-foreground">ADAB Studio</p>
+      <p className="mt-1 text-xs text-primary-foreground/60">{ROLE_LABEL[role]}</p>
 
       <nav className="mt-8 flex flex-row flex-wrap gap-x-6 gap-y-2 lg:flex-col lg:gap-0">
         {groups.map((g, gi) => (
           <div key={g.title ?? gi} className="contents lg:block lg:mt-4 first:lg:mt-0">
             {g.title && (
-              <p className="hidden lg:block px-3 pb-1 pt-2 text-[10px] font-display uppercase tracking-[0.06em] text-muted-foreground/60">
+              <p className="hidden lg:block px-3 pb-1 pt-2 text-[10px] font-display uppercase tracking-[0.06em] text-primary-foreground/60">
                 {g.title}
               </p>
             )}
@@ -87,7 +87,9 @@ export function StudioSidebar({ role }: { role: Role }) {
                   href={l.href}
                   className={cn(
                     "text-sm transition-colors lg:block lg:rounded-md lg:px-3 lg:py-2",
-                    active ? "text-primary lg:bg-[color:var(--paper)]" : "text-muted-foreground hover:text-foreground",
+                    active
+                      ? "text-primary lg:bg-background"
+                      : "text-primary-foreground/75 hover:text-primary-foreground lg:hover:bg-white/10",
                   )}
                 >
                   {l.label}
@@ -98,11 +100,11 @@ export function StudioSidebar({ role }: { role: Role }) {
         ))}
       </nav>
 
-      <div className="mt-6 lg:mt-8 space-y-3">
-        <Link href="/" className="block text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground">
+      <div className="mt-6 space-y-3 border-t border-white/15 pt-5 lg:mt-8">
+        <Link href="/" className="block text-xs uppercase tracking-[0.06em] text-primary-foreground/70 hover:text-primary-foreground">
           ← View site
         </Link>
-        <SignOutButton />
+        <SignOutButton onDark />
       </div>
     </aside>
   );
