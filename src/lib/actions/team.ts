@@ -86,6 +86,46 @@ export async function revokeInvite(id: string): Promise<TeamActionResult> {
 }
 
 /** Change an existing member's role. Guards the last root from demotion. */
+/** Re-send an invitation email, extending its expiry. Needed because the only
+ *  recovery when a mail goes astray was revoke-and-reinvite, which churns the
+ *  token and loses the original invite's trail. Keeps the same row so the
+ *  invitation's history stays intact. */
+export async function resendInvite(id: string): Promise<TeamActionResult> {
+  const actor = await requireRoot();
+  if (!actor) return { ok: false, error: "Only a root admin can do this." };
+
+  try {
+    const rows = (await sql`
+      SELECT email, role, token FROM admin_invitations
+      WHERE id = ${id} AND accepted_at IS NULL
+      LIMIT 1
+    `) as { email: string; role: Role; token: string }[];
+    const invite = rows[0];
+    if (!invite) return { ok: false, error: "That invitation is no longer open." };
+
+    // Push the expiry out so a resend of an expired invite is actually usable.
+    await sql`
+      UPDATE admin_invitations
+      SET expires_at = now() + (${INVITE_TTL_HOURS} || ' hours')::interval
+      WHERE id = ${id}
+    `;
+
+    await sendAdminInvite({
+      to: invite.email,
+      role: invite.role,
+      invitedBy: actor.email,
+      url: `${SITE_URL}/invite/accept?token=${invite.token}`,
+    });
+
+    await recordAudit(actor.email, "team.invite_resend", invite.email, { role: invite.role });
+  } catch (err) {
+    console.error("[team] resend invite failed", err);
+    return { ok: false, error: "Could not resend the invitation." };
+  }
+  revalidatePath("/studio/team");
+  return { ok: true };
+}
+
 export async function changeRole(email: string, role: string): Promise<TeamActionResult> {
   const actor = await requireRoot();
   if (!actor) return { ok: false, error: "Only a root admin can do this." };

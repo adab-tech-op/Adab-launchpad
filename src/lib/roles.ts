@@ -254,17 +254,37 @@ export async function getAuditLog(limit = 200): Promise<AuditEntry[]> {
   }
 }
 
-export type PendingInvite = { id: string; email: string; role: Role; invitedBy: string; createdAt: string; expiresAt: string };
+export type PendingInvite = {
+  id: string;
+  email: string;
+  role: Role;
+  invitedBy: string;
+  createdAt: string;
+  expiresAt: string;
+  expired: boolean;
+  /** So the inviter can copy the link when the email does not arrive. */
+  token: string;
+};
 
 export async function getPendingInvites(): Promise<PendingInvite[]> {
   try {
     const rows = (await sql`
-      SELECT id, email, role, invited_by, created_at, expires_at
+      SELECT id, email, role, invited_by, created_at, expires_at, token
       FROM admin_invitations
-      WHERE accepted_at IS NULL AND expires_at > now()
+      WHERE accepted_at IS NULL
       ORDER BY created_at DESC
-    `) as { id: string; email: string; role: Role; invited_by: string; created_at: string; expires_at: string }[];
-    return rows.map((r) => ({ id: r.id, email: r.email, role: r.role, invitedBy: r.invited_by, createdAt: r.created_at, expiresAt: r.expires_at }));
+    `) as { id: string; email: string; role: Role; invited_by: string; created_at: string; expires_at: string; token: string }[];
+    const now = Date.now();
+    return rows.map((r) => ({
+      id: r.id,
+      email: r.email,
+      role: r.role,
+      invitedBy: r.invited_by,
+      createdAt: r.created_at,
+      expiresAt: r.expires_at,
+      expired: new Date(r.expires_at).getTime() <= now,
+      token: r.token,
+    }));
   } catch (err) {
     console.error("[invites] read failed", err);
     return [];

@@ -67,7 +67,7 @@ export function StudioSidebar({ role }: { role: Role }) {
   })).filter((g) => g.links.length > 0);
 
   return (
-    <aside className="lg:sticky lg:top-24 h-fit">
+    <aside className="lg:sticky lg:top-24 h-fit lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:pr-2 lg:[scrollbar-width:thin]">
       <p className="font-display text-[11px] uppercase tracking-[0.08em] text-primary">ADAB Studio</p>
       <p className="mt-1 text-xs text-muted-foreground">{ROLE_LABEL[role]}</p>
 
