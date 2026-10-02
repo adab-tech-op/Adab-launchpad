@@ -23,7 +23,13 @@ export function Providers({ children, isolated = false }: { children: ReactNode;
   // cannot open any of it advertises the site's structure and invites clicks
   // that only bounce back. (It is also the header whose logo was the bypass.)
   // Once isolation is off, sign-in looks like a normal page again.
-  const bare = isolated && AUTH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const onAuthRoute = AUTH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  // Studio has its own sidebar and header. The storefront nav on top of that is
+  // two navigations competing, and it offers links out of the admin panel
+  // mid-task. Unlike the auth-route case this is not tied to isolation: the
+  // admin panel should never wear the shop's chrome.
+  const inStudio = pathname === "/studio" || pathname.startsWith("/studio/");
+  const bare = inStudio || (isolated && onAuthRoute);
 
   return (
     <QueryClientProvider client={queryClient}>
