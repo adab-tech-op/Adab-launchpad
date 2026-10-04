@@ -83,3 +83,44 @@ export async function sendBroadcast(
   }
   return { recipientCount: recipients.length, sentCount: sent };
 }
+
+export type SentBroadcast = {
+  id: number;
+  subject: string;
+  recipientCount: number;
+  sentCount: number;
+  sentBy: string | null;
+  sentAt: string;
+};
+
+/** What has already gone out. The broadcasts table has recorded every send
+ *  since it was created, but nothing read it back — so the only way to avoid
+ *  repeating yourself was to remember, on a page whose action cannot be
+ *  undone. */
+export async function getSentBroadcasts(limit = 10): Promise<SentBroadcast[]> {
+  try {
+    const rows = (await sql`
+      SELECT id, subject, recipient_count, sent_count, sent_by, sent_at
+      FROM broadcasts
+      ORDER BY sent_at DESC
+      LIMIT ${limit}
+    `) as {
+      id: number;
+      subject: string;
+      recipient_count: number;
+      sent_count: number;
+      sent_by: string | null;
+      sent_at: string;
+    }[];
+    return rows.map((r) => ({
+      id: r.id,
+      subject: r.subject,
+      recipientCount: r.recipient_count,
+      sentCount: r.sent_count,
+      sentBy: r.sent_by,
+      sentAt: r.sent_at,
+    }));
+  } catch {
+    return [];
+  }
+}
