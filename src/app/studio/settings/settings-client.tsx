@@ -196,14 +196,16 @@ function HandoverGuideEditor({ initial }: { initial: HandoverGuideSettings }) {
 
 function IsolationEditor({ initial }: { initial: boolean }) {
   const [on, setOn] = useState(initial);
+  const [confirm, setConfirm] = useState("");
   const [pending, start] = useTransition();
 
-  const toggle = (next: boolean) =>
+  const apply = (next: boolean) =>
     start(async () => {
       const res = await saveIsolationMode(next);
       if (res.ok) {
         setOn(next);
-        toast.success(next ? "Isolation mode on — site is private" : "Isolation mode off — site is public");
+        setConfirm("");
+        toast.success(next ? "The site is private again" : "The site is live");
       } else toast.error(res.error);
     });
 
@@ -212,26 +214,50 @@ function IsolationEditor({ initial }: { initial: boolean }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <span className={labelCls}>Isolation mode</span>
-          <p className="mt-1 text-sm">
-            {on ? "The site is private." : "The site is live to the public."}
-          </p>
+          <p className="mt-1 text-base">{on ? "The site is private." : "The site is live to the public."}</p>
         </div>
-        <label className="flex shrink-0 items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-primary"
-            checked={on}
-            disabled={pending}
-            onChange={(e) => toggle(e.target.checked)}
-          />
-          {pending ? "Saving…" : on ? "On" : "Off"}
-        </label>
+        <span
+          className={`shrink-0 rounded-full px-4 py-1.5 text-xs ${
+            on ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"
+          }`}
+        >
+          {on ? "On" : "Off"}
+        </span>
       </div>
+
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        While on, every page redirects to sign-in and only studio users (root, admin, moderator) can get in — a
-        customer account is not a way through. Search engines are asked not to crawl, and every response carries a
-        noindex header. Turning this off publishes the whole site immediately.
+        While on, every page redirects to sign-in and only studio users get in. A customer account is not a way
+        through. Search engines are asked not to crawl, and every response carries a noindex header.
       </p>
+
+      {on ? (
+        <div className="mt-4 rounded-lg border border-border bg-background p-3.5">
+          <p className="text-sm">Turning this off publishes the whole site immediately.</p>
+          <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
+            <input
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="Type PUBLISH to confirm"
+              className="min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm outline-none focus:border-primary"
+            />
+            <button
+              onClick={() => apply(false)}
+              disabled={pending || confirm.trim().toUpperCase() !== "PUBLISH"}
+              className="rounded-full bg-foreground px-5 py-2 text-sm text-background disabled:opacity-40"
+            >
+              {pending ? "Publishing…" : "Go live"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => apply(true)}
+          disabled={pending}
+          className="mt-4 rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground disabled:opacity-50"
+        >
+          {pending ? "Saving…" : "Make the site private again"}
+        </button>
+      )}
     </div>
   );
 }
