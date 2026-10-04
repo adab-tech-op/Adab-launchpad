@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireStudioAccess, atLeast } from "@/lib/roles";
-import { getBroadcastRecipients } from "@/lib/broadcast-server";
+import { getBroadcastRecipients, getSentBroadcasts } from "@/lib/broadcast-server";
 import { BroadcastClient } from "./broadcast-client";
 
 export const metadata = { title: "Broadcast — ADAB Studio" };
@@ -8,7 +8,7 @@ export const metadata = { title: "Broadcast — ADAB Studio" };
 export default async function BroadcastPage() {
   const actor = await requireStudioAccess();
   if (!atLeast(actor.role, "admin")) redirect("/studio");
-  const recipients = await getBroadcastRecipients();
+  const [recipients, sent] = await Promise.all([getBroadcastRecipients(), getSentBroadcasts()]);
 
   return (
     <div>
@@ -19,7 +19,7 @@ export default async function BroadcastPage() {
         Always send yourself a test first.
       </p>
       <div className="mt-8">
-        <BroadcastClient recipientCount={recipients.length} selfEmail={actor.email} />
+        <BroadcastClient recipientCount={recipients.length} selfEmail={actor.email} sent={sent} />
       </div>
     </div>
   );

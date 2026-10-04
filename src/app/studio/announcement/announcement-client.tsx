@@ -43,15 +43,29 @@ export function AnnouncementEditor({ initial }: { initial: AnnouncementSettings 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
-        <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={s.enabled}
-            onChange={(e) => set("enabled", e.target.checked)}
-            className="h-4 w-4 accent-primary"
-          />
-          <span className="text-sm">Show the notification popup</span>
-        </label>
+        {/* The checkbox named the action, not the state, so answering "is this
+            showing right now?" meant reading a tick. */}
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+          <div>
+            <p className="text-sm">{s.enabled ? "The popup is showing." : "The popup is off."}</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {s.enabled
+                ? s.pages.length === 0
+                  ? "No pages selected, so nobody sees it. Pick at least one below."
+                  : `On ${s.pages.length} page${s.pages.length === 1 ? "" : "s"}, ${FREQ_LABELS[s.frequency].toLowerCase()}.`
+                : "Visitors see nothing until you turn it on."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => set("enabled", !s.enabled)}
+            className={`shrink-0 rounded-full px-5 py-2 text-xs transition-opacity hover:opacity-90 ${
+              s.enabled ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"
+            }`}
+          >
+            {s.enabled ? "On" : "Off"}
+          </button>
+        </div>
 
         <div>
           <label className={labelCls}>Eyebrow</label>
@@ -119,7 +133,9 @@ export function AnnouncementEditor({ initial }: { initial: AnnouncementSettings 
           <div className="mt-5 rounded-md bg-foreground py-2.5 text-center text-xs uppercase tracking-[0.06em] text-background">Notify Me</div>
         </div>
         <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
-          {s.enabled ? `Shows on ${s.pages.length || 0} page${s.pages.length === 1 ? "" : "s"}, ${FREQ_LABELS[s.frequency].toLowerCase()}.` : "Currently hidden from the site."}
+          {s.enabled && s.pages.length === 0
+            ? "Turned on, but no pages are selected, so this never appears."
+            : "This is how it looks to a visitor."}
         </p>
       </div>
     </div>
