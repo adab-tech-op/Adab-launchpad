@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireStudioAccess, atLeast } from "@/lib/roles";
-import { getFabricTypes } from "@/lib/fabrics-server";
+import { getFabricTypes, getFabricUsage } from "@/lib/fabrics-server";
 import { FabricsClient } from "./fabrics-client";
 
 export const metadata = { title: "Fabrics — ADAB Studio" };
@@ -8,7 +8,7 @@ export const metadata = { title: "Fabrics — ADAB Studio" };
 export default async function FabricsPage() {
   const actor = await requireStudioAccess();
   if (!atLeast(actor.role, "admin")) redirect("/studio");
-  const fabrics = await getFabricTypes();
+  const [fabrics, usage] = await Promise.all([getFabricTypes(), getFabricUsage()]);
 
   return (
     <div>
@@ -18,7 +18,7 @@ export default async function FabricsPage() {
         the product page and in the searchable Care Guide. Create a type here before assigning it to a product.
       </p>
       <div className="mt-8">
-        <FabricsClient initial={fabrics} />
+        <FabricsClient initial={fabrics} usage={usage} />
       </div>
     </div>
   );
