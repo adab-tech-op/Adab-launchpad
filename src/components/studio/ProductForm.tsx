@@ -13,6 +13,7 @@ import { HeroImagesEditor } from "@/components/studio/HeroImagesEditor";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { emptyPageHero, resolveTimerColor } from "@/lib/page-content";
 import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
+import { visibilitySentence, stockSummary } from "@/lib/product-visibility";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -57,18 +58,31 @@ export function ProductForm({
   fabricTypes,
   initialStock,
   initialSoldOut,
+  dropWindowDays = 7,
 }: {
   initial?: EditableProduct;
   mode: "create" | "edit";
   fabricTypes: FabricType[];
   initialStock?: Record<string, number>;
   initialSoldOut?: boolean;
+  /** Needed to say when an upcoming drop becomes visible. */
+  dropWindowDays?: number;
 }) {
   const router = useRouter();
   const [p, setP] = useState<EditableProduct>(initial ?? empty);
   const [stock, setStock] = useState<Record<string, number>>(initialStock ?? {});
   const [soldOut, setSoldOut] = useState<boolean>(initialSoldOut ?? false);
   const [saving, setSaving] = useState(false);
+  // What is still missing, so the gap is visible before the save fails.
+  const dirtyHint = !p.name.trim()
+    ? "Needs a name"
+    : !p.slug.trim()
+      ? "Needs an address"
+      : p.images.length === 0
+        ? "No images yet, the first becomes the cover"
+        : mode === "create"
+          ? "Ready to create"
+          : "";
   const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const set = <K extends keyof EditableProduct>(k: K, v: EditableProduct[K]) => setP((s) => ({ ...s, [k]: v }));
@@ -146,6 +160,30 @@ export function ProductForm({
 
   return (
     <div className="space-y-6">
+      {/* The only save button used to be at the very bottom of a long form, so
+          saving meant scrolling past every field first, and there was no way to
+          stop halfway. */}
+      <div className="sticky top-4 z-20 -mx-1 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 backdrop-blur">
+        <span className="text-sm">{mode === "create" ? "New product" : p.name || "Edit product"}</span>
+        <span className="text-xs text-muted-foreground">{dirtyHint}</span>
+        <div className="ml-auto flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push("/studio/products")}
+            className="text-xs uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving || uploading}
+            className="rounded-full bg-primary px-6 py-2.5 text-xs uppercase tracking-[0.08em] text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {saving ? "Saving…" : mode === "create" ? "Create product" : "Save changes"}
+          </button>
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="block">
           <span className={labelCls}>Name</span>
@@ -247,15 +285,20 @@ export function ProductForm({
             {p.drop_end && <span className="mt-1 block text-[10px] text-muted-foreground">Dhaka: {formatDhaka(p.drop_end)}</span>}
           </label>
         </div>
-        {p.drop_date ? (
-          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-            Hidden until ~a week before (set in Settings), then shows as <b>Upcoming</b> on the Drop page, then becomes buyable at the drop time. The <b>Status</b> above is ignored while a drop date is set.
-          </p>
-        ) : (
-          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-            No drop date → the piece follows the <b>Status</b> above, as normal.
-          </p>
-        )}
+        {/* Status, drop date, drop end and the tick below decide between them
+            what a visitor sees. The form never said what the combination added
+            up to, so this says it in one sentence and rewrites as they change. */}
+        <p className="mt-3 rounded-lg bg-primary p-3 text-[12px] leading-relaxed text-primary-foreground">
+          {visibilitySentence(
+            {
+              status: p.status,
+              dropDate: p.drop_date || undefined,
+              dropEnd: p.drop_end || undefined,
+              inShop: !!p.in_shop,
+            },
+            dropWindowDays,
+          )}
+        </p>
         <label className="mt-3 flex items-center gap-2 text-sm">
           <input type="checkbox" checked={!!p.in_shop} onChange={(e) => set("in_shop", e.target.checked)} className="accent-foreground" />
           Show in Shop after the drop concludes <span className="text-muted-foreground">(never returns to the Drop page)</span>
@@ -516,6 +559,12 @@ export function ProductForm({
             </label>
           ))}
         </div>
+
+        {/* The grid shows numbers; this says what they add up to, including
+            which sizes cannot be reserved and which are untracked. */}
+        <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+          {stockSummary(stock, [...SIZES])}
+        </p>
 
         {mode === "edit" && (
           <div className="mt-5 border-t border-border pt-4">

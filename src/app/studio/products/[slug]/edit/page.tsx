@@ -1,3 +1,4 @@
+import { getDropWindowDays } from "@/lib/settings-server";
 import { notFound } from "next/navigation";
 import { getProductForEdit } from "@/lib/actions/products-admin";
 import { getProductStock } from "@/lib/product-stock-server";
@@ -9,11 +10,12 @@ export const metadata = { title: "Edit Product — ADAB Studio" };
 
 export default async function EditProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [product, stock, pub, fabricTypes] = await Promise.all([
+  const [product, stock, pub, fabricTypes, dropWindowDays] = await Promise.all([
     getProductForEdit(slug),
     getProductStock(slug),
     getProductBySlug(slug),
     getFabricTypes(),
+    getDropWindowDays(),
   ]);
   if (!product) notFound();
   return (
@@ -22,6 +24,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
       <p className="mt-2 text-sm text-muted-foreground">{product.name}</p>
       <div className="mt-8">
         <ProductForm
+          dropWindowDays={dropWindowDays}
           mode="edit"
           initial={product}
           fabricTypes={fabricTypes}
