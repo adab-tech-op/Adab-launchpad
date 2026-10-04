@@ -43,3 +43,22 @@ export async function getFabricCare(fabricTypeId: number | null | undefined): Pr
     return null;
   }
 }
+
+/** How many products use each fabric, keyed by fabric id.
+ *
+ *  Deleting a fabric does not delete products — they lose their care guide and
+ *  fall back to the standard copy (FK ON DELETE SET NULL). The Fabrics page
+ *  never said so, so this makes the consequence visible before the click. */
+export async function getFabricUsage(): Promise<Record<number, number>> {
+  try {
+    const rows = (await sql`
+      SELECT fabric_type_id AS id, count(*)::int AS n
+      FROM products
+      WHERE fabric_type_id IS NOT NULL
+      GROUP BY fabric_type_id
+    `) as { id: number; n: number }[];
+    return Object.fromEntries(rows.map((r) => [r.id, r.n]));
+  } catch {
+    return {};
+  }
+}
