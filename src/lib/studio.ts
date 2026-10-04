@@ -229,3 +229,38 @@ export async function getNotifyList(): Promise<NotifyContact[]> {
 
   return [...byEmail.values()].sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1));
 }
+
+/** How much each Data-page action would delete, so the blast radius is visible
+ *  before anyone types DELETE. Counts are cheap and read-only; a failure
+ *  returns nulls so the page still renders without claiming a number. */
+export type PurgeCounts = {
+  orders: number | null;
+  messages: number | null;
+  customers: number | null;
+};
+
+export async function getPurgeCounts(): Promise<PurgeCounts> {
+  const one = async (q: Promise<unknown[]>): Promise<number | null> => {
+    try {
+      const rows = (await q) as { n: number | string }[];
+      return Number(rows[0]?.n ?? 0);
+    } catch {
+      return null;
+    }
+  };
+  const [orders, messages, customers] = await Promise.all([
+    one(sql`SELECT count(*)::int AS n FROM reservations` as unknown as Promise<unknown[]>),
+    one(sql`
+      SELECT (
+        (SELECT count(*) FROM contact_messages) +
+        (SELECT count(*) FROM waitlist_signups) +
+        (SELECT count(*) FROM marketing_unsubscribes)
+      )::int AS n
+    ` as unknown as Promise<unknown[]>),
+    one(sql`
+      SELECT count(*)::int AS n FROM "user" u
+      WHERE lower(u.email) NOT IN (SELECT lower(email) FROM admin_roles)
+    ` as unknown as Promise<unknown[]>),
+  ]);
+  return { orders, messages, customers };
+}

@@ -1,11 +1,13 @@
 import { AlertTriangle } from "lucide-react";
 import { requireRootPage } from "@/lib/roles";
+import { getPurgeCounts } from "@/lib/studio";
 import { DangerZone } from "./danger-client";
 
 export const metadata = { title: "Data — ADAB Studio" };
 
 export default async function DataPage() {
   await requireRootPage();
+  const counts = await getPurgeCounts();
 
   return (
     <div>
@@ -24,7 +26,7 @@ export default async function DataPage() {
       </div>
 
       <div className="mt-8">
-        <DangerZone />
+        <DangerZone counts={counts} />
       </div>
     </div>
   );
