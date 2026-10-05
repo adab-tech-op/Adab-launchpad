@@ -42,7 +42,20 @@ export default async function Manifesto() {
           {/* Each author line (split on \n) is its own non-wrapping block:
               honours intentional line breaks AND stops a single line — e.g. the
               Bengali "আদব ম্যানিফেস্টো" — from soft-wrapping mid-phrase. */}
-          <h1 className="mt-6 font-editorial text-4xl leading-[1.1] md:text-6xl lg:text-7xl">
+          {/* Studio previews this and offers a field for it, but the page never
+              rendered it, so the editor was showing a value the site ignored.
+              The mt-6 below was already leaving room for it. */}
+          {hero.eyebrow && (
+            <p
+              className={cn(
+                "font-display text-[11px] uppercase tracking-[0.14em]",
+                light ? "text-background/70" : "text-foreground/60",
+              )}
+            >
+              {hero.eyebrow}
+            </p>
+          )}
+          <h1 className="mt-4 font-editorial text-4xl leading-[1.1] md:text-6xl lg:text-7xl">
             {hero.heading.split("\n").map((line, i) => (
               <span key={i} className="block whitespace-nowrap">
                 {line || "\u00A0"}
