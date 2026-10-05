@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { User, Package, Wallet, Smartphone, Hash, Clock, ShieldCheck } from "lucide-react";
-import { getAllOrders } from "@/lib/studio";
+import { getAllOrders, getOrderEvents } from "@/lib/studio";
 import { requireStudioAccess, canSeePII, atLeast } from "@/lib/roles";
 import { PAYMENT_LABELS, DELIVERY_LABELS, PAYMENT_PILL, DELIVERY_PILL } from "@/lib/order-status";
 import { StatusControl } from "./status-control";
@@ -8,6 +8,7 @@ import { ConfirmPaymentButton } from "./confirm-dialog";
 import { FollowUpButton } from "./follow-up-dialog";
 import { VerifyPanel } from "./verify-panel";
 import { OrderSearch } from "./order-search";
+import { OrderHistory } from "./order-history";
 
 /** Mask an email/phone for the moderator (view-only, redacted) view. */
 function mask(value: string): string {
@@ -43,6 +44,8 @@ export default async function StudioOrders({
   const pii = canSeePII(actor.role);
 
   const orders = await getAllOrders();
+  // One query for the whole page rather than one per order.
+  const events = await getOrderEvents(orders.map((o) => o.orderRef));
 
   const countFor = (key: string) =>
     key === "all" ? orders.length : orders.filter((o) => o.status === key).length;
@@ -162,6 +165,8 @@ export default async function StudioOrders({
               ) : (
                 <p className="mt-4 text-xs text-muted-foreground italic">No payment submitted yet.</p>
               )}
+
+              <OrderHistory events={events[o.orderRef] ?? []} submittedAt={o.payment?.submittedAt ?? null} />
 
               {/* Actions — mutators only, once payment is verified as paid (and not cancelled) */}
               {canMutate && o.axes.payment === "paid" && !o.axes.cancelled && (
