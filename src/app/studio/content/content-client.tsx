@@ -390,6 +390,42 @@ export function ContentEditor({
   const [ct, setCt] = useState<ContactContent>(contact);
   const [pending, startTransition] = useTransition();
 
+  // All six tabs share this component, so edits survive switching between
+  // them. Nothing said which tabs still held unsaved work, and leaving the
+  // page discarded all of it without asking.
+  const [saved, setSaved] = useState({
+    home: JSON.stringify(home),
+    drop: JSON.stringify(drop),
+    shop: JSON.stringify(shop),
+    manifesto: JSON.stringify(manifesto),
+    care: JSON.stringify(care),
+    contact: JSON.stringify(contact),
+  });
+
+  const current: Record<typeof tab, string> = {
+    home: JSON.stringify(h),
+    drop: JSON.stringify(dr),
+    shop: JSON.stringify(sh),
+    manifesto: JSON.stringify(m),
+    care: JSON.stringify(c),
+    contact: JSON.stringify(ct),
+  };
+
+  const isDirty = (t: typeof tab) => current[t] !== saved[t];
+  const dirtyTabs = (Object.keys(current) as (typeof tab)[]).filter(isDirty);
+
+  useEffect(() => {
+    if (dirtyTabs.length === 0) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Browsers show their own wording; returning a value is what arms it.
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirtyTabs.length]);
+
+
   const tabLabel = (t: typeof tab) =>
     ({ home: "Home", drop: "Drop", shop: "Shop", manifesto: "Adab Story", care: "Care guide", contact: "Contact" })[t];
 
@@ -406,6 +442,8 @@ export function ContentEditor({
         toast.error(res.error);
         return;
       }
+      // This tab is now the saved baseline; the others keep their own state.
+      setSaved((s) => ({ ...s, [tab]: current[tab] }));
       toast.success(`${tabLabel(tab)} saved`);
       router.refresh();
     });
@@ -420,6 +458,34 @@ export function ContentEditor({
 
   return (
     <div>
+      {/* The Home tab runs to four slides plus a dozen copy fields, so a save
+          button at the very bottom meant scrolling the whole tab to use it. */}
+      <div className="sticky top-4 z-20 -mx-1 mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 backdrop-blur">
+        <span className="text-sm">{tabLabel(tab)}</span>
+        <span className="text-xs text-muted-foreground">
+          {isDirty(tab) ? "Unsaved changes" : "Everything saved"}
+        </span>
+        <button
+          type="button"
+          onClick={save}
+          disabled={pending || !isDirty(tab)}
+          className="ml-auto rounded-full bg-primary px-6 py-2.5 text-xs uppercase tracking-[0.08em] text-primary-foreground disabled:opacity-40"
+        >
+          {pending ? "Saving…" : `Save ${tabLabel(tab).toLowerCase()}`}
+        </button>
+      </div>
+
+      {dirtyTabs.filter((t) => t !== tab).length > 0 && (
+        <p className="mb-3 text-xs text-muted-foreground">
+          Unsaved changes on{" "}
+          {dirtyTabs
+            .filter((t) => t !== tab)
+            .map(tabLabel)
+            .join(", ")}
+          . Each tab saves on its own.
+        </p>
+      )}
+
       <div className="flex flex-wrap gap-2">
         {(["home", "drop", "shop", "manifesto", "care", "contact"] as const).map((t) => (
           <button
@@ -431,6 +497,12 @@ export function ContentEditor({
             }`}
           >
             {tabLabel(t)}
+            {isDirty(t) && (
+              <span
+                aria-label="unsaved changes"
+                className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#C9A24A] align-middle"
+              />
+            )}
           </button>
         ))}
       </div>
@@ -535,17 +607,6 @@ export function ContentEditor({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={save}
-        disabled={pending}
-        className="mt-8 rounded-full bg-primary px-6 py-3 text-xs uppercase tracking-[0.08em] text-white disabled:opacity-40"
-      >
-        {pending ? "Saving…" : `Save ${tabLabel(tab).toLowerCase()}`}
-      </button>
-      <p className="mt-3 text-xs text-muted-foreground">
-        Page layout and copy chrome stay fixed; these are the editable pieces. Edits appear on the live site within a minute.
-      </p>
     </div>
   );
 }
@@ -682,6 +743,26 @@ function AutoplaySecondsField({ value, onChange }: { value: number | undefined; 
   );
 }
 
+/** What is actually configured on a slide, for its collapsed row. */
+function slideSummary(slide: HeroSlide): string {
+  const set = [
+    slide.hero.desktop ? "desktop" : null,
+    slide.hero.tablet ? "tablet" : null,
+    slide.hero.phone ? "phone" : null,
+  ].filter(Boolean) as string[];
+
+  const images =
+    set.length === 0
+      ? "No image"
+      : set.length === 3
+        ? "All three sizes set"
+        : `${set.join(" and ")} set, the rest crop from desktop`;
+
+  const o = slide.overlay;
+  const wash = o?.enabled ? `wash ${o.from === "solid" ? "solid" : `from the ${o.from}`}, ${o.opacity}%` : "no wash";
+  return `${images} · ${wash}`;
+}
+
 function HeroSlidesEditor({ value, onChange }: { value: HeroSlide[]; onChange: (v: HeroSlide[]) => void }) {
   const slides = value.length ? value : [emptyHeroSlide()];
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -731,6 +812,12 @@ function HeroSlidesEditor({ value, onChange }: { value: HeroSlide[]; onChange: (
                   <span className={labelCls}>Slide {i + 1}</span>
                   <span className="block truncate text-sm text-muted-foreground">
                     {slide.heading.split("\n")[0] || "Untitled"}
+                  </span>
+                  {/* A thumbnail and a heading did not say which breakpoints
+                      had their own image, so finding the slide missing a phone
+                      image meant opening every one. */}
+                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                    {slideSummary(slide)}
                   </span>
                 </span>
                 <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
