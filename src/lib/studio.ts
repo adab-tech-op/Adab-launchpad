@@ -264,3 +264,57 @@ export async function getPurgeCounts(): Promise<PurgeCounts> {
   ]);
   return { orders, messages, customers };
 }
+
+export type OrderEvent = {
+  orderRef: string;
+  action: string;
+  actor: string;
+  detail: Record<string, unknown> | null;
+  at: string;
+};
+
+/**
+ * What has happened to each order, from the audit log.
+ *
+ * Every order action already writes an audit row keyed on the order reference,
+ * and the Orders page never read any of it — so answering "did we confirm
+ * this one?" or "who marked it delivered?" meant leaving for the Activity
+ * page and searching.
+ *
+ * One query for every order on the page rather than one per order: the page
+ * renders the whole filtered list, so a per-order query would be an N+1 that
+ * grows with the order book.
+ */
+export async function getOrderEvents(orderRefs: string[]): Promise<Record<string, OrderEvent[]>> {
+  if (orderRefs.length === 0) return {};
+  try {
+    const rows = (await sql`
+      SELECT target, action, actor_email, detail, created_at
+      FROM audit_log
+      WHERE action LIKE 'order.%' AND target = ANY(${orderRefs})
+      ORDER BY created_at ASC
+    `) as {
+      target: string;
+      action: string;
+      actor_email: string;
+      detail: Record<string, unknown> | null;
+      created_at: string;
+    }[];
+
+    const out: Record<string, OrderEvent[]> = {};
+    for (const r of rows) {
+      (out[r.target] ??= []).push({
+        orderRef: r.target,
+        action: r.action,
+        actor: r.actor_email,
+        detail: r.detail,
+        at: r.created_at,
+      });
+    }
+    return out;
+  } catch {
+    // The history is context, never the page — a failure here must not stop
+    // orders rendering.
+    return {};
+  }
+}
