@@ -16,6 +16,7 @@ import {
   type PaymentStatus,
   type DeliveryStatus,
 } from "@/lib/order-status";
+import { paymentSideEffects } from "@/lib/payment-verify";
 
 function Segmented<T extends string>({
   label,
@@ -83,18 +84,34 @@ export function StatusControl({ orderRef, axes }: { orderRef: string; axes: Orde
     });
   };
 
-  const pickPayment = (p: PaymentStatus) =>
+  const pickPayment = (p: PaymentStatus) => {
+    // These already happen in setPaymentStatus: moving off "paid" resets
+    // delivery, and "not received" releases stock and any coupon. Nothing said
+    // so, which made a status click have consequences you found out about
+    // afterwards.
+    const effects = paymentSideEffects(p, { payment: state.payment, delivery: state.delivery });
+    if (effects.length > 0) {
+      const list = effects.length === 1 ? effects[0] : `${effects.slice(0, -1).join(", ")} and ${effects.at(-1)}`;
+      if (!confirm(`Set ${orderRef} to ${PAYMENT_LABELS[p].toLowerCase()}?\n\nThis also ${list}.`)) return;
+    }
     run(
       { ...state, payment: p, delivery: p !== "paid" ? "not_delivered" : state.delivery },
       () => setPaymentStatus(orderRef, p),
       `payment ${PAYMENT_LABELS[p]}`,
     );
+  };
 
   const pickDelivery = (d: DeliveryStatus) =>
     run({ ...state, delivery: d }, () => setDeliveryStatus(orderRef, d), `delivery ${DELIVERY_LABELS[d]}`);
 
-  const toggleCancel = () =>
-    run({ ...state, cancelled: !state.cancelled }, () => setCancelled(orderRef, !state.cancelled), state.cancelled ? "restored" : "cancelled");
+  const toggleCancel = () => {
+    if (!state.cancelled && !confirm(`Cancel ${orderRef}? The customer sees this on their account.`)) return;
+    run(
+      { ...state, cancelled: !state.cancelled },
+      () => setCancelled(orderRef, !state.cancelled),
+      state.cancelled ? "restored" : "cancelled",
+    );
+  };
 
   return (
     <div className="flex flex-col gap-3">

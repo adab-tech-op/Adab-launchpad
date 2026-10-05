@@ -6,6 +6,8 @@ import { PAYMENT_LABELS, DELIVERY_LABELS, PAYMENT_PILL, DELIVERY_PILL } from "@/
 import { StatusControl } from "./status-control";
 import { ConfirmPaymentButton } from "./confirm-dialog";
 import { FollowUpButton } from "./follow-up-dialog";
+import { VerifyPanel } from "./verify-panel";
+import { OrderSearch } from "./order-search";
 
 /** Mask an email/phone for the moderator (view-only, redacted) view. */
 function mask(value: string): string {
@@ -75,6 +77,8 @@ export default async function StudioOrders({
         })}
       </div>
 
+      {filtered.length > 0 && <OrderSearch count={filtered.length} />}
+
       {filtered.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-border p-12 text-center paper-grain">
           <p className="font-editorial text-2xl italic text-muted-foreground">
@@ -89,7 +93,12 @@ export default async function StudioOrders({
       ) : (
         <div className="mt-8 space-y-4">
           {filtered.map((o) => (
-            <div key={o.orderRef} className="rounded-2xl border border-border p-6">
+            <div
+              key={o.orderRef}
+              data-order-card
+              data-search={[o.orderRef, o.name, pii ? o.email : "", pii ? o.phone : "", o.payment?.trxId ?? ""].join(" ")}
+              className="rounded-2xl border border-border p-6"
+            >
               <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
                 <div className="min-w-0">
                   <span className="font-display tracking-[0.05em] text-primary">{o.orderRef}</span>
@@ -141,29 +150,15 @@ export default async function StudioOrders({
               </div>
 
               {o.payment ? (
-                <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
-                  <p className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.06em] text-primary"><ShieldCheck className="h-3.5 w-3.5" strokeWidth={1.75} /> Payment to verify</p>
-                  <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
-                    <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Wallet className="h-3 w-3" /> Expected</p>
-                      <p className="tabular-nums">৳ {(o.payment.amount ?? o.total).toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Smartphone className="h-3 w-3" /> Paid from</p>
-                      <p className="tabular-nums">{pii ? o.payment.bkashNumber : mask(o.payment.bkashNumber)}</p>
-                    </div>
-                    <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Hash className="h-3 w-3" /> TrxID</p>
-                      <p className="font-medium">{pii ? o.payment.trxId : mask(o.payment.trxId)}</p>
-                    </div>
-                    <div>
-                      <p className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.05em] text-muted-foreground"><Clock className="h-3 w-3" /> Submitted</p>
-                      <p className="text-muted-foreground">
-                        {new Date(o.payment.submittedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <VerifyPanel
+                  expected={o.payment.amount ?? o.total}
+                  itemsTotal={o.total}
+                  paidFrom={pii ? o.payment.bkashNumber : mask(o.payment.bkashNumber)}
+                  customerPhone={pii ? o.phone : null}
+                  trxId={pii ? o.payment.trxId : mask(o.payment.trxId)}
+                  submittedAt={o.payment.submittedAt}
+                  redacted={!pii}
+                />
               ) : (
                 <p className="mt-4 text-xs text-muted-foreground italic">No payment submitted yet.</p>
               )}
