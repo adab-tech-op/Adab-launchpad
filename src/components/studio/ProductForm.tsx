@@ -213,25 +213,6 @@ export function ProductForm({
           <input type="number" min={0} placeholder="4500" value={p.price_bdt || ""} onChange={(e) => set("price_bdt", Number(e.target.value) || 0)} className={inputCls + " mt-2"} />
         </label>
 
-        <div className="rounded-xl border border-border p-4">
-          <span className={labelCls}>Sale (optional)</span>
-          <div className="mt-2 grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="text-[11px] text-muted-foreground">Discount %</span>
-              <input type="number" min={0} max={90} placeholder="0" value={p.discount_percent || ""} onChange={(e) => set("discount_percent", Math.min(90, Math.max(0, Number(e.target.value) || 0)))} className={inputCls + " mt-1"} />
-            </label>
-            <label className="block">
-              <span className="text-[11px] text-muted-foreground">Ends (optional)</span>
-              <input type="date" value={p.discount_until || ""} onChange={(e) => set("discount_until", e.target.value)} className={inputCls + " mt-1"} />
-            </label>
-          </div>
-          {p.discount_percent > 0 && p.price_bdt > 0 && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Sale price: <span className="text-primary">৳ {Math.round(p.price_bdt * (1 - p.discount_percent / 100)).toLocaleString("en-US")}</span>
-              {" "}(was ৳ {p.price_bdt.toLocaleString("en-US")}){p.discount_until ? ` · until ${p.discount_until}` : ""}
-            </p>
-          )}
-        </div>
         <label className="block">
           <span className={labelCls}>Main color</span>
           <input value={p.color} onChange={(e) => set("color", e.target.value)} placeholder="e.g. Steel Blue" className={inputCls + " mt-2"} />
@@ -242,6 +223,52 @@ export function ProductForm({
           <input type="number" min={0} placeholder="0" value={p.sort_order || ""} onChange={(e) => set("sort_order", Number(e.target.value) || 0)} className={inputCls + " mt-2"} />
           <span className="mt-1 block text-[10px] text-muted-foreground">Lower shows first on shop.</span>
         </label>
+      </div>
+
+      {/* Sale was one cell of the four-column row above while holding its own
+          two-column grid, so its fields were squeezed into roughly a quarter
+          of the width and the date input rendered as "dd". Its own row gives
+          both fields a usable size and lets the resulting price be stated
+          rather than squeezed in underneath. */}
+      <div className="rounded-xl border border-border p-4">
+        <span className={labelCls}>Sale (optional)</span>
+        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-[180px_220px_1fr] sm:items-end">
+          <label className="block">
+            <span className="text-[11px] text-muted-foreground">Discount %</span>
+            <input
+              type="number"
+              min={0}
+              max={90}
+              placeholder="0"
+              value={p.discount_percent || ""}
+              onChange={(e) => set("discount_percent", Math.min(90, Math.max(0, Number(e.target.value) || 0)))}
+              className={inputCls + " mt-1"}
+            />
+          </label>
+          <label className="block">
+            <span className="text-[11px] text-muted-foreground">Ends (optional)</span>
+            <input
+              type="date"
+              value={p.discount_until || ""}
+              onChange={(e) => set("discount_until", e.target.value)}
+              className={inputCls + " mt-1"}
+            />
+          </label>
+          <p className="text-xs leading-relaxed text-muted-foreground sm:pb-2.5">
+            {p.discount_percent > 0 && p.price_bdt > 0 ? (
+              <>
+                Sells at{" "}
+                <span className="text-primary">
+                  ৳ {Math.round(p.price_bdt * (1 - p.discount_percent / 100)).toLocaleString("en-US")}
+                </span>{" "}
+                instead of ৳ {p.price_bdt.toLocaleString("en-US")}
+                {p.discount_until ? `, until ${p.discount_until}` : ", with no end date"}.
+              </>
+            ) : (
+              "Leave the discount at zero for no sale. Product sales apply to everyone, unlike a coupon code."
+            )}
+          </p>
+        </div>
       </div>
 
       {/* Drop schedule — when set, this drives visibility/purchasability (times in Bangladesh / Asia-Dhaka) */}
