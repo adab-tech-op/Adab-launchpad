@@ -67,7 +67,7 @@ export function StudioSidebar({ role }: { role: Role }) {
   })).filter((g) => g.links.length > 0);
 
   return (
-    <aside className="h-fit rounded-3xl bg-primary p-5 pr-3 text-primary-foreground lg:sticky lg:top-10 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:[scrollbar-color:rgba(245,240,232,.25)_transparent] lg:[scrollbar-width:thin]">
+    <aside className="w-full shrink-0 rounded-3xl bg-primary p-5 pr-3 text-primary-foreground lg:sticky lg:top-5 lg:h-[calc(100dvh-2.5rem)] lg:w-[228px] lg:overflow-y-auto lg:[scrollbar-color:rgba(245,240,232,.25)_transparent] lg:[scrollbar-width:thin] lg:flex lg:flex-col">
       <p className="font-display text-[11px] uppercase tracking-[0.08em] text-primary-foreground">ADAB Studio</p>
       <p className="mt-1 text-xs text-primary-foreground/60">{ROLE_LABEL[role]}</p>
 
@@ -100,7 +100,7 @@ export function StudioSidebar({ role }: { role: Role }) {
         ))}
       </nav>
 
-      <div className="mt-6 space-y-3 border-t border-white/15 pt-5 lg:mt-8">
+      <div className="mt-6 space-y-3 border-t border-white/15 pt-5 lg:mt-auto lg:pt-6">
         <Link href="/" className="block text-xs uppercase tracking-[0.06em] text-primary-foreground/70 hover:text-primary-foreground">
           ← View site
         </Link>
