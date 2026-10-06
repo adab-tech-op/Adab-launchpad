@@ -7,7 +7,7 @@ export default async function StudioLayout({ children }: { children: React.React
   const actor = await requireStudioAccess(); // redirects non-admins; allows moderators to view
   return (
     <div data-studio className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[200px_1fr] lg:gap-16">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[210px_1fr] lg:gap-20">
         <StudioSidebar role={actor.role} />
         <div className="min-w-0">{children}</div>
       </div>

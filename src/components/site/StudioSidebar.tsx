@@ -67,7 +67,7 @@ export function StudioSidebar({ role }: { role: Role }) {
   })).filter((g) => g.links.length > 0);
 
   return (
-    <aside className="h-fit rounded-2xl bg-primary p-5 text-primary-foreground lg:sticky lg:top-10 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:[scrollbar-width:thin]">
+    <aside className="h-fit rounded-3xl bg-primary p-5 pr-3 text-primary-foreground lg:sticky lg:top-10 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:[scrollbar-color:rgba(245,240,232,.25)_transparent] lg:[scrollbar-width:thin]">
       <p className="font-display text-[11px] uppercase tracking-[0.08em] text-primary-foreground">ADAB Studio</p>
       <p className="mt-1 text-xs text-primary-foreground/60">{ROLE_LABEL[role]}</p>
 
