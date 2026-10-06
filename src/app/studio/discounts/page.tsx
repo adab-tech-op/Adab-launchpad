@@ -22,7 +22,7 @@ export default async function DiscountsPage() {
       <div className="mt-8">
         <DiscountsClient
           initial={coupons}
-          products={products.map((p) => ({ slug: p.slug, name: p.name }))}
+          products={products.map((p) => ({ slug: p.slug, name: p.name, price: p.price }))}
         />
       </div>
     </div>

@@ -63,8 +63,19 @@ export function TeasersClient({ initial }: { initial: Teaser[] }) {
               <p className="truncate font-medium">{t.label || "(untitled)"}</p>
               <p className="truncate text-xs text-muted-foreground">{t.subtext}</p>
             </div>
-            <button onClick={() => toggle(t)} disabled={pending} className={`shrink-0 rounded-full px-3 py-1 text-xs uppercase tracking-wide ${t.active ? "bg-foreground text-background" : "border border-border text-muted-foreground"}`}>
-              {t.active ? "Live" : "Off"}
+            {/* The only live control. The edit form used to carry a second one
+                that saved on a different action, so the two could disagree:
+                switch the row live, then save the form with its box unticked,
+                and it went straight back to hidden. */}
+            <button
+              onClick={() => toggle(t)}
+              disabled={pending}
+              title={t.active ? "Showing on the shop grid. Click to hide." : "Hidden from the shop. Click to show."}
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs ${
+                t.active ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"
+              }`}
+            >
+              {t.active ? "On the shop" : "Hidden"}
             </button>
             <button onClick={() => setEditing(t)} className="shrink-0 text-sm text-muted-foreground hover:text-foreground">Edit</button>
             <button onClick={() => remove(t.id)} className="shrink-0 text-sm text-muted-foreground hover:text-destructive">Delete</button>
@@ -89,11 +100,51 @@ export function TeasersClient({ initial }: { initial: Teaser[] }) {
             {editing.imageUrl && <button onClick={() => setEditing((e) => ({ ...e, imageUrl: "" }))} className="text-sm text-muted-foreground hover:text-foreground">Remove</button>}
           </div>
           <UploadHint spec="product" />
+
+          {/* A teaser is a card on a public grid, and there was no way to see
+              it as one without switching it live. */}
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="w-44 overflow-hidden rounded-xl border border-border bg-card">
+              <div className="relative aspect-[4/5] bg-muted">
+                {editing.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={editing.imageUrl} alt="" className="h-full w-full object-cover" />
+                )}
+                <span className="absolute left-2.5 top-2.5 rounded-full bg-background/90 px-2.5 py-1 text-[9px] uppercase tracking-[0.07em]">
+                  Coming soon
+                </span>
+              </div>
+              <div className="p-3">
+                <p className="truncate text-sm">{editing.label || "Untitled"}</p>
+                <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{editing.subtext || "\u00A0"}</p>
+              </div>
+            </div>
+            <p className="max-w-xs text-[11px] leading-relaxed text-muted-foreground">
+              How this card will look on the Shop grid.
+            </p>
+          </div>
           <input className={inputCls} placeholder="Label — e.g. Pattern in development" value={editing.label ?? ""} onChange={(e) => setEditing({ ...editing, label: e.target.value })} />
           <input className={inputCls} placeholder="Subtext — e.g. Arriving in a future drop" value={editing.subtext ?? ""} onChange={(e) => setEditing({ ...editing, subtext: e.target.value })} />
           <div className="flex flex-wrap items-center gap-6">
-            <label className="flex items-center gap-2 text-sm">Sort<input type="number" className={`${inputCls} w-20`} value={editing.sortOrder ?? 0} onChange={(e) => setEditing({ ...editing, sortOrder: Number(e.target.value) || 0 })} /></label>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!editing.active} onChange={(e) => setEditing({ ...editing, active: e.target.checked })} className="accent-foreground" /> Live on shop</label>
+            <label className="flex items-center gap-2 text-sm">
+              Order on the grid
+              <input
+                type="number"
+                className={`${inputCls} w-20`}
+                value={editing.sortOrder ?? 0}
+                onChange={(e) => setEditing({ ...editing, sortOrder: Number(e.target.value) || 0 })}
+              />
+            </label>
+            {editing.id ? (
+              <span className="text-xs text-muted-foreground">
+                {editing.active ? "Showing on the shop grid." : "Hidden from the shop."} Use the button on its row to
+                change that.
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                New teasers start hidden. Show it from its row once you are happy with it.
+              </span>
+            )}
           </div>
           <div className="flex gap-2">
             <button onClick={save} disabled={pending} className="rounded-full bg-primary px-5 py-2 text-sm text-white disabled:opacity-50">{pending ? "Saving…" : "Save"}</button>

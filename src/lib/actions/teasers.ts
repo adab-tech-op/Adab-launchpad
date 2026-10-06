@@ -28,9 +28,14 @@ export async function saveTeaser(input: unknown): Promise<TeaserResult> {
   const d = p.data;
   try {
     if (d.id) {
-      await sql`UPDATE teasers SET label=${d.label}, subtext=${d.subtext}, image_url=${d.imageUrl}, sort_order=${d.sortOrder}, active=${d.active} WHERE id=${d.id}`;
+      // active is deliberately NOT written here. Visibility is owned by
+      // toggleTeaser alone; letting a save carry it meant a form opened before
+      // a row toggle would quietly undo that toggle on save.
+      await sql`UPDATE teasers SET label=${d.label}, subtext=${d.subtext}, image_url=${d.imageUrl}, sort_order=${d.sortOrder} WHERE id=${d.id}`;
     } else {
-      await sql`INSERT INTO teasers (label, subtext, image_url, sort_order, active) VALUES (${d.label}, ${d.subtext}, ${d.imageUrl}, ${d.sortOrder}, ${d.active})`;
+      // New teasers start hidden, so a half-finished card never appears on the
+      // shop while it is being written.
+      await sql`INSERT INTO teasers (label, subtext, image_url, sort_order, active) VALUES (${d.label}, ${d.subtext}, ${d.imageUrl}, ${d.sortOrder}, false)`;
     }
   } catch (e) {
     return { ok: false, error: `Could not save: ${msg(e)}` };
