@@ -8,6 +8,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import { addScrapbookImage, updateScrapbookImage, deleteScrapbookImage } from "@/lib/actions/scrapbook";
 import { SCRAPBOOK_KINDS, SCRAPBOOK_SPANS, type ScrapbookImage, type ScrapbookKind, type ScrapbookSpan } from "@/lib/scrapbook";
 import { UploadHint } from "@/components/studio/UploadHint";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -82,7 +83,7 @@ function Tile({ img }: { img: ScrapbookImage }) {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={img.image_url}
+          src={cldUrl(img.image_url, IMG_W.preview)}
           alt={d.caption || "scrapbook"}
           className="h-32 w-full shrink-0 rounded-xl object-cover lg:h-40 lg:w-32"
         />

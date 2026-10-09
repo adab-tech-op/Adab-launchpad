@@ -1,6 +1,7 @@
 "use client";
 
 import { type HeroOverlay, type OverlayFrom, overlayStyle } from "@/lib/hero";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const GRID: OverlayFrom[] = [
   "top-left", "top", "top-right",
@@ -88,7 +89,7 @@ export function HeroOverlayEditor({
             <div>
               <p className="mb-1.5 text-[10px] uppercase tracking-[0.05em] text-muted-foreground">Preview</p>
               <div className="relative h-24 w-40 overflow-hidden rounded-md ring-1 ring-border">
-                <div className="absolute inset-0" style={{ backgroundImage: `url("${previewImage}")`, backgroundSize: "cover", backgroundPosition: "center" }} />
+                <div className="absolute inset-0" style={{ backgroundImage: `url("${cldUrl(previewImage, IMG_W.thumb)}")`, backgroundSize: "cover", backgroundPosition: "center" }} />
                 {style && <div className="absolute inset-0" style={style} />}
               </div>
             </div>

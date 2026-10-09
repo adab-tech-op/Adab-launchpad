@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { DeleteProductButton } from "@/components/studio/DeleteProductButton";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 export type ProductRow = {
   slug: string;
@@ -82,7 +83,7 @@ export function ProductsClient({ rows }: { rows: ProductRow[] }) {
             >
               <div className="h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-[color:var(--paper)] lg:h-[78px] lg:w-[62px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {p.image && <img src={p.image} alt="" className="h-full w-full object-cover" />}
+                {p.image && <img src={cldUrl(p.image, IMG_W.thumb)} alt="" className="h-full w-full object-cover" />}
               </div>
 
               <div className="min-w-0">

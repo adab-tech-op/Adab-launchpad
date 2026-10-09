@@ -1,4 +1,5 @@
 import { provenanceOf, tiltOf, type ScrapbookImage } from "@/lib/scrapbook";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 /** Fixed ratios so a card reads as a deliberate composition. `normal` keeps
  *  the image's own proportions, which is what makes the board uneven. */
@@ -40,7 +41,7 @@ export function ScrapbookTile({ img, tilt = true }: { img: ScrapbookImage; tilt?
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={img.image_url}
+            src={cldUrl(img.image_url, IMG_W.tile)}
             alt={img.caption || img.caption_bn || "ADAB scrapbook"}
             className="w-full rounded-[2px] object-contain"
             loading="lazy"
@@ -52,7 +53,7 @@ export function ScrapbookTile({ img, tilt = true }: { img: ScrapbookImage; tilt?
           <div className="overflow-hidden rounded-lg shadow-[0_12px_30px_rgba(28,28,28,0.17)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={img.image_url}
+              src={cldUrl(img.image_url, IMG_W.tile)}
               alt={img.caption || img.caption_bn || "ADAB scrapbook"}
               className={`w-full object-cover transition-transform duration-700 group-hover:scale-[1.03] ${MEDIA_RATIO[img.span] ?? ""}`}
               loading="lazy"

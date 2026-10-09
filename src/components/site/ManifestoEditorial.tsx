@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ROMAN } from "@/lib/page-content";
 import { cn } from "@/lib/utils";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 export type EditorialSection = {
   title: string;
@@ -24,7 +25,7 @@ function SectionMedia({ section, index }: { section: EditorialSection; index: nu
     return (
       <video
         src={section.video}
-        poster={section.image || undefined}
+        poster={cldUrl(section.image, IMG_W.large) || undefined}
         className="h-full w-full object-cover"
         autoPlay
         muted
@@ -38,7 +39,7 @@ function SectionMedia({ section, index }: { section: EditorialSection; index: nu
   if (section.image) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={section.image} alt="" className="h-full w-full object-cover" loading={index === 0 ? "eager" : "lazy"} />
+      <img src={cldUrl(section.image, IMG_W.large)} alt="" className="h-full w-full object-cover" loading={index === 0 ? "eager" : "lazy"} />
     );
   }
   return (

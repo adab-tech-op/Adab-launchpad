@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { removeFromWishlist } from "@/lib/actions/wishlist";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 type Tile = { slug: string; name: string; price: string; image: string; color: string };
 
@@ -39,7 +40,7 @@ export function WishlistGrid({ initial }: { initial: Tile[] }) {
           </button>
           <Link href={`/product/${t.slug}`} className="block">
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[color:var(--paper)]">
-              <img src={t.image} alt={t.name} className="absolute inset-0 h-full w-full object-cover" />
+              <img src={cldUrl(t.image, IMG_W.card)} alt={t.name} className="absolute inset-0 h-full w-full object-cover" />
             </div>
             <div className="mt-3 flex items-start justify-between gap-3">
               <div>

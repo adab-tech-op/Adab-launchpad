@@ -1,9 +1,19 @@
 import type { CSSProperties } from "react";
 import { CENTER_FOCAL, type FocalPoint, type HeroImages } from "@/lib/hero";
+import { cldUrl } from "@/lib/image-url";
 
-function layer(url: string, f: FocalPoint): CSSProperties {
+/** Pixels worth shipping per breakpoint layer. The phone number is the one
+ *  that matters: with no phone-specific upload, that layer falls back to the
+ *  2560px desktop image, which a 390px screen has no use for. Zoom scales the
+ *  layer up, so the budget scales with it. */
+function budget(base: number, f: FocalPoint): number {
+  const zoom = f.zoom && f.zoom > 1 ? f.zoom : 1;
+  return Math.round(base * zoom);
+}
+
+function layer(url: string, f: FocalPoint, width: number): CSSProperties {
   const style: CSSProperties = {
-    backgroundImage: `url("${url}")`,
+    backgroundImage: `url("${cldUrl(url, budget(width, f))}")`,
     backgroundSize: "cover",
     backgroundRepeat: "no-repeat",
     backgroundPosition: `${f.x}% ${f.y}%`,
@@ -35,12 +45,12 @@ export function HeroBackground({
   if (!images?.desktop) return null;
 
   const phoneStyle = images.phone
-    ? layer(images.phone, CENTER_FOCAL)
-    : layer(images.desktop, images.focalPhone ?? CENTER_FOCAL);
+    ? layer(images.phone, CENTER_FOCAL, 1080)
+    : layer(images.desktop, images.focalPhone ?? CENTER_FOCAL, 1080);
   const tabletStyle = images.tablet
-    ? layer(images.tablet, CENTER_FOCAL)
-    : layer(images.desktop, images.focalTablet ?? CENTER_FOCAL);
-  const desktopStyle = layer(images.desktop, CENTER_FOCAL);
+    ? layer(images.tablet, CENTER_FOCAL, 1600)
+    : layer(images.desktop, images.focalTablet ?? CENTER_FOCAL, 1600);
+  const desktopStyle = layer(images.desktop, CENTER_FOCAL, 2560);
 
   return (
     <div

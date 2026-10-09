@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Product } from "@/data/products";
 import { saleFor, formatPrice } from "@/lib/pricing";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 export function ProductCard({ product }: { product: Product }) {
   const primary = product.images[0];
@@ -17,7 +18,7 @@ export function ProductCard({ product }: { product: Product }) {
             devices — where :hover sticks after a tap — never get left showing
             the second image. On touch, the cover (images[0]) always stays. */}
         <img
-          src={primary}
+          src={cldUrl(primary, IMG_W.card)}
           alt={product.name}
           loading="lazy"
           width={1024}
@@ -25,7 +26,7 @@ export function ProductCard({ product }: { product: Product }) {
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 [@media(hover:hover)]:group-hover:opacity-0"
         />
         <img
-          src={hover}
+          src={cldUrl(hover, IMG_W.card)}
           alt=""
           loading="lazy"
           width={1024}

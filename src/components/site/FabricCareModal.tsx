@@ -3,6 +3,7 @@
 import { X, Droplets, Wind, Flame, Package, type LucideIcon } from "lucide-react";
 import { CARE_SECTIONS, type FabricType } from "@/lib/fabrics";
 import { ModalShell } from "@/components/site/ModalShell";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const SECTION_ICONS: Record<string, LucideIcon> = {
   washing: Droplets,
@@ -25,7 +26,7 @@ export function FabricCareModal({ fabric, onClose }: { fabric: FabricType | null
           <div className="max-h-[85vh] overflow-y-auto p-8 sm:p-10">
             {fabric.thumbnail_url && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={fabric.thumbnail_url} alt="" className="h-36 w-full rounded-xl object-cover" />
+              <img src={cldUrl(fabric.thumbnail_url, IMG_W.card)} alt="" className="h-36 w-full rounded-xl object-cover" />
             )}
             <h3 id="fabric-care-modal-title" className="mt-6 font-sans text-3xl leading-tight">
               {fabric.name}

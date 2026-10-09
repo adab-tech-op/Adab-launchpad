@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2, Undo2, X, ShoppingCart } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import { useCart } from "@/context/CartContext";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 export function CartModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, subtotal, setQty, removeItem } = useCart();
@@ -42,7 +43,7 @@ export function CartModal({ open, onClose }: { open: boolean; onClose: () => voi
                 className="grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-background p-3"
               >
                 <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-[color:var(--paper)]">
-                  <img src={item.image} alt="" className="h-full w-full object-cover" />
+                  <img src={cldUrl(item.image, IMG_W.thumb)} alt="" className="h-full w-full object-cover" />
                 </div>
                 <div className="min-w-0">
                   <p className="truncate font-display text-sm">{item.name}</p>

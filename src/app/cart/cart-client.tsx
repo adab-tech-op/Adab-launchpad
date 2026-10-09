@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Minus, Plus, X, ArrowLeft } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 export function CartClient() {
   const { items, setQty, removeItem, subtotal } = useCart();
@@ -31,7 +32,7 @@ export function CartClient() {
                   className="grid grid-cols-[96px_1fr] md:grid-cols-[120px_1fr_auto] gap-5 py-6 items-start"
                 >
                   <div className="aspect-[4/5] w-24 md:w-30 overflow-hidden rounded-xl bg-[color:var(--paper)]">
-                    <img src={item.image} alt="" className="h-full w-full object-cover" />
+                    <img src={cldUrl(item.image, IMG_W.preview)} alt="" className="h-full w-full object-cover" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-display text-lg">{item.name}</h3>
