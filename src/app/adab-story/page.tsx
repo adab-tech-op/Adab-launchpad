@@ -7,6 +7,7 @@ import { ManifestoEditorial } from "@/components/site/ManifestoEditorial";
 import { HeroBackground } from "@/components/site/HeroBackground";
 import { overlayStyle } from "@/lib/hero";
 import { cn } from "@/lib/utils";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 export const metadata: Metadata = {
   title: "The Adab Story — Old Soul. New Cut.",
@@ -102,7 +103,7 @@ export default async function Manifesto() {
               <div key={i} className="rounded-2xl border border-border bg-card p-6 md:p-8">
                 {value.icon ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={value.icon} alt="" className="h-5 w-5 object-contain" />
+                  <img src={cldUrl(value.icon, IMG_W.icon)} alt="" className="h-5 w-5 object-contain" />
                 ) : (
                   <Icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
                 )}

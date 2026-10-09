@@ -14,6 +14,7 @@ import { overlayStyle } from "@/lib/hero";
 import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
 import { UploadHint } from "@/components/studio/UploadHint";
 import { uploadToCloudinary, uploadVideoToCloudinary } from "@/lib/cloudinary";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 const labelCls = "font-display text-[11px] uppercase tracking-[0.06em] text-muted-foreground";
@@ -85,7 +86,7 @@ function BlockList({
             <div className="mt-3 flex flex-wrap items-center gap-3">
               {b.icon ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={b.icon} alt="" className="h-8 w-8 rounded object-contain ring-1 ring-border" />
+                <img src={cldUrl(b.icon, IMG_W.icon)} alt="" className="h-8 w-8 rounded object-contain ring-1 ring-border" />
               ) : (
                 <div className="grid h-8 w-8 place-items-center rounded bg-muted text-[8px] uppercase text-muted-foreground">Icon</div>
               )}
@@ -131,7 +132,7 @@ function StoryImageField({ value, onChange }: { value: string; onChange: (v: str
       <div className="mt-2 flex flex-wrap items-center gap-3">
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="" className="h-20 w-16 shrink-0 rounded object-cover ring-1 ring-border" />
+          <img src={cldUrl(value, IMG_W.thumb)} alt="" className="h-20 w-16 shrink-0 rounded object-cover ring-1 ring-border" />
         ) : (
           <div className="grid h-20 w-16 shrink-0 place-items-center rounded bg-muted text-[9px] uppercase tracking-wide text-muted-foreground">
             Default
@@ -259,7 +260,7 @@ function StoryBlockList({
             <div className="mt-2 flex flex-wrap items-center gap-3">
               {b.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={b.image} alt="" className="h-16 w-14 shrink-0 rounded object-cover ring-1 ring-border" />
+                <img src={cldUrl(b.image, IMG_W.thumb)} alt="" className="h-16 w-14 shrink-0 rounded object-cover ring-1 ring-border" />
               ) : (
                 <div className="grid h-16 w-14 shrink-0 place-items-center rounded bg-muted text-[9px] uppercase tracking-wide text-muted-foreground">No image</div>
               )}
@@ -313,7 +314,7 @@ function HeroEditor({ hero, onChange }: { hero: ManifestoHero; onChange: (h: Man
       {/* Live preview (desktop image) */}
       <div
         className={`mt-3 overflow-hidden rounded-lg ${!bg ? (light ? "bg-foreground" : "bg-background border border-border") : ""} relative`}
-        style={bg ? { backgroundImage: `url(${bg})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+        style={bg ? { backgroundImage: `url(${cldUrl(bg, IMG_W.card)})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
       >
         {bg && manifestoOverlay && <div className="absolute inset-0" style={manifestoOverlay} />}
         <div className={`relative px-5 py-10 ${light ? "text-background" : "text-foreground"}`}>
@@ -804,7 +805,7 @@ function HeroSlidesEditor({ value, onChange }: { value: HeroSlide[]; onChange: (
               >
                 {slide.hero.desktop ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={slide.hero.desktop} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                  <img src={cldUrl(slide.hero.desktop, IMG_W.thumb)} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
                 ) : (
                   <div className="h-10 w-10 shrink-0 rounded-lg border border-dashed border-border" />
                 )}

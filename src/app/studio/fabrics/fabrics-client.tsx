@@ -9,6 +9,7 @@ import { createFabricType, updateFabricType, deleteFabricType } from "@/lib/acti
 import { CARE_SECTIONS, type FabricType } from "@/lib/fabrics";
 import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { overlayStyle, type HeroOverlay } from "@/lib/hero";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const inputCls =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
@@ -86,7 +87,7 @@ function Thumb({ url, onChange, size = "h-14 w-14" }: { url: string; onChange: (
     <label className={`relative flex ${size} shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-muted/40 text-muted-foreground hover:border-primary`}>
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt="" className="h-full w-full object-cover" />
+        <img src={cldUrl(url, IMG_W.thumb)} alt="" className="h-full w-full object-cover" />
       ) : uploading ? (
         <span className="text-[10px]">Uploading…</span>
       ) : (
@@ -158,7 +159,7 @@ function FabricRow({ fabric, usedBy, open, onToggle }: { fabric: FabricType; use
         <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
           {fabric.thumbnail_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fabric.thumbnail_url} alt="" className="h-full w-full object-cover" />
+            <img src={cldUrl(fabric.thumbnail_url, IMG_W.thumb)} alt="" className="h-full w-full object-cover" />
           ) : null}
         </div>
         <div className="min-w-0">
@@ -185,7 +186,7 @@ function FabricRow({ fabric, usedBy, open, onToggle }: { fabric: FabricType; use
                 {fabric.thumbnail_url && (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={fabric.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                    <img src={cldUrl(fabric.thumbnail_url, IMG_W.preview)} alt="" className="h-full w-full object-cover" />
                     {ov && <div className="absolute inset-0" style={ov} />}
                   </>
                 )}

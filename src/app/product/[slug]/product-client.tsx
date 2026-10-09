@@ -15,6 +15,7 @@ import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import type { SizeGuideSettings, HandoverGuideSettings } from "@/lib/settings";
 import type { FabricType } from "@/lib/fabrics";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 // Feature flag: Founding Drop reservations vs. standard Add to Cart.
 // Flip to false once fulfilment + cart checkout are live.
@@ -164,7 +165,7 @@ export function ProductClient({
               {product.images.map((src, i) => (
                 <img
                   key={i}
-                  src={src}
+                  src={cldUrl(src, IMG_W.card)}
                   alt=""
                   className="h-[70vh] w-[85vw] snap-center rounded-2xl object-cover shrink-0"
                 />
@@ -179,7 +180,7 @@ export function ProductClient({
                   className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[color:var(--paper)] cursor-zoom-in"
                 >
                   <img
-                    src={src}
+                    src={cldUrl(src, IMG_W.large)}
                     alt={`${product.name} — view ${i + 1}`}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-[1.03]"
                   />
@@ -421,7 +422,7 @@ export function ProductClient({
           <button className="absolute right-6 top-6 text-background" aria-label="Close">
             <X className="h-6 w-6" strokeWidth={1.5} />
           </button>
-          <img src={zoom} alt="" className="max-h-[90vh] max-w-full rounded-2xl object-contain" />
+          <img src={cldUrl(zoom, IMG_W.zoom)} alt="" className="max-h-[90vh] max-w-full rounded-2xl object-contain" />
         </div>
       )}
 

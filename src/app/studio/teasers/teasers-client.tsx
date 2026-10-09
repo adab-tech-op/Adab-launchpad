@@ -7,6 +7,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import { UploadHint } from "@/components/studio/UploadHint";
 import { saveTeaser, deleteTeaser, toggleTeaser } from "@/lib/actions/teasers";
 import type { Teaser } from "@/lib/teasers";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const inputCls = "w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground";
 const blank: Partial<Teaser> = { label: "", subtext: "", imageUrl: "", sortOrder: 0, active: false };
@@ -55,7 +56,7 @@ export function TeasersClient({ initial }: { initial: Teaser[] }) {
           <div key={t.id} className="flex items-center gap-4 rounded-xl border border-border p-3">
             {t.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={t.imageUrl} alt="" className="h-14 w-12 shrink-0 rounded object-cover ring-1 ring-border" />
+              <img src={cldUrl(t.imageUrl, IMG_W.thumb)} alt="" className="h-14 w-12 shrink-0 rounded object-cover ring-1 ring-border" />
             ) : (
               <div className="grid h-14 w-12 shrink-0 place-items-center rounded bg-muted text-[9px] text-muted-foreground">No image</div>
             )}
@@ -89,7 +90,7 @@ export function TeasersClient({ initial }: { initial: Teaser[] }) {
           <div className="flex flex-wrap items-center gap-3">
             {editing.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={editing.imageUrl} alt="" className="h-20 w-16 rounded object-cover ring-1 ring-border" />
+              <img src={cldUrl(editing.imageUrl, IMG_W.thumb)} alt="" className="h-20 w-16 rounded object-cover ring-1 ring-border" />
             ) : (
               <div className="grid h-20 w-16 place-items-center rounded bg-muted text-[9px] text-muted-foreground">No image</div>
             )}
@@ -108,7 +109,7 @@ export function TeasersClient({ initial }: { initial: Teaser[] }) {
               <div className="relative aspect-[4/5] bg-muted">
                 {editing.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={editing.imageUrl} alt="" className="h-full w-full object-cover" />
+                  <img src={cldUrl(editing.imageUrl, IMG_W.preview)} alt="" className="h-full w-full object-cover" />
                 )}
                 <span className="absolute left-2.5 top-2.5 rounded-full bg-background/90 px-2.5 py-1 text-[9px] uppercase tracking-[0.07em]">
                   Coming soon

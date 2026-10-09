@@ -8,6 +8,7 @@ import { HeroCarousel } from "@/components/site/HeroCarousel";
 import type { HomeContent, HeroSlide } from "@/lib/page-content";
 import { HOME_BODY_DEFAULT } from "@/lib/page-content";
 import type { Product } from "@/data/products";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const storyArchival = "/assets/story-archival.jpg";
 const scrap1 = "/assets/scrapbook-1.jpg";
@@ -100,7 +101,7 @@ export function HomeClient({
           </div>
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl paper-grain">
             <img
-              src={body.storyImage || storyArchival}
+              src={cldUrl(body.storyImage, IMG_W.large) || storyArchival}
               alt=""
               aria-hidden
               loading="lazy"
@@ -181,7 +182,7 @@ export function HomeClient({
               className="relative aspect-square overflow-hidden rounded-2xl bg-[color:var(--paper)]"
             >
               <img
-                src={src}
+                src={cldUrl(src, IMG_W.card)}
                 alt=""
                 loading="lazy"
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"

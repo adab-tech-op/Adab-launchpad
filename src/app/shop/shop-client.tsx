@@ -6,6 +6,7 @@ import type { Product } from "@/data/products";
 import type { Teaser } from "@/lib/teasers";
 import { BANNER_DEFAULT, type BannerSettings } from "@/lib/settings";
 import { SlidersHorizontal, X } from "lucide-react";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const placeholderImg = "/assets/coming-soon-placeholder.jpg";
 
@@ -149,7 +150,7 @@ function ComingSoonCard({ teaser }: { teaser: Teaser }) {
     <div className="group block cursor-default">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[color:var(--paper)]">
         <img
-          src={teaser.imageUrl || placeholderImg}
+          src={cldUrl(teaser.imageUrl, IMG_W.card) || placeholderImg}
           alt=""
           loading="lazy"
           width={1024}

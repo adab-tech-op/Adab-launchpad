@@ -10,6 +10,7 @@ import type { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { createReservation } from "@/lib/actions/reservations";
 import { checkCoupon } from "@/lib/actions/coupons";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"];
 const priceNum = (s?: string) => Number((s ?? "").replace(/[^0-9]/g, "")) || 0;
@@ -187,7 +188,7 @@ export function CheckoutClient({
           <div key={l.slug} className="rounded-2xl border border-border p-5">
             <div className="flex items-start gap-4">
               <div className="h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-[color:var(--paper)]">
-                <img src={l.image} alt="" className="h-full w-full object-cover" />
+                <img src={cldUrl(l.image, IMG_W.thumb)} alt="" className="h-full w-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-sans text-lg leading-tight">{l.name}</p>

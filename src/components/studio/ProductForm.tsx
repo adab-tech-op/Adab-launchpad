@@ -14,6 +14,7 @@ import { HeroOverlayEditor } from "@/components/studio/HeroOverlayEditor";
 import { emptyPageHero, resolveTimerColor } from "@/lib/page-content";
 import { isoToDhakaLocal, dhakaLocalToISO, formatDhaka } from "@/lib/drop";
 import { visibilitySentence, stockSummary } from "@/lib/product-visibility";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -489,7 +490,7 @@ export function ProductForm({
         <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 gap-3">
           {p.images.map((url, i) => (
             <div key={url + i} className="relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-[color:var(--paper)]">
-              <img src={url} alt="" className="h-full w-full object-cover" />
+              <img src={cldUrl(url, IMG_W.preview)} alt="" className="h-full w-full object-cover" />
               {i === 0 ? (
                 <span className="absolute left-1 top-1 rounded bg-foreground/80 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-background">Cover</span>
               ) : (

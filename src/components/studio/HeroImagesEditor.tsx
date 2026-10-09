@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { UploadHint } from "@/components/studio/UploadHint";
 import { CENTER_FOCAL, type FocalPoint, type HeroImages, type ImageSpecKey } from "@/lib/hero";
+import { cldUrl, IMG_W } from "@/lib/image-url";
 
 type Slot = "desktop" | "tablet" | "phone";
 
@@ -114,7 +115,7 @@ function ImageSlot({
       <div className="mt-3 flex flex-wrap items-center gap-3">
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt="" className="h-16 w-28 shrink-0 rounded object-cover ring-1 ring-border" />
+          <img src={cldUrl(url, IMG_W.preview)} alt="" className="h-16 w-28 shrink-0 rounded object-cover ring-1 ring-border" />
         ) : (
           <div className="grid h-16 w-28 shrink-0 place-items-center rounded bg-muted text-[9px] uppercase tracking-wide text-muted-foreground">
             No image
@@ -182,7 +183,7 @@ function FocalControl({
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url("${image}")`,
+              backgroundImage: `url("${cldUrl(image, IMG_W.preview)}")`,
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               backgroundPosition: `${f.x}% ${f.y}%`,
